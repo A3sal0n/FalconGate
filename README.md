@@ -111,6 +111,3 @@ Currently the RPi 2 model B and the Banana Pi M2+ have both a single ethernet in
 
 This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
 
-## Acknowledgments
-
-
