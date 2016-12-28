@@ -46,10 +46,13 @@ This is well documented in multiple sources out there.
 - Connect to your device via SSH
 
 - Install Git if you don't have it yet
+
 <code>
 $ sudo apt-get update
+
 $ sudo apt-get install git
 </code>
+
 - Clone FalconGate's repository to a local folder
 ```
 $ cd /opt
