@@ -82,11 +82,6 @@ Add additional notes about how to deploy this on a live system
 
 ### Limitations
 
-## Authors
-
-* **Leonardo Mokarzel Falcon** - *Initial work*
-
-See also the full list of [contributors](https://github.com/A3sal0n/FalconGate/graphs/contributors)
 
 ## License
 
