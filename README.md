@@ -45,10 +45,10 @@ This is well documented in multiple sources.
 
 - Install Git if you don't have it yet
 
-'''
+```
 $ sudo apt-get update
 $ sudo apt-get install git
-'''
+```
 
 ### Deployment
 
