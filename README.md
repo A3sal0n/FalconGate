@@ -6,7 +6,20 @@ A smart gateway to stop hackers, Malware and more...
 
 Cyber attacks are on the raise. Hacker and cyber criminals are continuously improving their methods and building new tools and Malware with the purpose of hacking your network, spying on you and stealing valuable data. Recently a new business model has become popular among hackers: the use of Ransomware to encrypt your data and ask for a ransom to unlock it. These attacks have extended also to the Internet of Things (IoT) devices since many of them are vulnerable by design and hackers can leverage them to compromise other devices in your network or launch DDoS attacks towards other targets. Traditionally securing a network against such attacks has been an expensive item which could be afforded just by medium to large companies. With FalconGate we're aiming to change this and bring "out of the box" security for free to people, small businesses and anyone else in need.
 
+## Features
+
 FalconGate it's an open source smart gateway which can protect your home devices against hackers, Malware like Ransomeware and other threats. It detects and alerts on hacker intrusions on your home network as well as other devices misbehaving and attacking targets within your network or in the Internet.
+
+Currently FalconGate it's able to:
+
+- Block several types of Malware based on open source blacklists (see detailed list in file [intel-sources.md](intel-sources.md)
+- Block traffic to the Tor network
+- Detect and report potential Malware DNS requests based on VirusTotal reports
+- Detect and report the presence of Malware executables and other components based on VirusTotal reports
+- Detect and report Domain Generation Algorithm (DGA) Malware patterns
+- Detect and report on Malware spamming activity
+- Detect and report on internal and outbound port scans
+- Report details of all new devices connected to your network
 
 ## Getting Started
 
@@ -33,11 +46,11 @@ FalconGate has a number of software dependencies:
 - Exim
 - PHP
 
-It depends also on several Python modules (see requirements.txt file for details)
+It depends also on several Python modules (see [requirements.txt](requirements.txt) file for details)
 
-### Installing
+### Installing FalconGate
 
-Follow the steps below to configure your device and install FalconGate from its repository.
+Follow the steps below to configure your device and install FalconGate from this repository.
 
 - Download and install the OS image to your Raspberry Pi or Banana Pi device
 
@@ -60,9 +73,9 @@ $ sudo git clone https://github.com/A3sal0n/FalconGate.git
 $ cd FalconGate/
 $ sudo python install.py
 ```
-Now you can go for a walk, a coffee or any other beverage of your like because the installation takes some time. The script will print the progress to the console.
+Now you can go for a walk and prepare a coffee or any other beverage of your choice because the installation takes some time. The script will print the progress to the console.
 
-The script should finish without issues if you're using the supported platforms. If you're attempting to install FalconGate experimentally to a new hardware platform/OS and you get some errors during the installation you could try to correct the issues manually following the steps listed in the installation script.
+The script should finish without issues if you're using the supported platforms. If you're attempting to install FalconGate experimentally to a new hardware platform/OS and you get some errors during the installation you could try to correct the issues manually and continue to execute the steps listed in the installation script.
 
 - Login to your router and disable it's DHCP server function
 
@@ -71,17 +84,28 @@ FalconGate was designed to work connected to a router over ethernet. It does not
 - Reboot your device to apply all the configuration changes
 
 - Login to FalconGate's web app and configure the email address(es) to be used as recipients for alerts and your VirusTotal API key
+```
+https://[FalconGate IP address]
+Username: admin
+Password: falcongate
+```
+*Change the default password after the first logon to the application*
 
-Point your browser to https://[FalconGate IP address] and accept the SSL certificate provided by the app. Then navigate to the "Configuration" page and fill in the correct fields.
+- Navigate to the "Configuration" page and fill in the correct fields
+
 This configuration it's not mandatory but highly desired if you want to unleash FalconGate's full power.
-In order to receive a free VirusTotal API key you have to register at (https://www.virustotal.com/).
+In order to obtain a free VirusTotal API key you must register at (https://www.virustotal.com/).
 
 ### Deployment
 
-Add additional notes about how to deploy this on a live system
+Some important considerations to keep in mind when deploying FalconGate to a real environment: home or production network.
+
+- Change the default SSH password in your Raspberry Pi or Banana Pi devices
+- Regenerate the openssh-server certificates for SSH encryption
 
 ### Limitations
 
+Currently the RPi 2 model B and the Banana Pi M2+ have both a single ethernet interface so the traffic forwarding in the gateway it's done using this single interface. This has an impact in networks with fast Internet connection (e.g. > 50Mb/s). However it's still good enough for the home networks of many people's  and even some small businesses. 
 
 ## License
 
