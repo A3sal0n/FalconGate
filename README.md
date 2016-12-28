@@ -10,7 +10,7 @@ FalconGate it's an open source smart gateway which can protect your home devices
 
 ## Getting Started
 
-FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running it's to use the supplied installation script "install.py" to deploy and configure the framework in your own Raspberry Pi or Banana Pi. The installation usually takes a long time because Bro IDS it's compiled from source to ensure the latest features are available.
+FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running it's to use the supplied installation script "install.py" to deploy and configure the framework in your own Raspberry Pi or Banana Pi. This script tries to "guess" your network configuration, installs all the dependencies and configures them. The installation usually takes a while because the installation script compiles Bro IDS from it's source to ensure all the latest features are available.
 
 ### Supported Platforms
 
@@ -37,9 +37,20 @@ It depends also on several Python modules (see requirements.txt file for details
 
 ### Installing
 
+Follow the steps below to configure your device and install FalconGate from its repository.
 
+- Install the OS image in your Raspberry Pi or Banana Pi device
 
-## Deployment
+This is well documented in multiple sources.
+
+- Install Git if you don't have it yet
+
+'''
+$ sudo apt-get update
+$ sudo apt-get install git
+'''
+
+### Deployment
 
 Add additional notes about how to deploy this on a live system
 
