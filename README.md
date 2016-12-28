@@ -39,16 +39,27 @@ It depends also on several Python modules (see requirements.txt file for details
 
 Follow the steps below to configure your device and install FalconGate from its repository.
 
-- Install the OS image in your Raspberry Pi or Banana Pi device
-
+- Download and install the OS image to your Raspberry Pi or Banana Pi device
+```
 This is well documented in multiple sources.
-
+```
 - Install Git if you don't have it yet
-
 ```
 $ sudo apt-get update
 $ sudo apt-get install git
 ```
+- Clone FalconGate's repository to a local folder
+```
+$ cd /opt
+$ sudo git clone https://github.com/A3sal0n/FalconGate.git
+```
+- Run the installation script inside FalconGate's folder
+```
+$ cd FalconGate/
+$ sudo python install.py
+```
+Now you can go for a walk, a coffee or any other beverage of your like because the installation takes some time. The script will print the progress to the console.
+
 
 ### Deployment
 
