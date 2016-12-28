@@ -41,18 +41,15 @@ Follow the steps below to configure your device and install FalconGate from its 
 
 - Download and install the OS image to your Raspberry Pi or Banana Pi device
 
-This is well documented in multiple sources out there.
+*This is well documented in multiple sources out there.*
 
 - Connect to your device via SSH
 
 - Install Git if you don't have it yet
-
-<code>
+```
 $ sudo apt-get update
-
 $ sudo apt-get install git
-</code>
-
+```
 - Clone FalconGate's repository to a local folder
 ```
 $ cd /opt
@@ -63,11 +60,11 @@ $ sudo git clone https://github.com/A3sal0n/FalconGate.git
 $ cd FalconGate/
 $ sudo python install.py
 ```
-Now you can go for a walk, a coffee or any other beverage of your like because the installation takes some time. The script will print the progress to the console.
+*Now you can go for a walk, a coffee or any other beverage of your like because the installation takes some time. The script will print the progress to the console.
 
-The script should finish without issues if you're using the supported platforms. If you're attempting to install FalconGate experimentally to a new hardware platform/OS and you get some errors during the installation you could try to correct the issues manually following the steps listed in the installation script.  
+The script should finish without issues if you're using the supported platforms. If you're attempting to install FalconGate experimentally to a new hardware platform/OS and you get some errors during the installation you could try to correct the issues manually following the steps listed in the installation script.*
 
-- Login to you router and disable it's DHCP server function
+- Login to your router and disable it's DHCP server function
 
 FalconGate was designed to work connected to a router over ethernet. It does not replaces the functions of your router. Instead it becomes a layer of security between your devices and your router. Disabling your router's DHCP allows FalconGate to become the new gateway for all the devices connected to the same router in your VLAN.
 
