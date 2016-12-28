@@ -1,0 +1,13 @@
+Flask==0.10.1
+itsdangerous==0.24
+Jinja2==2.8
+MarkupSafe==0.23
+netaddr==0.7.12
+netifaces==0.10.4
+requests==2.4.3
+sh==1.11
+ua-parser==0.7.2
+user-agents==1.0.1
+virtualenv==15.0.3
+Werkzeug==0.11.11
+pygtail==0.7.0

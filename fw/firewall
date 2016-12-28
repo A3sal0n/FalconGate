@@ -1,0 +1,7 @@
+#!/bin/sh
+
+#This script must be copied to /etc/network/if-pre-up.d folder and make executable
+
+/sbin/iptables-restore < /etc/iptables.rules
+
+/sbin/ipset restore < /etc/ipset.rules

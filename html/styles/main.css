@@ -1,0 +1,59 @@
+body {
+background-color:white;
+}
+
+#wrapper {
+width:90%;
+background: white;
+margin-top: 30px;
+margin-right: auto;
+margin-left: auto;
+padding: 0px;
+}
+
+#header {
+    background-color:white;
+    height: 150px;
+    color:black;
+    text-align:left;
+    padding:5px;
+    margin: 0px;
+}
+
+#img {
+float: left;
+}
+
+#header p {
+float: right;
+font-size: 28px;
+margin-right: 85%;
+}
+
+#nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height:300px;
+    width:100px;
+    float:left;
+    padding:5px;
+}
+
+#section {
+    width:350px;
+    float:left;
+    padding:10px;
+}
+
+#section input {
+margin: 10px;
+}
+
+#footer {
+    float: bottom;
+    background-color:white;
+    color:black;
+    clear:both;
+    text-align:center;
+   padding:5px;
+}

@@ -1,0 +1,15 @@
+domain-needed
+bogus-priv
+dns-forward-max=150
+no-resolv
+addn-hosts=/opt/SIDE/fw/sinkholed_hosts
+server=8.8.8.8
+server=8.8.4.4
+interface=eth0:0
+listen-address=$ETH00IP$
+bind-interfaces
+dhcp-range=$DHCPSTART$,$DHCPEND$,7d
+dhcp-authoritative
+cache-size=300
+log-queries
+log-dhcp
