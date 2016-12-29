@@ -48,7 +48,7 @@ def main():
     print iface, gw
 
     octects = str(gw).split(".")
-    eth0IP = octects[0] + "." + octects[1] + "." + octects[2] + ".2"
+    STATIP = octects[0] + "." + octects[1] + "." + octects[2] + ".2"
     dhcpstart = octects[0] + "." + octects[1] + "." + octects[2] + ".4"
     dhcpend = octects[0] + "." + octects[1] + "." + octects[2] + ".254"
     netmask = '255.255.255.0'
@@ -57,7 +57,7 @@ def main():
         for line in fileinput.input(f, inplace=1):
             line = re.sub("\$FALCONGATEDIR\$", cwd, line.rstrip())
             line = re.sub("\$IFACE\$", iface, line.rstrip())
-            line = re.sub("\$ETH0IP\$", eth0IP, line.rstrip())
+            line = re.sub("\$STATIP\$", STATIP, line.rstrip())
             line = re.sub("\$NETMASK\$", netmask, line.rstrip())
             line = re.sub("\$GATEWAY\$", gw, line.rstrip())
             line = re.sub("\$DHCPSTART\$", dhcpstart, line.rstrip())
@@ -122,12 +122,12 @@ def main():
     print "Configuring falcongate service..."
     run_command("chmod +x /etc/init.d/run-falcongate.sh")
     run_command("chmod +x /etc/init.d/kill-falcongate.sh")
-    f = open('/etc/rc.local', 'w')
-    f.write("#!/bin/sh -e\n")
-    f.write("/etc/init.d/run-falcongate.sh\n")
-    f.write("service dnsmasq restart\n")
-    f.write("exit 0\n")
-    f.close()
+
+    # Installing Cron task to ensure critical services will start
+    run_command("crontab -l > /tmp/mycron")
+    run_command('echo "@reboot /bin/sleep 10 && /usr/sbin/service dnsmasq restart && /usr/sbin/service nginx restart && /etc/init.d/run-falcongate.sh" >> /tmp/mycron')
+    run_command("crontab /tmp/mycron")
+    run_command("rm /tmp/mycron")
 
     # Installing FW scripts
     print "Installing and configuring FW scripts..."
