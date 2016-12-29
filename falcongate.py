@@ -136,15 +136,6 @@ def main():
     while True:
 
         try:
-            with lock:
-                try:
-                    """for k in homenet.hosts["192.168.0.149"].user_agents:
-                        print k
-                    print "Device family:", homenet.hosts["192.168.0.149"].device_family
-                    print "OS family:", homenet.hosts["192.168.0.149"].os_family"""
-                except Exception as e:
-                    log.debug(e.__doc__ + " - " + e.message)
-
             flag = False
             while not flag:
                 try:
