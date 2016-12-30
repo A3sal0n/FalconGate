@@ -23,7 +23,7 @@ class HourlyAlerts(threading.Thread):
                 self.check_spamming()
             except Exception as e:
                 log.debug(e.__doc__ + " - " + e.message)
-            time.sleep(60)
+            time.sleep(3600)
 
     def check_dga(self):
         with lock:
