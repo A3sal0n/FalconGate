@@ -110,6 +110,9 @@ def main():
     shutil.copy("templates/kill-falcongate.sh.tpl", "/etc/init.d/kill-falcongate.sh")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
+    
+    #Creating domain block file for dnsmasq 
+    run_command("touch /etc/dnsmasq.block")
 
     run_command("chown www-data:www-data html/user_config.ini")
     run_command("chown www-data:www-data html/pwd.db")
