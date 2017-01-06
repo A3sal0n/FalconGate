@@ -107,6 +107,9 @@ Some important considerations to keep in mind when deploying FalconGate to a rea
 
 Currently the RPi 2 model B and the Banana Pi M2+ have both a single ethernet interface so the traffic forwarding in the gateway it's done using this single interface. This has an impact in networks with fast Internet connection (e.g. > 50Mb/s). However it's still good enough for the home networks of many people's  and even some small businesses. 
 
+### Collaborators
+[easy4MEr](https://github.com/easy4MEr)
+
 ### Follow us
 
 You can subscribe to our [newsletter](http://eepurl.com/cvwEYj) to receive news on major developments, new features released, etc.
