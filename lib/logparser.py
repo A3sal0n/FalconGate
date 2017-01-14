@@ -153,7 +153,6 @@ class ReadBroDNS(threading.Thread):
                                                     homenet.hosts[cip] = host
                                             if query not in reported_domains:
                                                 reported_domains.append(query)
-                                                intel.upload_unusual_domains(query)
                                         elif fields[14] == "NXDOMAIN":
                                             try:
                                                 with lock:
