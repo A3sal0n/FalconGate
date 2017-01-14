@@ -287,26 +287,3 @@ def get_top_domains(dbname):
         else:
             pass
         return domains
-
-
-def upload_unusual_domains(domain):
-    ip_url = 'https://7x5ecozaka.execute-api.eu-central-1.amazonaws.com/prod/domain/send?domains='
-    headers = {'x-api-key': 'h5LmKdAeVc27qyosUjerf6rpZ232zj7K4vhFF9ep'}
-    try:
-        r = requests.get(ip_url + domain, headers=headers)
-    except Exception as e:
-        log.debug('An error ocurred while uploading suspicious domains to Nest: ' + e)
-
-
-def download_vt_intel(domains):
-    ip_url = 'https://7x5ecozaka.execute-api.eu-central-1.amazonaws.com/prod/domain/read?domains='
-    headers = {'x-api-key': 'h5LmKdAeVc27qyosUjerf6rpZ232zj7K4vhFF9ep'}
-    domains = string.join(domains, ",")
-    try:
-        r = requests.get(ip_url + domains, headers=headers)
-        if r:
-            return r.json()
-        else:
-            return None
-    except Exception:
-        log.debug('An error ocurred while downloading suspicious domains to Nest: ')
