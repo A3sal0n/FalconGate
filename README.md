@@ -58,7 +58,9 @@ Follow the steps below to configure your device and install FalconGate from this
 This is well documented in multiple sources out there.
 
 - Connect to your device via SSH
-
+```
+$ ssh pi@<IP assigned to your RPi>
+```
 - Install Git if you don't have it yet
 ```
 $ sudo apt-get update
