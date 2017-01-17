@@ -14,6 +14,6 @@ log-queries
 log-dhcp
 dhcp-leasefile=/var/log/dnsmasq.leases
 dhcp-lease-max=253
-dhcp-option=6,$ETH0IP$
+dhcp-option=6,$STATIP$
 no-hosts
 addn-hosts=/etc/dnsmasq.block
