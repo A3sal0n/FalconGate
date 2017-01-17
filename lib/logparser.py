@@ -203,36 +203,19 @@ class ReadDHCPLeases(threading.Thread):
 
         while 1:
             self.ctime = int(time.time())
-            f = open('/var/log/dnsmasq.leases', 'r')
-            lines = f.readlines()
-            if len(lines) > 0:
-                with lock:
-                    for line in lines:
-                        line = line.strip()
-                        fields = line.split()
-                        ts = int(fields[0]) - 604800
-                        mac = fields[1].upper()
-                        ip = str(fields[2])
-                        hostname = str(fields[3])
-                        if ip not in homenet.hosts:
-                            device = Host()
-                            device.ts = ts
-                            device.lseen = ts
-                            device.mac = mac
-                            device.ip = ip
-                            device.hostname = hostname
-                            device.vendor = utils.get_vendor(mac)
-                            homenet.hosts[ip] = device
-                            self.create_alert(ts, ip, mac, hostname)
-                            if mac not in homenet.mac_history:
-                                homenet.mac_history[mac] = [[ip, ts]]
-                            else:
-                                homenet.mac_history[mac].append([ip, ts])
-                        else:
-                            if (ts > homenet.hosts[ip].lseen) and (mac == homenet.hosts[ip].mac):
-                                homenet.hosts[ip].lseen = ts
-                            elif (ts > homenet.hosts[ip].lseen) and (mac != homenet.hosts[ip].mac):
-                                del homenet.hosts[ip]
+            try:
+                f = open('/var/log/dnsmasq.leases', 'r')
+                lines = f.readlines()
+                if len(lines) > 0:
+                    with lock:
+                        for line in lines:
+                            line = line.strip()
+                            fields = line.split()
+                            ts = int(fields[0]) - 604800
+                            mac = fields[1].upper()
+                            ip = str(fields[2])
+                            hostname = str(fields[3])
+                            if ip not in homenet.hosts:
                                 device = Host()
                                 device.ts = ts
                                 device.lseen = ts
@@ -246,9 +229,29 @@ class ReadDHCPLeases(threading.Thread):
                                     homenet.mac_history[mac] = [[ip, ts]]
                                 else:
                                     homenet.mac_history[mac].append([ip, ts])
-            else:
-                pass
-            time.sleep(30)
+                            else:
+                                if (ts > homenet.hosts[ip].lseen) and (mac == homenet.hosts[ip].mac):
+                                    homenet.hosts[ip].lseen = ts
+                                elif (ts > homenet.hosts[ip].lseen) and (mac != homenet.hosts[ip].mac):
+                                    del homenet.hosts[ip]
+                                    device = Host()
+                                    device.ts = ts
+                                    device.lseen = ts
+                                    device.mac = mac
+                                    device.ip = ip
+                                    device.hostname = hostname
+                                    device.vendor = utils.get_vendor(mac)
+                                    homenet.hosts[ip] = device
+                                    self.create_alert(ts, ip, mac, hostname)
+                                    if mac not in homenet.mac_history:
+                                        homenet.mac_history[mac] = [[ip, ts]]
+                                    else:
+                                        homenet.mac_history[mac].append([ip, ts])
+                else:
+                    pass
+            except Exception as e:
+                log.debug(e.__doc__ + " - " + e.message)
+            time.sleep(5)
 
     def create_alert(self, ts, ip, mac, hostname):
         ctime = int(time.time())
