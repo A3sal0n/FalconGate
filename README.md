@@ -13,13 +13,14 @@ FalconGate it's an open source smart gateway which can protect your home devices
 Currently FalconGate it's able to:
 
 - Block several types of Malware based on open source blacklists (see detailed list in file [intel-sources.md](intel-sources.md))
-- Block traffic to the Tor network
+- Block Malware using the Tor network
 - Detect and report potential Malware DNS requests based on VirusTotal reports
 - Detect and report the presence of Malware executables and other components based on VirusTotal reports
 - Detect and report Domain Generation Algorithm (DGA) Malware patterns
 - Detect and report on Malware spamming activity
 - Detect and report on internal and outbound port scans
 - Report details of all new devices connected to your network
+- Block ads based on open source lists
 
 ## Getting Started
 

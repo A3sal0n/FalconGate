@@ -1,4 +1,4 @@
-function ValidateInput(){  
+function ValidateInput() {
     var IPformat = /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/;
     var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     
@@ -61,4 +61,31 @@ function ValidateInput(){
 
     return true;
 
+}
+
+function ValidateMailerInput(){
+    var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    var selector = document.forms["from_email"]["selector"].value;
+    var mailerdata = document.forms["from_email"]["mailer_address"].value;
+    var pwddata = document.forms["from_email"]["mailer_pwd"].value;
+    
+    if (selector === 'gmail'){
+        if(mailerdata != ""){
+            mailerdata = mailerdata.replace(/\s+/g, '');
+            if(mailerdata.match(mailformat) === null){    
+                alert("You have entered an invalid email address!");
+                return false;
+            }
+        }else{
+            alert("You did not entered the email address!");
+            return false;
+        }
+    
+        if(pwddata == ""){
+            alert("You entered an empty password!");
+            return false;
+        }
+    }
+    
+    return true;
 }

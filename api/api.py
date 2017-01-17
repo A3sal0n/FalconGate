@@ -33,37 +33,35 @@ class FlaskAPI(threading.Thread):
             abort(400)
 
         target = str(request.json['target'])
-        if target == 'devices':
-            data = get_active_devices()
-            data = json.dumps(data)
+        try:
+            if target == 'devices':
+                data = get_active_devices()
+                resp = Response()
+                resp.data = data
+                resp.status_code = 200
+                resp.mimetype = "application/json"
+                return resp
+            elif target == 'network':
+                data = get_network_config()
+                resp = Response()
+                resp.data = data
+                resp.status_code = 200
+                resp.mimetype = "application/json"
+                return resp
+            elif target == 'alerts':
+                data = utils.get_alerts_within_time(604800)
+                resp = Response()
+                resp.data = data
+                resp.status_code = 200
+                resp.mimetype = "application/json"
+                return resp
+            else:
+                abort(400)
+        except Exception as e:
+            log.debug(e.__doc__ + " - " + e.message)
             resp = Response()
-            resp.data = data
-            resp.status_code = 200
-            resp.mimetype = "application/json"
+            resp.status_code = 500
             return resp
-        elif target == 'network':
-            data = get_network_config()
-            data = json.dumps(data)
-            resp = Response()
-            resp.data = data
-            resp.status_code = 200
-            resp.mimetype = "application/json"
-            return resp
-        elif target == 'alerts':
-            data = get_alerts()
-            if not data:
-                data = ['none']
-            try:
-                data = json.dumps(data)
-            except Exception as e:
-                log.debug(e.__doc__ + " - " + e.message)
-            resp = Response()
-            resp.data = data
-            resp.status_code = 200
-            resp.mimetype = "application/json"
-            return resp
-        else:
-            abort(400)
 
     @staticmethod
     @app.route('/api/v1.0/falcongate/response/host', methods=['POST'])
@@ -141,6 +139,10 @@ class FlaskAPI(threading.Thread):
         resp.status_code = 200
         return resp
 
+    @staticmethod
+    def debug():
+        assert app.debug == False
+
 
 def get_active_devices():
     devices = []
@@ -148,14 +150,14 @@ def get_active_devices():
         for k in homenet.hosts.keys():
             device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor)}
             devices.append(device)
-    return devices
+    return json.dumps(devices)
 
 
 def get_network_config():
     with lock:
         netconfig = {'interface': str(homenet.interface), 'ip': str(homenet.ip), 'gateway': str(homenet.gateway),
                      'netmask': str(homenet.netmask), 'mac': str(homenet.mac)}
-    return netconfig
+    return json.dumps(netconfig)
 
 
 def get_alerts():

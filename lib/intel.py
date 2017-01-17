@@ -1,15 +1,11 @@
 import threading
 import requests
-import time
 import sqlite3 as lite
 from lib.logger import *
-import string
 import re
-import urllib2
 from datetime import datetime
 from lib.config import *
 import lib.utils as utils
-
 
 url_list = {'Malware': ['http://malc0de.com/bl/IP_Blacklist.txt',
                         'https://sslbl.abuse.ch/blacklist/sslipblacklist.csv',
@@ -37,66 +33,85 @@ class DownloadIntel(threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.ip_regex = re.compile(r"\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ip_regex = re.compile(r'[0-9]+(?:\.[0-9]+){3}')
+        self.domain_regex = re.compile(r'(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}')
         self.headers = {'User-Agent': 'Mozilla/5.0'}
         self.all_ips = []
+        self.all_domains = []
 
     def run(self):
         log.debug('Downloading daily blacklists')
 
         while 1:
             del self.all_ips[:]
+            del self.all_domains[:]
 
             with lock:
                 homenet.bad_ips.clear()
+                homenet.bad_domains.clear()
+                self.retrieve_bad_ips()
+                self.configure_ipset()
 
-            self.retrieve_bad_ips()
-
-            utils.flush_ipset_list('blacklist')
-
-            fout = open('/tmp/ip_blacklist', 'w')
-
-            with lock:
-                myset = set(self.all_ips)
-
-            for entry in myset:
-                if len(entry) >= 7:
-                    fout.write('add blacklist ' + entry + '\n')
-            fout.close()
-            utils.restore_ipset_blacklist('/tmp/ip_blacklist')
+                self.retrieve_bad_domains()
+                self.configure_dnsmasq()
 
             time.sleep(14400)
 
+    def configure_ipset(self):
+        utils.flush_ipset_list('blacklist')
+
+        fout = open('/tmp/ip_blacklist', 'w')
+
+        myset = set(self.all_ips)
+
+        for entry in myset:
+            if len(entry) >= 7:
+                fout.write('add blacklist ' + entry + '\n')
+        fout.close()
+        utils.restore_ipset_blacklist('/tmp/ip_blacklist')
+
+    def configure_dnsmasq(self):
+        fout = open('/etc/dnsmasq.block', 'w')
+        fout.write("127.0.0.1\tlocalhost\n")
+        fout.write("::1\tlocalhost #[IPv6]\n")
+        for entry in self.all_domains:
+            fout.write('127.0.0.1' + '\t' + entry + '\n')
+        fout.close()
+        utils.restart_dnsmasq()
+
     def retrieve_bad_ips(self):
         # Downloading Intel from open sources
-        for threat in url_list.keys():
+        for threat in homenet.blacklist_sources_ip.keys():
             homenet.bad_ips[threat] = []
-            for url in url_list[threat]:
-                req = urllib2.Request(url, None, self.headers)
+            for url in homenet.blacklist_sources_ip[threat]:
                 try:
-                    response = urllib2.urlopen(req)
-                except Exception:
+                    response = requests.get(url, headers=self.headers)
+                    entries = re.findall(self.ip_regex, response.content)
+                    for ip in entries:
+                        if ip not in homenet.user_whitelist:
+                            homenet.bad_ips[threat].append(ip)
+                            self.all_ips.append(ip)
+                except Exception as e:
                     log.debug('Error while retrieving the bad IPs from: ' + url)
-                    continue
-                entries = re.findall(self.ip_regex, response.read())
-                for ip in entries:
-                    if ip[3] == 0:
-                        continue
-                    else:
-                        ip = self.buildIP(ip)
-                        with lock:
-                            if ip not in homenet.user_whitelist:
-                                homenet.bad_ips[threat].append(ip)
-                                self.all_ips.append(ip)
 
         # Adding user blacklisted IP addresses
-        with lock:
-            homenet.bad_ips['user_blacklist'] = []
-            homenet.bad_ips['user_blacklist'] = homenet.bad_ips['user_blacklist'] + homenet.blacklist
-            self.all_ips = self.all_ips + homenet.blacklist
+        homenet.bad_ips['user_blacklist'] = []
+        homenet.bad_ips['user_blacklist'] = homenet.bad_ips['user_blacklist'] + homenet.blacklist
+        self.all_ips = self.all_ips + homenet.blacklist
 
-    def buildIP(self, tupla):
-        return tupla[0] + '.' + tupla[1] + '.' + tupla[2] + '.' + tupla[3]
+    def retrieve_bad_domains(self):
+        # Downloading Intel from open sources
+        for threat in homenet.blacklist_sources_domain.keys():
+            homenet.bad_domains[threat] = []
+            for url in homenet.blacklist_sources_domain[threat]:
+                try:
+                    response = requests.get(url, headers=self.headers)
+                    entries = re.findall(self.domain_regex, response.content)
+                    for domain in entries:
+                        homenet.bad_domains[threat].append(domain)
+                        self.all_domains.append(domain)
+                except Exception as e:
+                    log.debug('Error while retrieving the bad domains from: ' + url)
 
     def write_to_db(self):
         conn = lite.connect('ip_blacklist.sqlite')
@@ -120,6 +135,7 @@ class CheckVirusTotalIntel(threading.Thread):
     def run(self):
         global homenet
         global lock
+        global top_domains
 
         while 1:
             dns_lookup_list = {}
@@ -130,10 +146,11 @@ class CheckVirusTotalIntel(threading.Thread):
                         # Get all DNS entries which need VT lookup
                         for k1, dns in host.dns.iteritems():
                             if not dns.bad:
-                                if dns.sld not in dns_lookup_list:
-                                    dns_lookup_list[dns.sld] = [k]
-                                else:
-                                    dns_lookup_list[dns.sld].append(k)
+                                if dns.sld not in top_domains:
+                                    if dns.sld not in dns_lookup_list:
+                                        dns_lookup_list[dns.sld] = [k]
+                                    else:
+                                        dns_lookup_list[dns.sld].append(k)
 
                         # Get all files which need VT lookup
                         for k1, f in host.files.iteritems():
@@ -198,8 +215,9 @@ class CheckVirusTotalIntel(threading.Thread):
         try:
             response = requests.get(homenet.vt_api_file_url, params=params, headers=headers)
             response_json = response.json()
-        except Exception:
+        except Exception as e:
             log.debug("There were some issues while connecting to VirusTotal's API")
+            log.debug(e.__doc__ + " - " + e.message)
             return None
 
         if response_json["response_code"] == 1:
@@ -217,8 +235,9 @@ class CheckVirusTotalIntel(threading.Thread):
         try:
             response = requests.get(homenet.vt_api_domain_url, params=params, headers=headers)
             response_json = response.json()
-        except Exception:
+        except Exception as e:
             log.debug("There were some issues while connecting to VirusTotal's API")
+            log.debug(e.__doc__ + " - " + e.message)
             return None
         domain = Domain()
         domain.name = domain
@@ -271,19 +290,3 @@ class CheckVirusTotalIntel(threading.Thread):
             return True
         else:
             return False
-
-
-def get_top_domains(dbname):
-    con = lite.connect(dbname)
-    con.text_factory = str
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT domain FROM domains")
-        rows = cur.fetchall()
-        domains = []
-        if rows:
-            for row in rows:
-                domains.append(row[0])
-        else:
-            pass
-        return domains

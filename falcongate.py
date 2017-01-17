@@ -27,12 +27,18 @@ except Exception as e:
 
 # Master lock for threads
 lock = threading.Lock()
+
 # Master list of bad IP addresses
 bad_ips = []
+
 # Master whitelist of IP addresses
 good_ips = []
+
 # Top domains whitelist
-top_domains = intel.get_top_domains("top_domains.sqlite")
+top_domains = utils.get_top_domains("top_domains.sqlite")
+
+# Create alert database if not there
+utils.create_alert_db()
 
 # Creating global variables in the name space of core libraries
 logparser.lock = lock
@@ -49,9 +55,7 @@ utils.homenet = homenet
 reporter.homenet = homenet
 api.homenet = homenet
 config.homenet = homenet
-logparser.top_domains = top_domains
 intel.top_domains = top_domains
-alerts.top_domains = top_domains
 
 # Master thread list
 threads = {}

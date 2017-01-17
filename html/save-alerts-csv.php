@@ -26,11 +26,11 @@ if (!$result){
     if ($obj[0] != 'none'){
         foreach ($obj as $alert){
             $nextrow = array();
-            $nextrow[0] = date('Y/m/d H:i:s', $alert['alerts']['first_seen']);
-            $nextrow[1] = date('Y/m/d H:i:s', $alert['alerts']['last_seen']);
-            $nextrow[2] = $alert['host'];
-            $nextrow[3] = $alert['alerts']['threat'];
-            $nextrow[4] = implode(",", $alert['alerts']['indicators']);
+            $nextrow[0] = date('Y/m/d H:i:s', $alert[2]);
+            $nextrow[1] = date('Y/m/d H:i:s', $alert[3]);
+            $nextrow[2] = $alert[7];
+            $nextrow[3] = $alert[6];
+            $nextrow[4] = $alert[8];
             fputcsv($output, $nextrow);
         }
     }

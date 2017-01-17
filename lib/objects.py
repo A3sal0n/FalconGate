@@ -1,27 +1,9 @@
 
-class Alert:
-    def __init__(self, alert_type):
-        self.alert_type = alert_type
-        self.first_seen = None
-        self.last_seen = None
-        self.last_reported = None
-        self.nreports = 0
-        self.threat = None
-        self.indicators = []
-        self.handled = False
-        self.description = None
-        self.references = []
-
-    def serialize_alert(self):
-        alert = {'alert_type': self.alert_type, 'first_seen': self.first_seen, 'last_seen': self.last_seen,
-                 'last_reported': self.last_reported, 'nreports': self.nreports, 'threat': self.threat,
-                 'indicators': self.indicators, 'handled': self.handled}
-        return alert
-
 
 class DNSRequest:
     def __init__(self):
         self.ts = None
+        self.lseen = None
         self.query = None
         self.sld = None
         self.tld = None
@@ -29,7 +11,7 @@ class DNSRequest:
         self.sip = None
         self.qtype = None
         self.qresult = None
-        self.bad = None
+        self.bad = False
         self.counter = 0
 
 
@@ -82,16 +64,14 @@ class Host:
         self.vendor = None
         self.os_family = []
         self.device_family = []
-        self.dga_counter = 0
         self.dga_domains = []
-        self.spamm_counter = 0
         self.spammed_domains = []
         self.user_agents = []
         self.dns = {}
         self.conns = {}
         self.files = {}
         self.scans = {}
-        self.alerts = {}
+        self.alerts = []
         self.interesting_urls = []
 
 
@@ -109,6 +89,7 @@ class Network:
         self.netmask = None
         self.net_cidr = None
         self.bad_ips = {}
+        self.bad_domains = {}
         self.user_blacklist = []
         self.user_whitelist = []
         self.target_mime_types = ["application/x-7z-compressed", "application/x-ace-compressed", "application/x-shockwave-flash",
@@ -134,6 +115,12 @@ class Network:
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None
+        self.mailer_mode = None
+        self.mailer_address = None
+        self.mailer_pwd = None
+        self.last_alert_id = 0
+        self.blacklist_sources_ip = {}
+        self.blacklist_sources_domain = {}
 
 
 class Report:

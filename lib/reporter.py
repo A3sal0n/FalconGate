@@ -3,6 +3,8 @@ from lib.logger import *
 from lib.config import *
 import smtplib
 import time
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 
 class AlertReporter(threading.Thread):
@@ -17,47 +19,76 @@ class AlertReporter(threading.Thread):
 
         while 1:
             self.ctime = int(time.time())
-            try:
-                if homenet.dst_emails:
-                    self.find_active_alerts()
-                else:
-                    pass
-            except Exception as e:
-                log.debug(e.__doc__ + " - " + e.message)
-            time.sleep(30)
+            if homenet.dst_emails:
+                self.report_new_alerts()
+            else:
+                pass
+            time.sleep(15)
 
-    def find_active_alerts(self):
+    def report_new_alerts(self):
+        alerts = utils.get_not_reported_alerts()
         with lock:
-            for k in homenet.hosts.keys():
-                for k1 in homenet.hosts[k].alerts.keys():
-                    if homenet.hosts[k].alerts[k1].nreports == 0 or (((self.ctime - homenet.hosts[k].alerts[k1].last_reported) > 86400) and not homenet.hosts[k].alerts[k1].handled):
-                        subject = "A " + homenet.hosts[k].alerts[k1].threat + " alert was reported for host " + homenet.hosts[k].ip
-                        body = "FalconGate has reported a " + homenet.hosts[k].alerts[k1].threat + " alert for the device below:\r\n\r\n" \
-                               "IP address: " + homenet.hosts[k].ip + "\r\n" \
-                               "Hostname: " + homenet.hosts[k].hostname + "\r\n" \
-                               "MAC address: " + homenet.hosts[k].mac + "\r\n" \
-                               "MAC vendor: " + homenet.hosts[k].vendor + "\r\n" \
-                               "Operating system family: " + "\r\n".join(homenet.hosts[k].os_family) + "\r\n" \
-                               "Device family: " + "\r\n".join(homenet.hosts[k].device_family) + "\r\n\r\n" \
-                               "Description: " + homenet.hosts[k].alerts[k1].description + "\r\n\r\n" \
-                               "The following indicators were detected:\r\n" + "\r\n".join(homenet.hosts[k].alerts[k1].indicators) + "\r\n\r\n" \
-                               "References:\r\n" + "\r\n".join(homenet.hosts[k].alerts[k1].references) + "\r\n\r\n" \
-                               "This incident has been reported " + str(homenet.hosts[k].alerts[k1].nreports) + " times previously\r\n\r\n" \
-                               "We recommend to investigate this issue asap."
-                        self.sendmail(homenet.dst_emails, subject, body)
-                        homenet.hosts[k].alerts[k1].last_reported = self.ctime
-                        homenet.hosts[k].alerts[k1].nreports += 1
+            for a in alerts:
+                email = {}
+                email['subject'] = "A " + a[6] + " alert was reported for host " + a[7]
+                indicators = a[8].replace('.', '[.]')
+                indicators = indicators.split('|')
+                references = a[11].split('|')
+                email['body'] = "FalconGate has reported a " + a[6] + " alert for the device below:\r\n\r\n" \
+                                "IP address: " + a[7] + "\r\n" \
+                                "Hostname: " + str(homenet.hosts[a[7]].hostname) + "\r\n" \
+                                "MAC address: " + str(homenet.hosts[a[7]].mac) + "\r\n" \
+                                "MAC vendor: " + str(homenet.hosts[a[7]].vendor) + "\r\n" \
+                                "Operating system family: " + "\r\n".join(homenet.hosts[a[7]].os_family) + "\r\n" \
+                                "Device family: " + str("\r\n".join(homenet.hosts[a[7]].device_family)) + "\r\n\r\n" \
+                                "Description: " + a[10] + "\r\n\r\n" \
+                                "The following indicators were detected:\r\n" + str("\r\n".join(indicators)) + "\r\n\r\n" \
+                                "References:\r\n" + str("\r\n".join(references)) + "\r\n\r\n" \
+                                "This is the first time this incident is reported.\r\n" \
+                                "We recommend to investigate this issue asap."
+                if (not homenet.mailer_mode) or (homenet.mailer_mode == 'standalone'):
+                    res = self.sendmail_stand(email)
+                    if res:
+                        utils.update_alert_nrep(a[0], a[5] + 1)
+                    else:
+                        pass
+                elif homenet.mailer_mode == 'gmail':
+                    res = self.sendmail_gmail(email, homenet.mailer_address, homenet.mailer_pwd)
+                    if res:
+                        utils.update_alert_nrep(a[0], a[5] + 1)
+                    else:
+                        pass
 
-    @staticmethod
-    def sendmail(toaddrs, subject, body):
+    def sendmail_stand(self, report):
         fromaddr = "no-reply@falcongate.local"
+        try:
+            server = smtplib.SMTP('localhost')
+            msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (fromaddr, ", ".join(homenet.dst_emails), report['subject']))
+            msg += report['body']
+            for address in homenet.dst_emails:
+                server.sendmail(fromaddr, address, msg)
+            server.quit()
+            return True
+        except Exception as e:
+            log.debug(e.__doc__ + " - " + e.message)
+            return False
 
-        # Add the From: and To: headers at the start!
-        msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n"
-               % (fromaddr, ", ".join(toaddrs), subject))
-
-        msg += body
-
-        server = smtplib.SMTP('localhost')
-        server.sendmail(fromaddr, toaddrs, msg)
-        server.quit()
+    def sendmail_gmail(self, report, fromaddr, passwd):
+        try:
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(fromaddr, passwd)
+            for address in homenet.dst_emails:
+                msg = MIMEMultipart()
+                msg['From'] = fromaddr
+                msg['To'] = address
+                msg['Subject'] = report['subject']
+                body = report['body']
+                msg.attach(MIMEText(body, 'plain'))
+                text = msg.as_string()
+                server.sendmail(fromaddr, address, text)
+            server.quit()
+            return True
+        except Exception as e:
+            log.debug(e.__doc__ + " - " + e.message)
+            return False

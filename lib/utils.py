@@ -11,6 +11,8 @@ import cPickle as pickle
 from lib.logger import *
 import os
 import sys
+import gc
+import json
 
 
 class CleanOldHomenetObjects(threading.Thread):
@@ -62,14 +64,22 @@ def domain_resolver(domain):
     return record[2]
 
 
-def get_sld_from_query(query):
+def get_sld(query):
     fields = query.split(".")
-    return fields[-2]+"."+fields[-1]
+    if len(fields) == 2:
+        return query
+    elif len(fields) > 2:
+        return fields[-2] + "." + fields[-1]
+    else:
+        return None
 
 
-def get_tld_from_query(query):
+def get_tld(query):
     fields = query.split(".")
-    return fields[-1]
+    if len(fields) >= 2:
+        return fields[-1]
+    else:
+        return None
 
 
 def encode_base64(s):
@@ -93,6 +103,117 @@ def get_vendor(mac):
             else:
                 pass
         con.close()
+
+
+def create_alert_db():
+    con = lite.connect('logs/alerts.sqlite')
+    with con:
+        cur = con.cursor()
+        try:
+            cur.execute("create table alerts(id int, type text, fseen int, lseen int, lrep int, "
+                        "nrep int, threat text, sip text, ind text, handled int, desc text, ref text, primary key "
+                        "(sip, ind))")
+            cur.execute("create index id_idx on alerts (id)")
+            cur.execute("create index type_idx on alerts (type)")
+            cur.execute("create index nrep_idx on alerts (nrep)")
+            cur.execute("create index threat_idx on alerts (threat)")
+            cur.execute("create index sip_idx on alerts (sip)")
+            cur.execute("create index handled_idx on alerts (handled)")
+        except lite.OperationalError as e:
+            pass
+
+
+def add_alert_to_db(alert):
+    global homenet
+    global lock
+    con = lite.connect('logs/alerts.sqlite')
+    with con:
+        cur = con.cursor()
+        cur.execute('select * from alerts')
+        res = cur.fetchone()
+        if not res:
+            alert[0] = 1
+            lid = 1
+        else:
+            cur.execute('select MAX(id) from alerts')
+            res = cur.fetchone()
+            lid = res[0] + 1
+            alert[0] = lid
+
+        try:
+            cur.execute("insert into alerts values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", alert)
+        except lite.IntegrityError:
+            ctime = int(time.time())
+            cur.execute("update alerts set lseen = ? where sip = ? and ind = ?", (ctime, alert[7], alert[8]))
+    con.commit()
+    con.close()
+    return lid
+
+
+def get_not_reported_alerts():
+    con = lite.connect('logs/alerts.sqlite')
+    with con:
+        cur = con.cursor()
+        try:
+            cur.execute("select * from alerts where nrep = 0 order by fseen asc")
+            res = cur.fetchall()
+        except lite.OperationalError:
+            res = None
+    con.close()
+    return res
+
+
+def get_latest_alerts(nalerts):
+    con = lite.connect('logs/alerts.sqlite')
+    with con:
+        cur = con.cursor()
+        try:
+            cur.execute("select * from alerts order by id desc limit ?", (nalerts,))
+            res = cur.fetchall()
+        except lite.OperationalError:
+            res = None
+    con.close()
+    return res
+
+
+def get_alerts_within_time(tframe):
+    con = lite.connect('logs/alerts.sqlite')
+    ctime = int(time.time())
+    ttime = ctime - tframe
+    with con:
+        cur = con.cursor()
+        try:
+            cur.execute("select * from alerts where fseen > ? order by fseen desc", (str(ttime),))
+            res = cur.fetchall()
+        except lite.OperationalError:
+            res = ['none']
+    con.close()
+    return json.dumps(res)
+
+
+def update_alert_nrep(alert_id, nrep):
+    con = lite.connect('logs/alerts.sqlite')
+    with con:
+        cur = con.cursor()
+        cur.execute("update alerts set nrep = ? where id = ?", (nrep, alert_id))
+    con.commit()
+    con.close()
+
+
+def get_top_domains(dbname):
+    con = lite.connect(dbname)
+    con.text_factory = str
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT domain FROM domains")
+        rows = cur.fetchall()
+        domains = []
+        if rows:
+            for row in rows:
+                domains.append(row[0])
+        else:
+            pass
+        return domains
 
 
 # Iptables manipulation routines
@@ -173,6 +294,12 @@ def list_ipset_blacklist(listname):
     return lines
 
 
+def restart_dnsmasq():
+    cmd = "service dnsmasq restart"
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    output, err = p.communicate()
+
+
 def reboot_appliance():
     cmd = "reboot"
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -180,9 +307,15 @@ def reboot_appliance():
 
 
 def kill_falcongate(pid):
-    sys.stdout.flush()
-    devnull = open(os.devnull, 'wb')
-    subprocess.Popen(['nohup', '/etc/init.d/kill-falcongate.sh', str(pid)], stdout=devnull, stderr=devnull, shell=False)
+    global homenet
+    global lock
+    with lock:
+        sys.stdout.flush()
+        del homenet
+        time.sleep(5)
+        gc.collect()
+        devnull = open(os.devnull, 'wb')
+        subprocess.Popen(['nohup', '/etc/init.d/kill-falcongate.sh', str(pid)], stdout=devnull, stderr=devnull, shell=False)
 
 
 def save_pkl_object(obj, filename):

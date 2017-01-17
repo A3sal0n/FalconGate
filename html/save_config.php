@@ -40,6 +40,25 @@ if (isset($_POST['whitelist'])){
     $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 }
 
+if (isset($_POST['selector'])){
+    if($_POST['selector'] == 'gmail'){
+        $config->set('main', 'mailer_mode', $_POST['selector']);
+        if (isset($_POST['mailer_address'])){
+            $config->set('main', 'mailer_address', $_POST['mailer_address']);
+        }
+        
+        if (isset($_POST['mailer_pwd']) and !empty($_POST['mailer_pwd'])){
+            //$new_pwd = password_hash($_POST['mailer_pwd'], PASSWORD_DEFAULT);
+            $config->set('main', 'mailer_pwd', $_POST['mailer_pwd']);
+        }
+    }else{
+        $config->set('main', 'mailer_mode', $_POST['selector']);
+        $config->set('main', 'mailer_address', '');
+        $config->set('main', 'mailer_pwd', '');
+    }
+}
+
+
 $config->save();
 
 redirect('read_config.php?updated=True');

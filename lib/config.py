@@ -32,9 +32,15 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 with lock:
                     homenet.interface = core_config.get('main', 'iface')
-                    homenet.vt_api_domain_url = core_config.get('virustotal', 'vt_api_domain_url')
-                    homenet.vt_api_ip_url = core_config.get('virustotal', 'vt_api_ip_url')
-                    homenet.vt_api_file_url = core_config.get('virustotal', 'vt_api_file_url')
+                    homenet.vt_api_domain_url = core_config.get('virustotal', 'vt_api_domain_url').strip('"')
+                    homenet.vt_api_ip_url = core_config.get('virustotal', 'vt_api_ip_url').strip('"')
+                    homenet.vt_api_file_url = core_config.get('virustotal', 'vt_api_file_url').strip('"')
+
+                    for option in core_config.options('blacklists_ip'):
+                        homenet.blacklist_sources_ip[option.capitalize()] = core_config.get('blacklists_ip', option).strip('"').split(',')
+
+                    for option in core_config.options('blacklists_domain'):
+                        homenet.blacklist_sources_domain[option.capitalize()] = core_config.get('blacklists_domain', option).strip('"').split(',')
 
             stamp = os.stat(self.user_conf_file).st_mtime
             if stamp != self._cached_stamp_user:
@@ -45,10 +51,13 @@ class CheckConfigFileModification(threading.Thread):
                 user_config.read('html/user_config.ini')
 
                 # main section
-                homenet.dst_emails = (user_config.get('main', 'dst_emails').translate(None, '"\n\r ')).split(",")
-                homenet.vt_api_key = user_config.get('main', 'vt_api_key').translate(None, '"\n\r ')
-                homenet.blacklist = (user_config.get('main', 'blacklist').translate(None, '"\n\r ')).split(",")
-                homenet.whitelist = (user_config.get('main', 'whitelist').translate(None, '"\n\r ')).split(",")
+                homenet.dst_emails = (user_config.get('main', 'dst_emails').translate(None, '"\n\r ')).strip('"').split(",")
+                homenet.vt_api_key = user_config.get('main', 'vt_api_key').translate(None, '"\n\r ').strip('"')
+                homenet.blacklist = (user_config.get('main', 'blacklist').translate(None, '"\n\r ')).strip('"').split(",")
+                homenet.whitelist = (user_config.get('main', 'whitelist').translate(None, '"\n\r ')).strip('"').split(",")
+                homenet.mailer_mode = user_config.get('main', 'mailer_mode').translate(None, '"\n\r ').strip('"')
+                homenet.mailer_address = user_config.get('main', 'mailer_address').translate(None, '"\n\r ').strip('"')
+                homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').translate(None, '"\n\r ').strip('"')
 
             if flag:
                 counter += 1
@@ -57,3 +66,16 @@ class CheckConfigFileModification(threading.Thread):
                 utils.kill_falcongate(homenet.pid)
 
             time.sleep(5)
+
+
+class CheckNetworkModifications(threading.Thread):
+    def __init__(self, threadID):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+
+    def run(self):
+        global homenet
+        global lock
+
+        while 1:
+            pass
