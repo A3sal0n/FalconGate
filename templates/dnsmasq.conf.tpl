@@ -5,7 +5,7 @@ no-resolv
 server=8.8.8.8
 server=8.8.4.4
 interface=$IFACE$
-listen-address=$ETH0IP$
+listen-address=$STATIP$
 bind-interfaces
 dhcp-range=$DHCPSTART$,$DHCPEND$,7d
 dhcp-authoritative
