@@ -1,6 +1,6 @@
 
 server {
-	listen $ETH0IP$:80;
+	listen $STATIP$:80;
 	server_name default_server;
 	return 301 https://$server_addr$request_uri;
 }
@@ -10,7 +10,7 @@ server {
 
 	# SSL configuration
 	#
-	listen $ETH0IP$:443 ssl;
+	listen $STATIP$:443 ssl;
 
 	root $FALCONGATEDIR$/html;
 
