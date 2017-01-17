@@ -41,6 +41,6 @@ slaac private
 nohook lookup-hostname
 
 interface $IFACE$
-static ip_address=$ETH0IP$/24
+static ip_address=$STATIP$/24
 static routers=$GATEWAY$
 static domain_name_servers=8.8.8.8 8.8.4.4
