@@ -1,3 +1,44 @@
+class HostAlertTemplate:
+    def __init__(self, homenet, alert):
+        self.homenet = homenet
+        self.alert = alert
+        self.subject = "A " + alert[6] + " alert was reported for host " + alert[7]
+        self.indicators = alert[8].replace('.', '[.]').split('|')
+        self.references = alert[11].split('|')
+        self.body = ''
+
+    def create_body(self):
+        self.body = "FalconGate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
+                    "IP address: " + self.alert[7] + "\r\n" \
+                    "Hostname: " + str(self.homenet.hosts[self.alert[7]].hostname) + "\r\n" \
+                    "MAC address: " + str(self.homenet.hosts[self.alert[7]].mac) + "\r\n" \
+                    "MAC vendor: " + str(self.homenet.hosts[self.alert[7]].vendor) + "\r\n" \
+                    "Operating system family: " + "\r\n".join(self.homenet.hosts[self.alert[7]].os_family) + "\r\n" \
+                    "Device family: " + str("\r\n".join(self.homenet.hosts[self.alert[7]].device_family)) + "\r\n\r\n" \
+                    "Description: " + self.alert[10] + "\r\n\r\n" \
+                    "The following indicators were detected:\r\n" + str("\r\n".join(self.indicators)) + "\r\n\r\n" \
+                    "References:\r\n" + str("\r\n".join(self.references)) + "\r\n\r\n" \
+                    "This is the first time this incident is reported.\r\n" \
+                    "We recommend to investigate this issue asap."
+
+
+class AccountBreachAlertTemplate:
+    def __init__(self, alert):
+        self.alert = alert
+        self.subject = "A " + alert[6] + " alert was reported for account " + alert[7]
+        self.indicators = alert[8].split('|')
+        self.references = alert[11].split('|')
+        self.body = ''
+
+    def create_body(self):
+        self.body = "FalconGate has reported a " + self.alert[6] + " alert:\r\n\r\n" \
+                    "Account at risk: " + self.alert[7] + "\r\n\r\n" \
+                    "Description: " + self.alert[10] + "\r\n\r\n" \
+                    "The following indicators were detected:\r\n" + str("\r\n".join(self.indicators)) + "\r\n\r\n" \
+                    "References:\r\n" + str("\r\n".join(self.references)) + "\r\n\r\n" \
+                    "This is the first time this incident is reported.\r\n" \
+                    "We recommend to change immediately the password for this account to prevent further misuse by" \
+                    "hackers."
 
 
 class DNSRequest:
@@ -112,9 +153,11 @@ class Network:
                               'gdn', 'stream', 'download', 'top', 'us', 'study', 'click', 'biz']
         self.vt_api_key = None
         self.dst_emails = None
+        self.email_watchlist = []
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None
+        self.hibp_api_url = None
         self.mailer_mode = None
         self.mailer_address = None
         self.mailer_pwd = None

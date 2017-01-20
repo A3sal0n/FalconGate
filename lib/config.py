@@ -32,9 +32,10 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 with lock:
                     homenet.interface = core_config.get('main', 'iface')
-                    homenet.vt_api_domain_url = core_config.get('virustotal', 'vt_api_domain_url').strip('"')
-                    homenet.vt_api_ip_url = core_config.get('virustotal', 'vt_api_ip_url').strip('"')
-                    homenet.vt_api_file_url = core_config.get('virustotal', 'vt_api_file_url').strip('"')
+                    homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
+                    homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
+                    homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')
+                    homenet.hibp_api_url = core_config.get('api_urls', 'hibp_api_url').strip('"')
 
                     for option in core_config.options('blacklists_ip'):
                         homenet.blacklist_sources_ip[option.capitalize()] = core_config.get('blacklists_ip', option).strip('"').split(',')
@@ -52,6 +53,7 @@ class CheckConfigFileModification(threading.Thread):
 
                 # main section
                 homenet.dst_emails = (user_config.get('main', 'dst_emails').translate(None, '"\n\r ')).strip('"').split(",")
+                homenet.email_watchlist = (user_config.get('main', 'email_watchlist').translate(None, '"\n\r ')).strip('"').split(",")
                 homenet.vt_api_key = user_config.get('main', 'vt_api_key').translate(None, '"\n\r ').strip('"')
                 homenet.blacklist = (user_config.get('main', 'blacklist').translate(None, '"\n\r ')).strip('"').split(",")
                 homenet.whitelist = (user_config.get('main', 'whitelist').translate(None, '"\n\r ')).strip('"').split(",")

@@ -26,6 +26,10 @@ if (isset($_POST['dst_emails'])){
     $config->set('main', 'dst_emails', $_POST['dst_emails']);
 }
 
+if (isset($_POST['email_watchlist'])){
+    $config->set('main', 'email_watchlist', $_POST['email_watchlist']);
+}
+
 if (isset($_POST['blacklist'])){
     $config->set('main', 'blacklist', $_POST['blacklist']);
     $target = explode(",", $_POST['blacklist']);

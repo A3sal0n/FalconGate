@@ -5,6 +5,8 @@ import smtplib
 import time
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from lib.objects import AccountBreachAlertTemplate
+from lib.objects import HostAlertTemplate
 
 
 class AlertReporter(threading.Thread):
@@ -30,22 +32,17 @@ class AlertReporter(threading.Thread):
         with lock:
             for a in alerts:
                 email = {}
-                email['subject'] = "A " + a[6] + " alert was reported for host " + a[7]
-                indicators = a[8].replace('.', '[.]')
-                indicators = indicators.split('|')
-                references = a[11].split('|')
-                email['body'] = "FalconGate has reported a " + a[6] + " alert for the device below:\r\n\r\n" \
-                                "IP address: " + a[7] + "\r\n" \
-                                "Hostname: " + str(homenet.hosts[a[7]].hostname) + "\r\n" \
-                                "MAC address: " + str(homenet.hosts[a[7]].mac) + "\r\n" \
-                                "MAC vendor: " + str(homenet.hosts[a[7]].vendor) + "\r\n" \
-                                "Operating system family: " + "\r\n".join(homenet.hosts[a[7]].os_family) + "\r\n" \
-                                "Device family: " + str("\r\n".join(homenet.hosts[a[7]].device_family)) + "\r\n\r\n" \
-                                "Description: " + a[10] + "\r\n\r\n" \
-                                "The following indicators were detected:\r\n" + str("\r\n".join(indicators)) + "\r\n\r\n" \
-                                "References:\r\n" + str("\r\n".join(references)) + "\r\n\r\n" \
-                                "This is the first time this incident is reported.\r\n" \
-                                "We recommend to investigate this issue asap."
+
+                if a[1] == 'data_breach':
+                    t = AccountBreachAlertTemplate(a)
+                    t.create_body()
+                else:
+                    t = HostAlertTemplate(homenet, a)
+                    t.create_body()
+
+                email['subject'] = t.subject
+                email['body'] = t.body
+
                 if (not homenet.mailer_mode) or (homenet.mailer_mode == 'standalone'):
                     res = self.sendmail_stand(email)
                     if res:

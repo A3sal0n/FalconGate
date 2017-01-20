@@ -2,6 +2,51 @@ import threading
 from lib.logger import *
 import lib.utils as utils
 import time
+import requests
+
+
+class DailyAlerts(threading.Thread):
+    def __init__(self, threadID):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.headers = {'User-Agent': 'Mozilla/5.0'}
+        self.ctime = None
+
+    def run(self):
+        global lock
+        global homenet
+
+        while 1:
+            self.ctime = int(time.time())
+            self.get_pwnage()
+            time.sleep(60)
+
+    def get_pwnage(self):
+        pwnings = {}
+        for a in homenet.email_watchlist:
+            try:
+                r = requests.get(homenet.hibp_api_url + a, headers=self.headers)
+                if r.status_code == 200:
+                    r_json = r.json()
+                    if len(r_json) >= 1:
+                        pwnings[a] = r_json
+            except Exception as e:
+                log.debug(e.__doc__ + " - " + e.message)
+            time.sleep(1)
+
+        if len(pwnings) > 0:
+            for a in pwnings.keys():
+                self.create_pwning_alert(a, pwnings[a])
+
+    def create_pwning_alert(self, src, breaches):
+        for breach in breaches:
+            description = breach['Description']
+            indicators = 'Site breached: ' + breach['Domain'] + '|' + 'BreachDate: ' + breach['BreachDate'] \
+                         + '|' + 'AddedDate: ' + breach['AddedDate'] + '|' + 'StolenData: ' \
+                         + ','.join(breach['DataClasses']) + '|' + 'Verified: ' + str(breach['IsVerified'])
+            reference = homenet.hibp_api_url + src
+            a = [0, 'data_breach', self.ctime, self.ctime, 0, 0, 'Data Breach', src, indicators, 0, description, reference]
+            alert_id = utils.add_alert_to_db(a)
 
 
 class HourlyAlerts(threading.Thread):
