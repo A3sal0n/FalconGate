@@ -38,7 +38,7 @@ class AccountBreachAlertTemplate:
                     "References:\r\n" + str("\r\n".join(self.references)) + "\r\n\r\n" \
                     "This is the first time this incident is reported.\r\n" \
                     "We recommend to change immediately the password for this account to prevent further misuse by" \
-                    "hackers."
+                    " malicious hackers."
 
 
 class DNSRequest:
