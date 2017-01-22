@@ -21,6 +21,7 @@ Currently FalconGate it's able to:
 - Detect and report on internal and outbound port scans
 - Report details of all new devices connected to your network
 - Block ads based on open source lists
+- Monitor a custom list of personal or family accounts used in online services for reports of hacking and alerts if any hit was found  
 
 ## Getting Started
 
