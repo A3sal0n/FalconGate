@@ -50,6 +50,12 @@ FalconGate has a number of software dependencies:
 
 It depends also on several Python modules (see [requirements.txt](requirements.txt) file for details)
 
+### Other dependencies
+
+The devices's malware detection can be enhanced with the utilization of [VirusTotal's personal free API](https://www.virustotal.com/en/documentation/public-api/)
+
+Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2) public API to detect whether credentials and/or other data from personal accounts have been stolen by hackers from third party sites.
+
 ### Installing FalconGate
 
 Follow the steps below to configure your device and install FalconGate from this repository.
