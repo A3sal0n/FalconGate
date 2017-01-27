@@ -19,7 +19,7 @@ class DailyAlerts(threading.Thread):
         while 1:
             self.ctime = int(time.time())
             self.get_pwnage()
-            time.sleep(60)
+            time.sleep(86400)
 
     def get_pwnage(self):
         pwnings = {}
