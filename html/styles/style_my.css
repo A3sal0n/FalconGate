@@ -1,0 +1,136 @@
+body {
+	background: #eaeaea;
+	font: 400 14px/1.5em sans-serif;
+	width: 100%;
+	margin: 0;
+}
+
+/* Texts
+-----------------------------------------------------------------------------*/
+a {
+	text-decoration: none;
+}
+
+a:link, a:visited {
+	color: #1dabb8;
+}
+
+a:hover {
+    color: #000000;
+}
+
+a:active {
+    color: #1dabb8;
+}
+
+h1 {
+	color: #000000;
+	font-size: 17x;
+}
+
+h2 {
+	color: #000000;
+	font-size: 15px;
+	text-decoration: underline;
+}
+
+h3 {
+	color: #000000;
+	font-size: 13px;
+
+}
+
+.error_message {
+  color: #b30422;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+/* Button
+-----------------------------------------------------------------------------*/
+
+.config_button {
+    background: #1dabb8;
+	border-radius: 6px;
+	border: 1px solid #1dabb8;
+    color: #ffffff;
+    margin-top: 5px;
+    padding: 3px 10px;
+	cursor: pointer;
+}
+.config_button:hover {
+	background: #198d98;
+	border-radius: 6px;
+	border: 1px solid #198d98;
+    color: #ffffff;
+    margin-top: 5px;
+    padding: 3px 10px;
+	cursor: pointer;
+}
+
+/* Menu
+-----------------------------------------------------------------------------*/
+.menu {
+	border-bottom: 1px double #000000;
+	background-color: #282830;
+	width: 200px;
+	vertical-align: top;
+}
+
+ul.vert-one{margin:0;padding:0;list-style-type:none;display:block;
+	font:bold 16px Helvetica, Verdana, Arial, sans-serif;line-height:165%;
+	width:200px;}
+
+ul.vert-one li{margin:0;padding:0;border-top:0px solid #4D0000;}
+
+ul.vert-one li a{display:block;text-decoration:none;color:#fff;
+	background:#282830;padding:0 0 0 20px;width:180px;}
+
+ul.vert-one li a:hover{
+	background: #1dabb8 url("images/vert-one_arrow.gif") no-repeat 0 9px;}
+
+ul.vert-one li a.current{
+	background: #1a95a1 url("images/vert-one_arrow.gif") no-repeat 0 9px;}
+
+ul.vert-one li a.current:hover{
+	background: #1dabb8 url("images/vert-one_arrow.gif") no-repeat 0 9px;}
+
+
+/* Header
+-----------------------------------------------------------------------------*/
+.header {}
+
+#logout {
+	text-align: right;
+	padding-right: 2px;
+	padding-top: 2px;
+	font: 400 11px sans-serif;
+}
+
+#header_text {
+	color: #585B50;
+	font-size: 50px;
+	padding-bottom: 2px;
+}
+
+/* Content
+-----------------------------------------------------------------------------*/
+.content {
+	background-color: #FFFFFF;
+	border-right: 1px double #000000;
+	border-bottom: 1px double #000000;
+	border-top: 1px double #000000;
+	padding-top: 5px;
+	padding-left: 10px;
+}
+
+/* Footer
+-----------------------------------------------------------------------------*/
+.footer {
+	font: 400 12px/1.5em sans-serif;
+	color: #585B50;
+	padding: 2px;
+	text-align: right;
+}
