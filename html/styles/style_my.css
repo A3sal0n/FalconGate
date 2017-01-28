@@ -25,18 +25,18 @@ a:active {
 
 h1 {
 	color: #000000;
-	font-size: 17x;
+	font-size: 25px;
 }
 
 h2 {
 	color: #000000;
-	font-size: 15px;
+	font-size: 17px;
 	text-decoration: underline;
 }
 
 h3 {
 	color: #000000;
-	font-size: 13px;
+	font-size: 15px;
 
 }
 
@@ -46,6 +46,11 @@ h3 {
 
 table {
     border-collapse: collapse;
+}
+
+.notes {
+	color: #404040;
+	font-size: 12px;
 }
 
 /* Button
@@ -74,6 +79,7 @@ table {
 -----------------------------------------------------------------------------*/
 .menu {
 	border-bottom: 1px double #000000;
+	border-top: 1px solid #000000;
 	background-color: #282830;
 	width: 200px;
 	vertical-align: top;
@@ -106,7 +112,7 @@ ul.vert-one li a.current:hover{
 	text-align: right;
 	padding-right: 2px;
 	padding-top: 2px;
-	font: 400 11px sans-serif;
+	font: 400 13px sans-serif;
 }
 
 #header_text {
@@ -125,6 +131,25 @@ ul.vert-one li a.current:hover{
 	padding-top: 5px;
 	padding-left: 10px;
 }
+
+.TFtable{
+		border-collapse:collapse; 
+	}
+.TFtable td{ 
+		padding:7px; border:#4e95f4 1px solid;
+	}
+	/* provide some minimal visual accomodation for IE8 and below */
+.TFtable tr{
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the ODD background rows  */
+.TFtable tr:nth-child(odd){ 
+		background: #b8d1f3;
+	}
+	/*  Define the background color for all the EVEN background rows  */
+.TFtable tr:nth-child(even){
+		background: #dae5f4;
+	}
 
 /* Footer
 -----------------------------------------------------------------------------*/

@@ -2,13 +2,13 @@
 session_start();
 
 include_once 'includes/functions.php';
-require 'templates/header.html';
 
 ?>
 
 <?php
 
 if (login_check() == true){
+	require 'templates/header.html';
     require 'home.html';
     require 'templates/footer.html';
  } else {

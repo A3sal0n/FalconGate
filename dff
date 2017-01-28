@@ -1,0 +1,312 @@
+[33mcommit e67f83bf940b7d43a21803667d436cefe891ea72[m
+Author: easy4MEr <easy4MEr@gmail.com>
+Date:   Fri Jan 27 10:57:53 2017 -0500
+
+    New WebGUI
+
+[33mcommit 502b09ca482bd107fea800d174a8d217194119ba[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Jan 27 14:26:11 2017 +0100
+
+    Corrected sleep time for the daily alerts thread
+
+[33mcommit aac20bc74d0867710fd167bc2fb7826622ba8011[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Sun Jan 22 21:35:46 2017 +0100
+
+    Added other dependencies section.
+
+[33mcommit b6e311ef69b6e0d356ef58ef2a8daf3b495ee63b[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Sun Jan 22 16:00:15 2017 +0100
+
+    Added contributing guidelines.
+
+[33mcommit b85aeb243142f52e660140c94cd092a0b020e31d[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Sun Jan 22 14:59:22 2017 +0100
+
+    Some cosmetic spelling fixed in the alert report.
+
+[33mcommit 31799f4cad536122c2aaabb6b1ca83ef5677d064[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Jan 20 17:26:34 2017 +0100
+
+    New feature successfully implemented. New template objects were created for host and account breach based alerts.
+
+[33mcommit 470106d0d91950bfd2537a758a25871d103dad9a[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 23:44:23 2017 +0100
+
+    Update logparser.py
+
+[33mcommit a10b6d0dc77060acdd9011508bcec80ba68e110c[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 23:25:33 2017 +0100
+
+    Update dnsmasq.conf.tpl
+
+[33mcommit b3891495e1f32e87f9ebf2e28462445173cb121c[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 21:46:09 2017 +0100
+
+    Create log_folder
+
+[33mcommit cafa71ead088981ea58512986d11e3a824cb5c1a[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 21:44:07 2017 +0100
+
+    Delete dummy.md
+
+[33mcommit 17c0376feed1710ded179969deba6db7732a18d3[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 21:43:01 2017 +0100
+
+    Create dummy.md
+
+[33mcommit b0058a36a016a8190526c4dad0819eb159baf654[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 07:40:40 2017 +0100
+
+    Update nginx_default_site.tpl
+
+[33mcommit 86e11d1111245afb8b39267ac84f918c50c1f1ce[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 07:39:23 2017 +0100
+
+    Update dnsmasq.conf.tpl
+
+[33mcommit a6b6f48c29952547f7ab1404a050df41c756635c[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 07:38:52 2017 +0100
+
+    Update dhcpcd.conf.tpl
+
+[33mcommit e52426c5bc609abb385c752b7f39440d3ea1e932[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 07:37:57 2017 +0100
+
+    Update interfaces.tpl
+
+[33mcommit 030e04ab51a95243a8c7daae764eff61f1cd42ff[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 01:55:21 2017 +0100
+
+    Minor update
+
+[33mcommit 35f6d819834825b6abcd1d45570687edaf14e435[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Tue Jan 17 01:29:57 2017 +0100
+
+    Multiple fixes and improvements to the code. Issue #5 should be solved in this commit.
+
+[33mcommit 58a99a5b12777eb8dd074f40685f9c8723e6c733[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Sat Jan 14 21:44:59 2017 +0100
+
+    Code cleaning
+
+[33mcommit b5fb5ddd3dbeff310cb44fb6584cf686d510bf74[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Sat Jan 14 21:44:02 2017 +0100
+
+    Code cleaning
+
+[33mcommit b615d45a162ca38a5fcd1dda021c18d7435c65ce[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Jan 6 01:05:52 2017 +0100
+
+    Added the Collaborators section
+
+[33mcommit 89e23d162076816f9de5e215c3fa0b81c4c147ef[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Jan 6 00:32:11 2017 +0100
+
+    This update it's part of change #3
+
+[33mcommit 8864ec77f18588eb8f47155565b7ad51f607f0d5[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Jan 6 00:29:02 2017 +0100
+
+    This change it's part of issue #3
+
+[33mcommit 956bf22d93be26b789c2ec45893599a55e9bbc5e[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Jan 6 00:25:26 2017 +0100
+
+    temporary file deleted
+
+[33mcommit a8db8d96b8d85504527d99d6705e8e480489c5a0[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Dec 30 01:34:40 2016 +0100
+
+    Code cleaning
+
+[33mcommit ac61dce327964fea3bbf5a6a00c1e608d4f185b6[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Fri Dec 30 00:41:46 2016 +0100
+
+    added the creation of a Cron job in the installation script to ensure dnsmasq and nginx will start after reboot in BPi
+
+[33mcommit b9c39eeccfff08844ec32eed93bfc1f1b000640c[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Thu Dec 29 22:35:48 2016 +0100
+
+    Cleaning the code
+
+[33mcommit 2baf044eca84f00a4969404903c067e8285d03ce[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Thu Dec 29 13:48:21 2016 +0100
+
+    Update README.md
+
+[33mcommit 787bf4fae4e0a7f0a3a9964b385731b6344de442[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 23:41:18 2016 +0100
+
+    Update README.md
+
+[33mcommit 0bf23035f4ed36cda0d7fedd05b2103efc39f91e[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 23:40:29 2016 +0100
+
+    Update README.md
+
+[33mcommit f65ffe3eeb1a8ea49cf80fe18e9fe64e71f7bc9c[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 23:39:14 2016 +0100
+
+    Update intel-sources.md
+
+[33mcommit 938ccc1440de7b3b74da7abcbe15f6eb30d3ca89[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 23:38:24 2016 +0100
+
+    Rename intel-sources.mb to intel-sources.md
+
+[33mcommit 58497096837f8a470a8c97cebbfb8acf07c60ecb[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 23:37:27 2016 +0100
+
+    Create intel-sources.mb
+
+[33mcommit 2d7fbd29b5bb4df6986aab15be3151f222078419[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 23:32:34 2016 +0100
+
+    Update README.md
+
+[33mcommit b09f31a6079e52ada3d2435c980323446238e9a3[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:39:36 2016 +0100
+
+    Update README.md
+
+[33mcommit c22cfef54b5500de086db2bb22b76157a348fbac[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:38:50 2016 +0100
+
+    Update README.md
+
+[33mcommit cd62355ef08b9f8569664dff0acaf1b3f78386a6[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:21:36 2016 +0100
+
+    Update README.md
+
+[33mcommit 297b647d38061d0a9250b957c130c54e84b65139[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:16:56 2016 +0100
+
+    Update README.md
+
+[33mcommit 96d6c05e68062648a918685db2c6a5164c730c58[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:16:12 2016 +0100
+
+    Update README.md
+
+[33mcommit b3e685fb5407623cb1525e7a04300433563aae16[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:08:54 2016 +0100
+
+    Update README.md
+
+[33mcommit c5222b3c3b88b6728a96bff01c0d71ede708764b[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 17:05:47 2016 +0100
+
+    Update README.md
+
+[33mcommit 0c8e6b2e1e492930e56d603ff8e0361650ca9678[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 16:47:00 2016 +0100
+
+    Update README.md
+
+[33mcommit 3a7217e46e04c14cba1313c3bf08be7d921ae041[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 16:33:28 2016 +0100
+
+    Update README.md
+
+[33mcommit 2de4908d861bea1e8961c6dc3ae878bfcaeed8d3[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 16:32:50 2016 +0100
+
+    Update README.md
+
+[33mcommit 4ba14d025462302c84aa880362f24a4b74e6a1d5[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 16:14:52 2016 +0100
+
+    modified README.md
+
+[33mcommit 49f136ac064dd087108fa0f956e388197d0037b3[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 13:34:41 2016 +0100
+
+    deleting .idea folder
+
+[33mcommit aa75cd3043a5629c03e72bfd8f9539d2216d0e93[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 13:30:31 2016 +0100
+
+    Update user_config.ini
+
+[33mcommit adb05e8b0cb6eb13d07803a4f8669fb6fa4d325b[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 13:30:01 2016 +0100
+
+    Update user_config.ini
+
+[33mcommit 2299217de5af9b17500e195f710e34ba5f04cb74[m
+Merge: a71a0bb 3c4b2f4
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 13:27:29 2016 +0100
+
+    Merge branch 'master' of https://github.com/A3sal0n/FalconGate
+
+[33mcommit a71a0bbfdb624b1f21dbd61543c56c9892a0cc6f[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 13:26:05 2016 +0100
+
+    First large commit after change of identity. Still many things to be done.
+
+[33mcommit 3c4b2f4fc912bde6a5b2288251a3018601dee48c[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 12:07:26 2016 +0100
+
+    Update README.md
+
+[33mcommit fe319ba61addee8d4f012a08b9109b0f9d501665[m
+Author: A3sal0n <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 12:04:04 2016 +0100
+
+    README file updated
+
+[33mcommit ae669b2ceb3905abddf647deb6386d261b28d39f[m
+Author: Leonardo Mokarzel Falcon <leonardo.mokarzel.falcon@gmail.com>
+Date:   Wed Dec 28 11:58:56 2016 +0100
+
+    Initial commit
