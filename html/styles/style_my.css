@@ -95,13 +95,13 @@ ul.vert-one li a{display:block;text-decoration:none;color:#fff;
 	background:#282830;padding:0 0 0 20px;width:180px;}
 
 ul.vert-one li a:hover{
-	background: #1dabb8 url("images/vert-one_arrow.gif") no-repeat 0 9px;}
+	background: #1dabb8 url("../images/vert-one_arrow.gif") no-repeat 0 9px;}
 
 ul.vert-one li a.current{
-	background: #1a95a1 url("images/vert-one_arrow.gif") no-repeat 0 9px;}
+	background: #1a95a1 url("../images/vert-one_arrow.gif") no-repeat 0 9px;}
 
 ul.vert-one li a.current:hover{
-	background: #1dabb8 url("images/vert-one_arrow.gif") no-repeat 0 9px;}
+	background: #1dabb8 url("../images/vert-one_arrow.gif") no-repeat 0 9px;}
 
 
 /* Header
@@ -118,7 +118,7 @@ ul.vert-one li a.current:hover{
 #header_text {
 	color: #585B50;
 	font-size: 50px;
-	padding-bottom: 2px;
+	padding-bottom: 10px;
 }
 
 /* Content

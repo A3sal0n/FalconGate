@@ -1,7 +1,7 @@
 <?php
 session_start();
 include_once 'includes/functions.php';
-require 'templates/header.html';
+
 ?>
 
 <?php
@@ -9,6 +9,7 @@ if (login_check() != true){
     echo ("<p><span class=error_message>You are not authorized to access this page. Please</span> <a href=index.php>login</a>.</p>");
     exit(0);
 }
+require 'templates/header.html';
 ?>
 
 <?php
