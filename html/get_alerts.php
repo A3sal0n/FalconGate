@@ -24,7 +24,7 @@ if (login_check() != true){
 $data = array("target" => "alerts");
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
 if (!$result){
-    echo ("<h3>Eggshell API process seems to be down!</h3>");
+    echo ("<h3>FalconGate API process seems to be down!</h3>");
     echo ("<h3>Check your device's configuration and reboot if necessary.</h3>");
 }else{
     $obj = json_decode($result, true);
