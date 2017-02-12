@@ -164,6 +164,17 @@ if (login_check() == true) {
     $logged = 'out';
 }
 ?>
+<script type="text/javascript">
+function fillField(input,val) {
+      if(input.value == "")
+         input.value=val;
+};
+
+function clearField(input,val) {
+      if(input.value == val)
+         input.value="";
+};
+</script>
 <table height="100%" width="100%">
 	<tr>
 		<td align="center" valign="center">
@@ -174,8 +185,8 @@ if (login_check() == true) {
             <h3>Login</h3>
             <fieldset>
                 <form action="includes/process_login.php" method="post" name="login_form">
-                    <input type="uname" name="uname" value="Username">
-                    <input type="password" name="passwd" value="Password">
+                    <input type="uname" name="uname" value="Username" onblur="fillField(this,'Username');" onfocus="clearField(this,'Username');"/>
+                    <input type="password" name="passwd" value="Password" onblur="fillField(this,'Password');" onfocus="clearField(this,'Password');"/>
                     <input type="submit" value="Login">
                     <footer class="error_message">
                            <?php
