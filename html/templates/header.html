@@ -1,152 +1,51 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
 	<title>FalconGate</title>
-	<style type="text/css">
-
-		/* Layout */
-		body {
-			min-width: 630px;
-		}
-
-		#container {
-			padding-left: 200px;
-			padding-right: 190px;
-			margin-left: 20px;
-			margin-right: 20px;
-		}
-
-		#container .column {
-			position: relative;
-			float: left;
-		}
-
-		#center {
-			padding: 10px 20px;
-			width: 100%;
-		}
-
-		#left {
-			width: 180px;
-			padding: 0 10px;
-			right: 240px;
-			margin-left: -100%;
-		}
-
-		#right {
-			width: 130px;
-			padding: 0 10px;
-			margin-right: -100%;
-		}
-
-		#footer {
-			clear: both;
-		}
-
-		/* IE hack */
-		* html #left {
-			left: 150px;
-		}
-
-		#container {
-			overflow: hidden;
-		}
-
-		#container .column {
-			padding-bottom: 1001em;
-			margin-bottom: -1000em;
-		}
-
-		* html body {
-			overflow: hidden;
-		}
-
-		* html #footer-wrapper {
-			float: left;
-			position: relative;
-			width: 100%;
-			padding-bottom: 10010px;
-			margin-bottom: -10000px;
-			background: #fff;
-		}
-
-		body {
-			margin: 0;
-			padding: 0;
-			font-family:Sans-serif;
-			line-height: 1.5em;
-		}
-
-		p {
-			color: #555;
-		}
-
-		nav ul {
-			list-style-type: none;
-			margin: 0;
-			padding: 0;
-		}
-
-		nav ul a {
-			color: #AED6F1;
-			text-decoration: none;
-		}
-
-		#header, #footer {
-			font-size: large;
-			padding: 0.3em;
-			background: silver;
-			margin-left: 20px;
-			margin-right: 20px;
-		}
-
-		#left {
-			background: gray;
-		}
-
-		#right {
-			background: #fff;
-		}
-
-		#center {
-			background: #fff;
-		}
-
-		#container .column {
-			padding-top: 1em;
-		}
-
-		#left h2 {
-			color: black;
-		}
-
-	</style>
-    
-    
-<style type="text/css">
-	.TFtable{
-		border-collapse:collapse; 
-	}
-	.TFtable td{ 
-		padding:7px; border:#4e95f4 1px solid;
-	}
-	/* provide some minimal visual accomodation for IE8 and below */
-	.TFtable tr{
-		background: #b8d1f3;
-	}
-	/*  Define the background color for all the ODD background rows  */
-	.TFtable tr:nth-child(odd){ 
-		background: #b8d1f3;
-	}
-	/*  Define the background color for all the EVEN background rows  */
-	.TFtable tr:nth-child(even){
-		background: #dae5f4;
-	}
-</style>
-
-<script type="text/javascript" src="scripts/form_validator.js"></script>
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<link href="styles/style_my.css" rel="stylesheet">
+	<script type="text/javascript" src="scripts/form_validator.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
+	<script>
+	
+		$(function(){
+				$("a[href='home.php']").addClass("current");
+			$("a.scroll").click(function() {
+				$("a.scroll").removeClass("current");
+				$(this).addClass("current");
+			});
+		});		
+	</script>
 </head>
 
 <body>
+<table height="100%" width="100%">
+	<tr>
+		<td align="center" valign="top">
+			<table class="table" width="1000">
+				<tbody>
+					<tr class="header">
+						<td colspan="2">
+						<div id="logout"><a href="logout.php">Logout</a></div>
+						<div id="header_text">FalconGate</div>						
+						</td>
+					</tr>
+					<tr>
+						<td class="menu">
+						<ul class="vert-one">
+							<li><a class="scroll" href="home.php">Home</a></li>
+							<li><a class="scroll" href="status.php">Status</a></li>
+							<li><a class="scroll" href="get_alerts.php">Recent Alerts</a></li>
+							<li><a class="scroll" href="read_config.php">Configuration</a></li>
+							<li><a class="scroll" href="admin.php">Admin</a></li>
+							<!--
+							<li><a class="scroll" href="#">TBA</a></li>
+							<li><a class="scroll" href="#">TBA</a></li>
+							 -->
+						</ul>
+
+						</td>
+						<td class="content">
+						<div class="">
