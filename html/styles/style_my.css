@@ -136,19 +136,19 @@ ul.vert-one li a.current:hover{
 		border-collapse:collapse; 
 	}
 .TFtable td{ 
-		padding:7px; border:#4e95f4 1px solid;
+		padding:7px; border:#e5e5e5 1px solid;
 	}
 	/* provide some minimal visual accomodation for IE8 and below */
 .TFtable tr{
-		background: #b8d1f3;
+		background: #e5e5e5;
 	}
 	/*  Define the background color for all the ODD background rows  */
 .TFtable tr:nth-child(odd){ 
-		background: #b8d1f3;
+		background: #e5e5e5;
 	}
 	/*  Define the background color for all the EVEN background rows  */
 .TFtable tr:nth-child(even){
-		background: #dae5f4;
+		background: #ffffff;
 	}
 
 /* Footer
