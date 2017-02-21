@@ -30,7 +30,7 @@ class CleanOldHomenetObjects(threading.Thread):
             try:
                 self.clean_old_host_objects()
             except Exception as e:
-                log.debug(e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: ' + e.__doc__ + " - " + e.message)
             time.sleep(600)
 
     def clean_old_host_objects(self):
