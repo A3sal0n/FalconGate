@@ -60,6 +60,7 @@ intel.top_domains = top_domains
 # Master thread list
 threads = {}
 threads["config_reader"] = config.CheckConfigFileModification("config_reader")
+threads["check_net_config"] = config.CheckNetworkModifications("check_net_config")
 threads["read_dhcp_leases"] = logparser.ReadDHCPLeases("read_dhcp_leases")
 threads["read_bro_dns"] = logparser.ReadBroDNS("read_bro_dns")
 threads["read_bro_conn"] = logparser.ReadBroConn("read_bro_conn")
@@ -134,7 +135,21 @@ def main():
 
     # Get default gateway for eth0
     gws = netifaces.gateways()
-    homenet.gateway = gws['default'][netifaces.AF_INET][0]
+    cgw = gws['default'][netifaces.AF_INET][0]
+    if not homenet.gateway:
+        homenet.gateway = cgw
+    else:
+        if homenet.gateway != cgw:
+            utils.reconfigure_network(homenet.gateway, cgw)
+            homenet.gateway = cgw
+            try:
+                with lock:
+                    utils.save_pkl_object(homenet, "homenet.pkl")
+            except Exception as e:
+                log.debug(e.__doc__ + " - " + e.message)
+            utils.reboot_appliance()
+        else:
+            pass
 
     log.debug('FG-DEBUG: Starting main loop')
 
