@@ -303,8 +303,8 @@ def restart_dnsmasq():
 
 def reboot_appliance():
     log.debug("Rebooting FalCongate...")
-    cmd = 'shutdown -r now'
-    os.system(cmd)
+    cmd = '/sbin/reboot'
+    subprocess.call(cmd, shell=True)
 
 
 def kill_falcongate(pid):
