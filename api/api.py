@@ -58,7 +58,7 @@ class FlaskAPI(threading.Thread):
             else:
                 abort(400)
         except Exception as e:
-            log.debug(e.__doc__ + " - " + e.message)
+            log.debug('FG-WARN: ' + e.__doc__ + " - " + e.message)
             resp = Response()
             resp.status_code = 500
             return resp
@@ -159,21 +159,3 @@ def get_network_config():
                      'netmask': str(homenet.netmask), 'mac': str(homenet.mac)}
     return json.dumps(netconfig)
 
-
-def get_alerts():
-    ctime = int(time.time())
-    alerts = []
-    with lock:
-        try:
-            for k in homenet.hosts.keys():
-                if len(homenet.hosts[k].alerts) > 0:
-                    for k1 in homenet.hosts[k].alerts.keys():
-                        if (ctime - homenet.hosts[k].alerts[k1].last_seen) < 604800:
-                            alert = {'host': homenet.hosts[k].ip, 'alerts': homenet.hosts[k].alerts[k1].serialize_alert()}
-                            alerts.append(alert)
-        except Exception as e:
-            log.debug(e.__doc__ + " - " + e.message)
-    if len(alerts) > 0:
-        return alerts
-    else:
-        return None

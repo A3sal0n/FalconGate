@@ -22,7 +22,7 @@ import api.api as api
 try:
     homenet = utils.load_pkl_object("homenet.pkl")
 except Exception as e:
-    log.debug(e.__doc__ + " - " + e.message)
+    log.debug('FG-ERROR: ' + e.__doc__ + " - " + e.message)
     homenet = Network()
 
 # Master lock for threads
@@ -89,7 +89,7 @@ def get_lock(name):
 
 def main():
     if not os.geteuid() == 0:
-        log.debug('Script must be run as root')
+        log.debug('FG-FATAL: Script must be run as root')
         exit('Script must be run as root')
 
     global homenet
@@ -98,13 +98,13 @@ def main():
     # Check if process is not runing already
     get_lock('falcongate_main')
 
-    log.debug('main.py started')
+    log.debug('FG-INFO: main.py started')
 
     # Starting threads
     for key in threads.keys():
         threads[key].daemon = True
         threads[key].start()
-        log.debug('Started thread ' + key)
+        log.debug('FG-INFO: Started thread ' + key)
 
     time.sleep(15)
 
@@ -151,7 +151,7 @@ def main():
         else:
             pass
 
-    log.debug('Starting main loop')
+    log.debug('FG-DEBUG: Starting main loop')
 
     while True:
 
@@ -163,13 +163,13 @@ def main():
                         utils.save_pkl_object(homenet, "homenet.pkl")
                     flag = True
                 except Exception as e:
-                    log.debug(e.__doc__ + " - " + e.message)
+                    log.debug('FG-ERROR: ' + e.__doc__ + " - " + e.message)
                     time.sleep(2)
 
             time.sleep(30)
 
         except KeyboardInterrupt:
-            log.debug('Process terminated by keyboard interrupt')
+            log.debug('FG-INFO: Process terminated by keyboard interrupt')
             print 'Have a nice day!'
             sys.exit(0)
 

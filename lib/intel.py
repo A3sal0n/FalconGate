@@ -40,7 +40,7 @@ class DownloadIntel(threading.Thread):
         self.all_domains = []
 
     def run(self):
-        log.debug('Downloading daily blacklists')
+        log.debug('FG-INFO: Downloading daily blacklists')
 
         while 1:
             del self.all_ips[:]
@@ -92,7 +92,7 @@ class DownloadIntel(threading.Thread):
                             homenet.bad_ips[threat].append(ip)
                             self.all_ips.append(ip)
                 except Exception as e:
-                    log.debug('Error while retrieving the bad IPs from: ' + url)
+                    log.debug('FG-ERROR: Error while retrieving the bad IPs from: ' + url)
 
         # Adding user blacklisted IP addresses
         homenet.bad_ips['user_blacklist'] = []
@@ -111,7 +111,7 @@ class DownloadIntel(threading.Thread):
                         homenet.bad_domains[threat].append(domain)
                         self.all_domains.append(domain)
                 except Exception as e:
-                    log.debug('Error while retrieving the bad domains from: ' + url)
+                    log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
     def write_to_db(self):
         conn = lite.connect('ip_blacklist.sqlite')
@@ -216,8 +216,7 @@ class CheckVirusTotalIntel(threading.Thread):
             response = requests.get(homenet.vt_api_file_url, params=params, headers=headers)
             response_json = response.json()
         except Exception as e:
-            log.debug("There were some issues while connecting to VirusTotal's API")
-            log.debug(e.__doc__ + " - " + e.message)
+            log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API')
             return None
 
         if response_json["response_code"] == 1:
@@ -236,8 +235,7 @@ class CheckVirusTotalIntel(threading.Thread):
             response = requests.get(homenet.vt_api_domain_url, params=params, headers=headers)
             response_json = response.json()
         except Exception as e:
-            log.debug("There were some issues while connecting to VirusTotal's API")
-            log.debug(e.__doc__ + " - " + e.message)
+            log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API')
             return None
         domain = Domain()
         domain.name = domain
@@ -255,7 +253,7 @@ class CheckVirusTotalIntel(threading.Thread):
                             count += 1
                     domain.detected_urls = count
                 except Exception as e:
-                    log.debug(e.__doc__ + " - " + e.message)
+                    log.debug('FG-DEBUG: ' + e.__doc__ + " - " + e.message)
 
                 try:
                     samples = response_json['detected_communicating_samples']
@@ -268,7 +266,7 @@ class CheckVirusTotalIntel(threading.Thread):
                             count += 1
                         domain.detected_comm_payloads = count
                 except Exception as e:
-                    log.debug(e.__doc__ + " - " + e.message)
+                    log.debug('FG-DEBUG: ' + e.__doc__ + " - " + e.message)
 
                 try:
                     samples = response_json['detected_downloaded_samples']
@@ -281,10 +279,10 @@ class CheckVirusTotalIntel(threading.Thread):
                             count += 1
                         domain.detected_down_payloads = count
                 except Exception as e:
-                    log.debug(e.__doc__ + " - " + e.message)
+                    log.debug('FG-DEBUG: ' + e.__doc__ + " - " + e.message)
 
         except Exception as e:
-            log.debug(e.__doc__ + " - " + e.message)
+            log.debug('FG-DEBUG: ' + e.__doc__ + " - " + e.message)
 
         if (domain.detected_urls > 1) or (domain.detected_comm_payloads > 1) or (domain.detected_down_payloads > 1):
             return True
