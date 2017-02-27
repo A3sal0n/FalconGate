@@ -149,9 +149,9 @@ def main():
     run_command("iptables-restore < fw/iptables.rules")
 
     # Restarting device
-    print "Installation finished!" \
-          "Disable your router DHCP function and reboot the falcongate server to start protecting your network." \
-          "Have good day."
+    print "Installation finished!\n" \
+          "Disable your router's DHCP function and reboot the FalconGate server to start protecting your network.\n" \
+          "Have a good day!"
 
 if __name__ == '__main__':
     main()
