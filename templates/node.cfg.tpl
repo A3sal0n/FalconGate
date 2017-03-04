@@ -8,7 +8,7 @@
 [bro]
 type=standalone
 host=localhost
-interface=$IFACE$
+interface=$IFACE0$
 
 ## Below is an example clustered configuration. If you use this,
 ## remove the [bro] node above.

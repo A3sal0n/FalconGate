@@ -27,7 +27,7 @@ class ReadBroConn(threading.Thread):
                 for line in self.new_lines:
                     if line[0] != "#":
                         line = line.strip()
-                        fields = line.split()
+                        fields = line.split('\t')
                         try:
                             cip = fields[2]
                             cid = fields[2] + fields[4] + fields[5]
@@ -62,7 +62,7 @@ class ReadBroConn(threading.Thread):
                                                 homenet.hosts[cip].conns[cid].server_packets += int(fields[19])
                                                 homenet.hosts[cip].conns[cid].counter += 1
                         except Exception as e:
-                            log.debug(e.__doc__ + " - " + e.message)
+                            log.debug('FG-WARN: read_bro_conn_log - ' + e.__doc__ + " - " + e.message)
             time.sleep(5)
 
     def get_new_lines(self):
@@ -82,7 +82,8 @@ class ReadBroConn(threading.Thread):
             else:
                 f.close()
                 return False
-        except IOError:
+        except Exception as e:
+            log.debug('FG-WARN: read_bro_conn_log - ' + e.__doc__ + " - " + e.message)
             return False
 
     @staticmethod
@@ -135,39 +136,42 @@ class ReadBroDNS(threading.Thread):
                     if line[0] != '#':
                         line = line.strip()
                         fields = line.split('\t')
-                        if fields[9] != '-' and utils.validate_domain(fields[9]):
-                            query = fields[9]
-                            sld = utils.get_sld(query)
-                            tld = utils.get_tld(query)
-                            cip = fields[2]
-                            if tld not in self.tld_whitelist:
-                                with lock:
-                                    if cip in homenet.hosts:
-                                        if fields[15] != 'NXDOMAIN':
-                                            if query not in homenet.hosts[cip].dns:
-                                                request = DNSRequest()
-                                                request.ts = float(fields[0])
-                                                request.cip = cip
-                                                request.query = query
-                                                request.tld = utils.get_tld(query)
-                                                request.sld = sld
-                                                request.sip = fields[4]
-                                                request.qtype = fields[13]
-                                                request.qresult = fields[15]
-                                                homenet.hosts[cip].dns[query] = request
-                                            else:
-                                                homenet.hosts[cip].dns[query].lseen = float(fields[0])
-                                                homenet.hosts[cip].dns[query].counter += 1
-                                        elif fields[15] == 'NXDOMAIN':
-                                            try:
-                                                if query not in homenet.hosts[cip].dga_domains:
-                                                    homenet.hosts[cip].dga_domains.append(query)
-                                            except KeyError:
-                                                pass
+                        try:
+                            if fields[9] != '-' and utils.validate_domain(fields[9]):
+                                query = fields[9]
+                                sld = utils.get_sld(query)
+                                tld = utils.get_tld(query)
+                                cip = fields[2]
+                                if tld not in self.tld_whitelist:
+                                    with lock:
+                                        if cip in homenet.hosts:
+                                            if fields[15] != 'NXDOMAIN':
+                                                if query not in homenet.hosts[cip].dns:
+                                                    request = DNSRequest()
+                                                    request.ts = float(fields[0])
+                                                    request.cip = cip
+                                                    request.query = query
+                                                    request.tld = utils.get_tld(query)
+                                                    request.sld = sld
+                                                    request.sip = fields[4]
+                                                    request.qtype = fields[13]
+                                                    request.qresult = fields[15]
+                                                    homenet.hosts[cip].dns[query] = request
+                                                else:
+                                                    homenet.hosts[cip].dns[query].lseen = float(fields[0])
+                                                    homenet.hosts[cip].dns[query].counter += 1
+                                            elif fields[15] == 'NXDOMAIN':
+                                                try:
+                                                    if query not in homenet.hosts[cip].dga_domains:
+                                                        homenet.hosts[cip].dga_domains.append(query)
+                                                except KeyError:
+                                                    pass
 
-                                        if (fields[13] == 'MX') or query.startswith('mail.'):
-                                            if query not in homenet.hosts[cip].spammed_domains:
-                                                homenet.hosts[cip].spammed_domains.append(query)
+                                            if (fields[13] == 'MX') or query.startswith('mail.'):
+                                                if query not in homenet.hosts[cip].spammed_domains:
+                                                    homenet.hosts[cip].spammed_domains.append(query)
+                        except Exception as e:
+                            log.debug('FG-WARN: read_bro_dns_log - ' + e.__doc__ + " - " + e.message)
             time.sleep(5)
 
     def get_new_lines(self):
@@ -187,7 +191,8 @@ class ReadBroDNS(threading.Thread):
             else:
                 f.close()
                 return False
-        except IOError:
+        except Exception as e:
+            log.debug('FG-WARN: read_bro_dns_log - ' + e.__doc__ + " - " + e.message)
             return False
 
 
@@ -250,7 +255,7 @@ class ReadDHCPLeases(threading.Thread):
                 else:
                     pass
             except Exception as e:
-                log.debug(e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: read_dhcp_leases_log - ' + e.__doc__ + " - " + e.message)
             time.sleep(5)
 
     def create_alert(self, ts, ip, mac, hostname):
@@ -309,7 +314,7 @@ class ReadBroNotice(threading.Thread):
                                         homenet.hosts[src].alerts.append(alert_id)
                             self.recorded.append(uid)
             except (IOError, OSError) as e:
-                log.debug(e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: read_bro_notice_log - ' + e.__doc__ + " - " + e.message)
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -366,9 +371,9 @@ class ReadBroFiles(threading.Thread):
                                                 homenet.hosts[fdst].files[sha1].lseen = ts
                                     self.recorded.append(fuid)
                             except Exception as e:
-                                log.debug(e.__doc__ + " - " + e.message)
+                                log.debug('FG-WARN: read_bro_file_log - ' + e.__doc__ + " - " + e.message)
             except (IOError, OSError) as e:
-                log.debug(e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: read_bro_file_log - ' + e.__doc__ + " - " + e.message)
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -427,7 +432,7 @@ class ReadBroHTTP(threading.Thread):
                                                     del homenet.hosts[sip].interesting_urls[0:50]
                                                     homenet.hosts[sip].interesting_urls.append(url)
                         except Exception as e:
-                            log.debug(e.__doc__ + " - " + e.message)
+                            log.debug('FG-WARN: read_bro_http_log - ' + e.__doc__ + " - " + e.message)
             time.sleep(5)
 
     def get_new_lines(self):

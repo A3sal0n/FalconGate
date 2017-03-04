@@ -43,9 +43,11 @@ def main():
 
     # Detecting default gateway
     print "Detecting default gateway..."
-    (iface, gw) = get_default_gateway()
+    (iface0, gw) = get_default_gateway()
 
-    print iface, gw
+    print iface0, gw
+
+    iface1 = iface0 + ':1'
 
     octects = str(gw).split(".")
     STATIP = octects[0] + "." + octects[1] + "." + octects[2] + ".2"
@@ -56,7 +58,8 @@ def main():
     for f in template_list:
         for line in fileinput.input(f, inplace=1):
             line = re.sub("\$FALCONGATEDIR\$", cwd, line.rstrip())
-            line = re.sub("\$IFACE\$", iface, line.rstrip())
+            line = re.sub("\$IFACE0\$", iface0, line.rstrip())
+            line = re.sub("\$IFACE1\$", iface1, line.rstrip())
             line = re.sub("\$STATIP\$", STATIP, line.rstrip())
             line = re.sub("\$NETMASK\$", netmask, line.rstrip())
             line = re.sub("\$GATEWAY\$", gw, line.rstrip())
@@ -146,9 +149,9 @@ def main():
     run_command("iptables-restore < fw/iptables.rules")
 
     # Restarting device
-    print "Installation finished!" \
-          "Disable your router DHCP function and reboot the falcongate server to start protecting your network." \
-          "Have good day."
+    print "Installation finished!\n" \
+          "Disable your router's DHCP function and reboot the FalconGate server to start protecting your network.\n" \
+          "Have a good day!"
 
 if __name__ == '__main__':
     main()

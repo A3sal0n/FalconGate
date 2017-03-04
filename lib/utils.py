@@ -13,6 +13,7 @@ import os
 import sys
 import gc
 import json
+import fileinput
 
 
 class CleanOldHomenetObjects(threading.Thread):
@@ -30,7 +31,7 @@ class CleanOldHomenetObjects(threading.Thread):
             try:
                 self.clean_old_host_objects()
             except Exception as e:
-                log.debug(e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: ' + e.__doc__ + " - " + e.message)
             time.sleep(600)
 
     def clean_old_host_objects(self):
@@ -301,9 +302,9 @@ def restart_dnsmasq():
 
 
 def reboot_appliance():
-    cmd = "reboot"
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    output, err = p.communicate()
+    log.debug("Rebooting FalCongate...")
+    cmd = '/sbin/reboot'
+    subprocess.call(cmd, shell=True)
 
 
 def kill_falcongate(pid):
@@ -327,3 +328,16 @@ def save_pkl_object(obj, filename):
 def load_pkl_object(filename):
     obj = pickle.load(open(filename, "rb"))
     return obj
+
+
+def reconfigure_network(old_gw, new_gw):
+    target_files = ['/etc/network/interfaces', '/etc/dnsmasq.conf', '/etc/nginx/sites-available/default']
+    octects = str(old_gw).split(".")
+    t_old_gw = '.'.join(octects[0:3])
+    octects = str(new_gw).split(".")
+    t_new_gw = '.'.join(octects[0:3])
+    for f in target_files:
+        for line in fileinput.input(f, inplace=1):
+            line = re.sub(old_gw, new_gw, line.rstrip())
+            line = re.sub(t_old_gw, t_new_gw, line.rstrip())
+            print(line)

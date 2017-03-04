@@ -3,6 +3,8 @@ import threading
 import os
 import time
 import lib.utils as utils
+import netifaces
+from lib.logger import *
 
 
 class CheckConfigFileModification(threading.Thread):
@@ -80,4 +82,20 @@ class CheckNetworkModifications(threading.Thread):
         global lock
 
         while 1:
-            pass
+            gws = netifaces.gateways()
+            cgw = gws['default'][netifaces.AF_INET][0]
+            if not homenet.gateway:
+                homenet.gateway = cgw
+            else:
+                if homenet.gateway != cgw:
+                    utils.reconfigure_network(homenet.gateway, cgw)
+                    homenet.gateway = cgw
+                    try:
+                        with lock:
+                            utils.save_pkl_object(homenet, "homenet.pkl")
+                    except Exception as e:
+                        log.debug(e.__doc__ + " - " + e.message)
+                    utils.reboot_appliance()
+                else:
+                    pass
+            time.sleep(10)
