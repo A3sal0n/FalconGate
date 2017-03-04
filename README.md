@@ -69,7 +69,9 @@ This is the fastest way to get FalconGate up and running in your network.
 You can use the guides below as reference for Raspberry Pi:
 
 [Linux](https://www.raspberrypi.org/documentation/installation/installing-images/linux.md)
+
 [Mac OS](https://www.raspberrypi.org/documentation/installation/installing-images/mac.md)
+
 [Windows](https://www.raspberrypi.org/documentation/installation/installing-images/windows.md)
 
 - Insert the SD card in your device and plug it to any available ethernet port in your router.
