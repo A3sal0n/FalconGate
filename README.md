@@ -8,9 +8,9 @@ Cyber attacks are on the raise. Hacker and cyber criminals are continuously impr
 
 ## Features
 
-FalconGate it's an open source smart gateway which can protect your home devices against hackers, Malware like Ransomeware and other threats. It detects and alerts on hacker intrusions on your home network as well as other devices misbehaving and attacking targets within your network or in the Internet.
+FalconGate is an open source smart gateway which can protect your home devices against hackers, Malware like Ransomeware and other threats. It detects and alerts on hacker intrusions on your home network as well as other devices misbehaving and attacking targets within your network or in the Internet.
 
-Currently FalconGate it's able to:
+Currently FalconGate is able to:
 
 - Block several types of Malware based on open source blacklists (see detailed list in file [intel-sources.md](intel-sources.md))
 - Block Malware using the Tor network
@@ -25,7 +25,7 @@ Currently FalconGate it's able to:
 
 ## Getting Started
 
-FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running is to deploy one of the supported system images from our [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads)
+FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running is to deploy one of the supported system images from our [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
 
 ### Supported Platforms
 
@@ -56,7 +56,43 @@ The devices's malware detection can be enhanced with the utilization of [VirusTo
 
 Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2) public API to detect whether credentials and/or other data from personal accounts have been stolen by hackers from third party sites.
 
-### Installing FalconGate
+### Deploying FalconGate from a supported image
+
+This is the fastest way to get FalconGate up and running in your network. 
+
+- Download the correct system images for your device from the [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
+
+- Extract the image to a folder in your computer.
+
+- Write the image to your SD card.
+
+You can use the guides below as reference for Raspberry Pi:
+
+[Linux](https://www.raspberrypi.org/documentation/installation/installing-images/linux.md)
+[Mac OS](https://www.raspberrypi.org/documentation/installation/installing-images/mac.md)
+[Windows](https://www.raspberrypi.org/documentation/installation/installing-images/windows.md)
+
+- Insert the SD card in your device and plug it to any available ethernet port in your router.
+
+- Power on your device and wait few minutes until it will acquire the correct configuration for your network.
+
+- Login to your router and disable its DHCP server function
+
+- Login to FalconGate's web app and configure the email address(es) to be used as recipients for alerts and your VirusTotal API key
+```
+https://[FalconGate IP address]
+Username: admin
+Password: falcongate
+```
+*Normally FalconGate will assign to its administration interface an IP ending in ".2" (e.g. 192.168.0.2) which is derived from the network's gateway IP*
+*Change the default password after the first logon to the application*
+
+- Navigate to the "Configuration" page and fill in the correct fields
+
+This configuration it's not mandatory but highly desired if you want to unleash FalconGate's full power.
+In order to obtain a free VirusTotal API key you must register at (https://www.virustotal.com/).
+
+### Installing FalconGate from source
 
 Follow the steps below to configure your device and install FalconGate from this repository.
 
@@ -83,28 +119,17 @@ $ sudo git clone https://github.com/A3sal0n/FalconGate.git
 $ cd FalconGate/
 $ sudo python install.py
 ```
-Now you can go for a walk and prepare a coffee or any other beverage of your choice because the installation takes some time. The script will print the progress to the console.
+Now you can go for a walk and prepare a coffee or any other beverage of your choice because the installation usually takes some time. The script will print the progress to the console.
 
 The script should finish without issues if you're using the supported platforms. If you're attempting to install FalconGate experimentally to a new hardware platform/OS and you get some errors during the installation you could try to correct the issues manually and continue to execute the steps listed in the installation script.
 
-- Login to your router and disable it's DHCP server function
+- Login to your router and disable its DHCP server function
 
 FalconGate was designed to work connected to a router over ethernet. It does not replaces the functions of your router. Instead it becomes a layer of security between your devices and your router. Disabling your router's DHCP allows FalconGate to become the new gateway for all the devices connected to the same router in your VLAN.
 
 - Reboot your device to apply all the configuration changes
 
 - Login to FalconGate's web app and configure the email address(es) to be used as recipients for alerts and your VirusTotal API key
-```
-https://[FalconGate IP address]
-Username: admin
-Password: falcongate
-```
-*Change the default password after the first logon to the application*
-
-- Navigate to the "Configuration" page and fill in the correct fields
-
-This configuration it's not mandatory but highly desired if you want to unleash FalconGate's full power.
-In order to obtain a free VirusTotal API key you must register at (https://www.virustotal.com/).
 
 ### Deployment
 
