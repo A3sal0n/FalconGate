@@ -21,11 +21,11 @@ Currently FalconGate it's able to:
 - Detect and report on internal and outbound port scans
 - Report details of all new devices connected to your network
 - Block ads based on open source lists
-- Monitor a custom list of personal or family accounts used in online services for reports of hacking and alerts if any hit was found  
+- Monitor a custom list of personal or family accounts used in online services for public reports of hacking  
 
 ## Getting Started
 
-FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running it's to use the supplied installation script "install.py" to deploy and configure the framework in your own Raspberry Pi or Banana Pi. This script tries to "guess" your network configuration, installs all the dependencies and configures them. The installation usually takes a while because the installation script compiles Bro IDS from it's source to ensure all the latest features are available.
+FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running is to deploy one of the supported system images from our [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads)
 
 ### Supported Platforms
 
