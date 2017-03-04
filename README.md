@@ -60,7 +60,7 @@ Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 
 This is the fastest way to get FalconGate up and running in your network. 
 
-- Download the correct system images for your device from the [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
+- Download the correct system image for your device from the [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
 
 - Extract the image to a folder in your computer.
 
@@ -86,7 +86,7 @@ https://[FalconGate IP address]
 Username: admin
 Password: falcongate
 ```
-*Normally FalconGate will assign to its administration interface an IP ending in ".2" (e.g. 192.168.0.2) which is derived from the network's gateway IP*
+*Usually FalconGate will assign to its administration interface an IP ending in ".2" (e.g. 192.168.0.2) which is derived from the network's gateway IP*
 *Change the default password after the first logon to the application*
 
 - Navigate to the "Configuration" page and fill in the correct fields
