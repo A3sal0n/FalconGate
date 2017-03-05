@@ -48,22 +48,22 @@ class FlaskAPI(threading.Thread):
                 resp.status_code = 200
                 resp.mimetype = "application/json"
                 return resp
-            elif target == 'alerts_week':
-                data = utils.get_alerts_within_time(604800)
+            elif target == 'alerts':
+                timeframe = str(request.json['timeframe'])
+                if timeframe == "alerts_week":
+                    data = utils.get_alerts_within_time(604800)
+                elif timeframe == "alerts_month":
+                    data = utils.get_alerts_within_time(2592000)
+                elif timeframe == "alerts_all":
+                    data = utils.get_alerts_within_time(172800000)
                 resp = Response()
                 resp.data = data
                 resp.status_code = 200
                 resp.mimetype = "application/json"
                 return resp
-            elif target == 'alerts_month':
-                data = utils.get_alerts_within_time(2592000)
-                resp = Response()
-                resp.data = data
-                resp.status_code = 200
-                resp.mimetype = "application/json"
-                return resp
-            elif target == 'alerts_all':
-                data = utils.get_alerts_within_time(157680000)
+            elif target == 'logs':
+                log_count = int(request.json['log_count'])
+                data = utils.get_syslogs(log_count)
                 resp = Response()
                 resp.data = data
                 resp.status_code = 200

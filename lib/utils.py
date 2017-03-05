@@ -13,7 +13,7 @@ import os
 import sys
 import gc
 import json
-import fileinput
+from lib.file_read_backwards import FileReadBackwards
 
 
 class CleanOldHomenetObjects(threading.Thread):
@@ -302,9 +302,9 @@ def restart_dnsmasq():
 
 
 def reboot_appliance():
-    log.debug("Rebooting FalCongate...")
-    cmd = '/sbin/reboot'
-    subprocess.call(cmd, shell=True)
+    cmd = "reboot"
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    output, err = p.communicate()
 
 
 def kill_falcongate(pid):
@@ -329,15 +329,17 @@ def load_pkl_object(filename):
     obj = pickle.load(open(filename, "rb"))
     return obj
 
-
-def reconfigure_network(old_gw, new_gw):
-    target_files = ['/etc/network/interfaces', '/etc/dnsmasq.conf', '/etc/nginx/sites-available/default']
-    octects = str(old_gw).split(".")
-    t_old_gw = '.'.join(octects[0:3])
-    octects = str(new_gw).split(".")
-    t_new_gw = '.'.join(octects[0:3])
-    for f in target_files:
-        for line in fileinput.input(f, inplace=1):
-            line = re.sub(old_gw, new_gw, line.rstrip())
-            line = re.sub(t_old_gw, t_new_gw, line.rstrip())
-            print(line)
+def get_syslogs(log_count):
+    logs = []
+    f = FileReadBackwards("/var/log/syslog", encoding="utf-8")
+    count = 0
+    for line in f:
+        if count <= log_count:
+            if "FG-" in line:
+                logs.append(line)
+                count += 1
+            else:
+                pass
+        else:
+            break
+    return json.dumps(logs)

@@ -16,9 +16,9 @@ require 'templates/header.html';
 <h1>Recent Alerts</h1>
 
 <?php
-$period =(!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
-$data = array("target" => $period);
-$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
+$period = (!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
+$data = array("target" => "alerts", "timeframe" => $period);
+$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));	
 if (!$result){
     echo ("<h3><span class=error_message>FalconGate API process seems to be down!</span></h3>");
     echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
@@ -35,10 +35,10 @@ if (!$result){
 	
     <h3>Alerts detected in <?php echo $display; ?></h3>
     <p align="right"><a href="save-alerts-csv.php" target="_blank">download csv</a></p>
-	<p>For what period you would like to see alerts? <form action="" method="get">
+	<p>For what period would you like to see alerts? <form action="" method="get">
 	<select name="period" onchange="this.form.submit()">
-		<option value="alerts_week" <?php echo ($period=='alerts_week') ? 'selected':'' ?>>Last Week</option>
-		<option value="alerts_month" <?php echo ($period=='alerts_month') ? 'selected':'' ?>>Last Month</option>
+		<option value="alerts_week" <?php echo ($period=='alerts_week') ? 'selected':'' ?>>Last 7 days</option>
+		<option value="alerts_month" <?php echo ($period=='alerts_month') ? 'selected':'' ?>>Last 30 days</option>
 		<option value="alerts_all" <?php echo ($period=='alerts_all') ? 'selected':'' ?>>All</option>
 	</select>
 	</form></p>
