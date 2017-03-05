@@ -13,6 +13,7 @@ import os
 import sys
 import gc
 import json
+import fileinput
 from lib.file_read_backwards import FileReadBackwards
 
 
