@@ -13,6 +13,55 @@ if (login_check() != true){
 require 'templates/header.html';
 ?>
 
+
+<script type='text/javascript'>//<![CDATA[
+$(window).load(function(){
+$(".show-more a").each(function() {
+    var $link = $(this);
+    var $content = $link.parent().prev("div.text-content");
+
+    console.log($link);
+
+    var visibleHeight = $content[0].clientHeight;
+    var actualHide = $content[0].scrollHeight - 2;
+
+    console.log(actualHide);
+    console.log(visibleHeight);
+
+    if (actualHide > visibleHeight) {
+        $link.show();
+    } else {
+        $link.hide();
+    }
+});
+
+$(".show-more a").on("click", function() {
+    var $link = $(this);
+    var $content = $link.parent().prev("div.text-content");
+    var linkText = $link.text();
+
+    $content.toggleClass("short-text, full-text");
+
+    $link.text(getShowLinkText(linkText));
+
+    return false;
+});
+
+function getShowLinkText(currentText) {
+    var newText = '';
+
+    if (currentText.toUpperCase() === "SHOW MORE") {
+        newText = "Show less";
+    } else {
+        newText = "Show more";
+    }
+
+    return newText;
+}
+});//]]> 
+
+</script>
+
 <h1>Recent Alerts</h1>
 
 <?php
@@ -34,7 +83,7 @@ if (!$result){
 ?>
 	
     <h3>Alerts detected in <?php echo $display; ?></h3>
-    <p align="right"><a href="save-alerts-csv.php" target="_blank">download csv</a></p>
+    <p align="right"><a href="save-alerts-csv.php?period=<?php echo $period; ?>" target="_blank">download csv</a></p>
 	<p>For what period would you like to see alerts? <form action="" method="get">
 	<select name="period" onchange="this.form.submit()">
 		<option value="alerts_week" <?php echo ($period=='alerts_week') ? 'selected':'' ?>>Last 7 days</option>
@@ -50,7 +99,7 @@ if (!$result){
 		
     if ($obj[0] != 'none'){
         foreach ($obj as $alert){    
-            echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td>'.str_replace('|','| ',$alert[8]).'</td></tr>');
+            echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td></tr>');
         }
     }
     echo ('</table>');

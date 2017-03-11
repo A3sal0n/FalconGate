@@ -151,6 +151,32 @@ ul.vert-one li a.current:hover{
 		background: #ffffff;
 	}
 
+/* Content - Get Alerts (Show / Hide More)
+------------------*/	
+div.text-container {
+    margin: 0 auto;
+    width: 75%;    
+}
+
+.text-content{
+    line-height: 1em;
+}
+
+.short-text {
+    overflow: hidden;
+    height: 2em;
+}
+
+.full-text{
+    height: auto;
+}
+
+.show-more {
+    padding: 1px 0;
+    text-align: right;
+}	
+	
+	
 /* Footer
 -----------------------------------------------------------------------------*/
 .footer {
