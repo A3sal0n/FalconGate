@@ -1,7 +1,8 @@
 <?php
 session_start();
 include_once 'includes/functions.php';
-$data = array("target" => "alerts");
+$period = (!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
+$data = array("target" => "alerts", "timeframe" => $period);
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
 if (!$result){
     echo ("<h3><span class=error_message>Eggshell API process seems to be down!<span></h3>");

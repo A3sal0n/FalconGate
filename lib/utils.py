@@ -14,7 +14,6 @@ import sys
 import gc
 import json
 import fileinput
-from lib.file_read_backwards import FileReadBackwards
 
 
 class CleanOldHomenetObjects(threading.Thread):
@@ -330,17 +329,24 @@ def load_pkl_object(filename):
     obj = pickle.load(open(filename, "rb"))
     return obj
 
+
 def get_syslogs(log_count):
     logs = []
-    f = FileReadBackwards("/var/log/syslog", encoding="utf-8")
-    count = 0
-    for line in f:
-        if count <= log_count:
-            if "FG-" in line:
-                logs.append(line)
-                count += 1
+    logs_to_return = []
+
+    with open("/var/log/syslog") as f:
+        for oline in f:
+            logs.append(oline)
+
+        count = 0
+        logs_len = len(logs)
+        for line in logs[:-logs_len:-1]:
+            if count <= log_count:
+                if "FG-" in line:
+                    logs_to_return.append(line)
+                    count += 1
+                else:
+                    pass
             else:
-                pass
-        else:
-            break
-    return json.dumps(logs)
+                break
+    return json.dumps(logs_to_return)

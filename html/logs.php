@@ -36,7 +36,7 @@ if (!$result){
 if ($obj[0] != 'none'){
     foreach ($obj as $log){    
 		//echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td>'.str_replace('|','| ',$alert[8]).'</td></tr>');
-        echo $log."\r\n";
+        echo $log;
 		}
 	}
 }
