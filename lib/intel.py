@@ -106,10 +106,14 @@ class DownloadIntel(threading.Thread):
             for url in homenet.blacklist_sources_domain[threat]:
                 try:
                     response = requests.get(url, headers=self.headers)
-                    entries = re.findall(self.domain_regex, response.content)
-                    for domain in entries:
-                        homenet.bad_domains[threat].append(domain)
-                        self.all_domains.append(domain)
+                    txt = response.text
+                    lines = txt.split('\n')
+                    for line in lines:
+                        if line[0] != '#':
+                            entries = re.findall(self.domain_regex, line)
+                            for domain in entries:
+                                homenet.bad_domains[threat].append(domain)
+                                self.all_domains.append(domain)
                 except Exception as e:
                     log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
