@@ -109,7 +109,7 @@ class DownloadIntel(threading.Thread):
                     txt = response.text
                     lines = txt.split('\n')
                     for line in lines:
-                        if line[0] != '#':
+                        if (len(line) > 0) and (line[0] != '#'):
                             entries = re.findall(self.domain_regex, line)
                             for domain in entries:
                                 homenet.bad_domains[threat].append(domain)
