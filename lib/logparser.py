@@ -278,6 +278,8 @@ class ReadBroNotice(threading.Thread):
         self._cached_stamp = 0
         self.scan_regex = "^(\d+\.\d+).+Scan\:\:Port\_Scan\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sscanned\sat\sleast" \
                           "\s15\sunique\sports\sof\shost\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sin\s(\dm\d+s)"
+        self.traceroute_regex = "^(\d+.\d.+)Traceroute\:\:Detected\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sseems\sto\sbe\srunning" \
+                                "\straceroute\susing\s.+\s.\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).+"
         self.recorded = []
 
     def run(self):
@@ -296,6 +298,7 @@ class ReadBroNotice(threading.Thread):
                         if uid not in self.recorded:
                             line = line.strip()
                             scan = re.search(self.scan_regex, line)
+                            traceroute = re.search(self.traceroute_regex, line)
                             if scan:
                                 ts = int(float(scan.group(1)))
                                 src = scan.group(2)
@@ -312,7 +315,22 @@ class ReadBroNotice(threading.Thread):
                                         a = [0, 'port_scan', ts, ctime, 0, 0, 'Port Scan', src, dst, 0, description, reference]
                                         alert_id = utils.add_alert_to_db(a)
                                         homenet.hosts[src].alerts.append(alert_id)
+                            elif traceroute:
+                                ts = int(float(traceroute.group(1)))
+                                src = scan.group(2)
+                                with lock:
+                                    if src in homenet.hosts:
+                                        ctime = int(time.time())
+                                        description = 'This host has been detected performing traceroute from your network.' \
+                                                        'Traceroute might be used for reconnaissance phase of attack. Attacker' \
+                                                        'gains visibility about how traffic is travelling from internal network' \
+                                                        'to internet. What hops are in the network, etc...'
+                                        reference = 'https://en.wikipedia.org/wiki/Traceroute'
+                                        a = [0, 'traceroute', ts, ctime, 0, 0, 'Traceroute', src, 0, description, reference]
+                                        alert_id = utils.add_alert_to_db(a)
+                                        homenet.hosts[src].alerts.append(alert_id)
                             self.recorded.append(uid)
+
             except (IOError, OSError) as e:
                 log.debug('FG-WARN: read_bro_notice_log - ' + e.__doc__ + " - " + e.message)
 
