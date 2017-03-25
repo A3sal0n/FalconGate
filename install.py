@@ -32,7 +32,7 @@ def run_command(cmd):
 
 template_list = ["config.ini", "templates/interfaces.tpl", "templates/broctl.tpl", "templates/dnsmasq.conf.tpl",
                  "templates/local.bro.tpl", "templates/nginx_default_site.tpl",
-                 "templates/dhcpcd.conf.tpl", "templates/run-falcongate.sh.tpl", "templates/node.cfg.tpl"]
+                 "templates/dhcpcd.conf.tpl", "templates/falcongate.service.tpl", "templates/node.cfg.tpl"]
 
 
 def main():
@@ -109,7 +109,7 @@ def main():
     shutil.copy("templates/update-exim4.conf.conf.tpl", "/etc/exim4/update-exim4.conf.conf")
     shutil.copy("templates/dnsmasq.conf.tpl", "/etc/dnsmasq.conf")
     shutil.copy("templates/nginx_default_site.tpl", "/etc/nginx/sites-available/default")
-    shutil.copy("templates/run-falcongate.sh.tpl", "/etc/init.d/run-falcongate.sh")
+    shutil.copy("templates/falcongate.service.tpl", "/etc/systemd/system/falcongate.service")
     shutil.copy("templates/kill-falcongate.sh.tpl", "/etc/init.d/kill-falcongate.sh")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
@@ -126,14 +126,8 @@ def main():
 
     # Configuring falcongate service
     print "Configuring falcongate service..."
-    run_command("chmod +x /etc/init.d/run-falcongate.sh")
+    run_command("systemctl enable falcongate.service")
     run_command("chmod +x /etc/init.d/kill-falcongate.sh")
-
-    # Installing Cron task to ensure critical services will start
-    run_command("crontab -l > /tmp/mycron")
-    run_command('echo "@reboot /bin/sleep 10 && /usr/sbin/service dnsmasq restart && /usr/sbin/service nginx restart && /etc/init.d/run-falcongate.sh" >> /tmp/mycron')
-    run_command("crontab /tmp/mycron")
-    run_command("rm /tmp/mycron")
 
     # Installing FW scripts
     print "Installing and configuring FW scripts..."
