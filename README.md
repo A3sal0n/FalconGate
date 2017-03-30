@@ -29,7 +29,7 @@ FalconGate was built on top of other open source software so it has multiple dep
 
 ### Supported Platforms
 
-Currently FalconGate has been successfully tested and implemented on Raspberry Pi (RPi 2 model B) and Banana Pi (BPI-M2+) using Raspian Jessie Lite as base OS. You can download the base image for RPi [here](https://downloads.raspberrypi.org/raspbian_lite_latest).
+Currently FalconGate has been successfully tested and implemented on Raspberry Pi (RPi 2 and 3) and Banana Pi (BPI-M2+) using Raspian Jessie Lite as base OS. You can download the base image for RPi [here](https://downloads.raspberrypi.org/raspbian_lite_latest).
 
 It should be compatible with other Debian ARM images as well but this has not been tested yet.
 
@@ -94,7 +94,7 @@ In order to obtain a free VirusTotal API key you must register at (https://www.v
 
 Follow the steps below to configure your device and install FalconGate from this repository.
 
-- Download and install the OS image to your Raspberry Pi or Banana Pi device
+- Download and install the OS image to your Raspberry Pi or other device
 
 This is well documented in multiple sources out there.
 
@@ -133,12 +133,12 @@ FalconGate was designed to work connected to a router over ethernet. It does not
 
 Some important considerations to keep in mind when deploying FalconGate to a real environment: home or production network.
 
-- Change the default SSH password in your Raspberry Pi or Banana Pi devices
-- Regenerate the openssh-server certificates for SSH encryption
+- Always change the default SSH password in your Raspberry Pi
+- Always regenerate the openssh-server certificates for SSH encryption
 
 ### Limitations
 
-Currently the RPi 2 model B and the Banana Pi M2+ have both a single ethernet interface so the traffic forwarding in the gateway it's done using this single interface. This has an impact in networks with fast Internet connection (e.g. > 50Mb/s). However it's still good enough for the home networks of many people's  and even some small businesses. 
+Currently the Raspberry Pi version 2 and 3 have both only one slow ethernet interface (10/100 Mbit). The traffic forwarding in the gateway it's done using only this interface. This has an impact in networks with fast internet connections (e.g. > 50Mb/s). However it's still good enough for the home networks of many people's  and even some small businesses. 
 
 ### Collaborators
 [easy4MEr](https://github.com/easy4MEr)
