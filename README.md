@@ -147,6 +147,14 @@ Currently the RPi 2 model B and the Banana Pi M2+ have both a single ethernet in
 
 You can subscribe to our [newsletter](http://eepurl.com/cvwEYj) to receive news on major developments, new features released, etc.
 
+### Donate
+
+So far we have been running this project with money from our own pockets. We have plans to continue expanding the capabilities of FalconGate but unfortunately many of the things we have in mind will require some level investment. If you like our project or you have found it useful please consider donating some money to support us.
+
+**Paypal:** https://www.paypal.me/FalconGate
+
+**Bitcoin wallet:** 14TdcLb2DYHZmcwqCUWP64v4g1UaTs8yK8
+
 ## License
 
 This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
