@@ -149,7 +149,7 @@ You can subscribe to our [newsletter](http://eepurl.com/cvwEYj) to receive news 
 
 ### Donate
 
-So far we have been running this project with money from our own pockets. We have plans to continue expanding the capabilities of FalconGate but unfortunately many of the things we have in mind will require some level investment. If you like our project or you have found it useful please consider donating some money to support us.
+So far we have been running this project with money from our own pockets. We have plans to continue expanding the capabilities of FalconGate but unfortunately many of the things we have in mind will require some additional level of investment. If you like our project or you have found it useful please consider donating some money to support us.
 
 **Paypal:** https://www.paypal.me/FalconGate
 
