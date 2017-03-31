@@ -89,6 +89,7 @@ def main():
     print "Installing Bro..."
     run_command("make install")
     os.chdir(root_dir)
+    run_command("rm -rf tmp/bro*")
     print "Configuring broctl service..."
     shutil.copy("templates/broctl.tpl", "/etc/init.d/broctl")
     run_command("chmod +x /etc/init.d/broctl")
