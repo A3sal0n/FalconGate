@@ -2,10 +2,6 @@
 
 #This script must be copied to /etc/network/if-pre-up.d folder and make executable
 
-/sbin/ipset flush
-
-/sbin/ipset create blacklist hash:ip
-
-/sbin/ipset create blacklist-user hash:ip
+/sbin/ipset restore -! < /etc/ipset.rules
 
 /sbin/iptables-restore < /etc/iptables.rules

@@ -1,0 +1,1 @@
+Created this folder to store some temporary files needed during installation and operation of the platform.

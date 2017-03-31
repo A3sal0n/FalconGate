@@ -39,7 +39,7 @@ def main():
     if not os.geteuid() == 0:
         exit('Script must be run as root')
 
-    cwd = os.getcwd()
+    root_dir = os.getcwd()
 
     # Detecting default gateway
     print "Detecting default gateway..."
@@ -57,7 +57,7 @@ def main():
 
     for f in template_list:
         for line in fileinput.input(f, inplace=1):
-            line = re.sub("\$FALCONGATEDIR\$", cwd, line.rstrip())
+            line = re.sub("\$FALCONGATEDIR\$", root_dir, line.rstrip())
             line = re.sub("\$IFACE0\$", iface0, line.rstrip())
             line = re.sub("\$IFACE1\$", iface1, line.rstrip())
             line = re.sub("\$STATIP\$", STATIP, line.rstrip())
@@ -72,12 +72,12 @@ def main():
 
     # Installing Dnsmasq
     print "Installing dependencies..."
-    run_command("apt-get install -y dnsmasq nginx php5-fpm php5-curl exim4-daemon-light mailutils ipset cmake make gcc "
+    run_command("apt-get install -y dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset cmake make gcc "
                 "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip")
 
     # Installing Bro
     print "Installing Bro..."
-    os.chdir("/tmp")
+    os.chdir("tmp/")
     print "Cloning Bro repo..."
     run_command("git clone --recursive git://git.bro.org/bro")
     os.chdir("bro")
@@ -85,10 +85,10 @@ def main():
     run_command("./configure")
     print "Building Bro..."
     print "Sit back and relax because this can take quite some time :)"
-    run_command("make -j4")
+    run_command("make -j2")
     print "Installing Bro..."
     run_command("make install")
-    os.chdir(cwd)
+    os.chdir(root_dir)
     print "Configuring broctl service..."
     shutil.copy("templates/broctl.tpl", "/etc/init.d/broctl")
     run_command("chmod +x /etc/init.d/broctl")
@@ -122,6 +122,8 @@ def main():
 
     # Installing Python libraries
     print "Installing Python dependencies..."
+    run_command("pip install --upgrade pip")
+    run_command("pip install setuptools")
     run_command("pip install -r requirements.txt")
 
     # Configuring falcongate service
