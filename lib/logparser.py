@@ -278,8 +278,6 @@ class ReadBroNotice(threading.Thread):
         self._cached_stamp = 0
         self.scan_regex = "^(\d+\.\d+).+Scan\:\:Port\_Scan\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sscanned\sat\sleast" \
                           "\s15\sunique\sports\sof\shost\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sin\s(\dm\d+s)"
-        #self.tracert_regex = "^(\d+.\d+).+Traceroute\:\:Detected\s\s\s\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sseems\sto" \
-                                #"\sbe\srunning\straceroute\susing\s.+\s.\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).+"
         self.tracert_regex = "^(\d+.\d+).+Traceroute\:\:Detected\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+seems\s+to" \
                              "\s+be\s+running\s+traceroute\s+using\s+\w+\s+.+\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).+"
         self.recorded = []
