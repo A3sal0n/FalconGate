@@ -278,8 +278,10 @@ class ReadBroNotice(threading.Thread):
         self._cached_stamp = 0
         self.scan_regex = "^(\d+\.\d+).+Scan\:\:Port\_Scan\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sscanned\sat\sleast" \
                           "\s15\sunique\sports\sof\shost\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sin\s(\dm\d+s)"
-        self.tracert_regex = "^(\d+.\d+).+Traceroute\:\:Detected\s\s\s\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sseems\sto" \
-                                "\sbe\srunning\straceroute\susing\s.+\s.\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).+"
+        #self.tracert_regex = "^(\d+.\d+).+Traceroute\:\:Detected\s\s\s\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\sseems\sto" \
+                                #"\sbe\srunning\straceroute\susing\s.+\s.\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).+"
+        self.tracert_regex = "^(\d+.\d+).+Traceroute\:\:Detected\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+seems\s+to" \
+                             "\s+be\s+running\s+traceroute\s+using\s+\w+\s+.+\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).+"
         self.recorded = []
 
     def run(self):
@@ -321,11 +323,13 @@ class ReadBroNotice(threading.Thread):
                                 with lock:
                                     if src in homenet.hosts:
                                         ctime = int(time.time())
-                                        indicator = '%s performed traceroute' % src
-                                        description = 'This host has been detected performing traceroute from your network.' \
-                                                        'Traceroute might be used for reconnaissance phase of attack. Attacker' \
-                                                        'gains visibility about how traffic is travelling from internal network' \
-                                                        'to internet. What hops are in the network, etc...'
+                                        indicator = '%s performed a traceroute' % src
+                                        description = 'This host has been detected performing traceroute on your network.' \
+                                                      'Traceroute is usually used by hackers during the initial stage ' \
+                                                      'of an attack on a new network (reconnaissance). With this the ' \
+                                                      'attacker gains visibility on how the traffic is travelling from ' \
+                                                      'your internal network to other internal networks or the ' \
+                                                      'Internet, which routers are on the way, etc.'
                                         reference = 'https://en.wikipedia.org/wiki/Traceroute'
                                         a = [0, 'traceroute', ts, ctime, 0, 0, 'Traceroute', src, indicator, 0, description, reference]
                                         alert_id = utils.add_alert_to_db(a)
