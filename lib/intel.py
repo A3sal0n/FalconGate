@@ -117,6 +117,19 @@ class DownloadIntel(threading.Thread):
                 except Exception as e:
                     log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
+    @staticmethod
+    def retrieve_fg_intel(self):
+        headers = {"Accept-Encoding": "gzip, deflate",
+                   "User-Agent": "Mozilla/5.0",
+                   "x-api-key": homenet.fg_intel_key}
+
+        try:
+            response = requests.get(homenet.fg_api_ip_blacklist, headers=headers)
+            response_json = response.json()
+        except Exception as e:
+            log.debug('FG-ERROR: There were some issues while connecting to FalconGate API')
+            return None
+
     def write_to_db(self):
         conn = lite.connect('ip_blacklist.sqlite')
         cur = conn.cursor()
@@ -214,7 +227,7 @@ class CheckVirusTotalIntel(threading.Thread):
     def eval_vt_intel_file(fhash):
         params = {'resource': fhash, 'apikey': homenet.vt_api_key}
         headers = {"Accept-Encoding": "gzip, deflate",
-                   "User-Agent": "My python example client"}
+                   "User-Agent": "Mozilla/5.0"}
 
         try:
             response = requests.get(homenet.vt_api_file_url, params=params, headers=headers)
@@ -234,7 +247,7 @@ class CheckVirusTotalIntel(threading.Thread):
         ctime = int(time.time())
         params = {'domain': domain, 'apikey': homenet.vt_api_key}
         headers = {"Accept-Encoding": "gzip, deflate",
-                   "User-Agent": "My python example client"}
+                   "User-Agent": "Mozilla/5.0"}
         try:
             response = requests.get(homenet.vt_api_domain_url, params=params, headers=headers)
             response_json = response.json()

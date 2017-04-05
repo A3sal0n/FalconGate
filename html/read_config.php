@@ -27,6 +27,7 @@ if($config['main']['mailer_mode'] == 'standalone'){
 }
     echo ('<form name="user_config" id="user_config" action="save_config.php" onsubmit="return ValidateInput();" method="post">
            <table width=95% halign=left>
+           <tr align=left><td title="Your personal FalconGate Intel API key.">FalconGate Intel API key:</td><td><input type=text size=71 name="fg_intel_key" value='.$config['main']['fg_intel_key'].'></td></tr>
            <tr align=left><td title="Your personal VirusTotal API key.">VirusTotal API key:</td><td><input type=text size=71 name="vt_key" value='.$config['main']['vt_api_key'].'></td></tr>
            <tr align=left><td title="This is the list of recipients for the email alerts sent by FalconGate.">Alert recipients:</td><td><input type=text size=71 name="dst_emails" value='.$config['main']['dst_emails'].'></td></tr>
            <tr align=left><td title="This is the customized list of IP addresses you wish to block.">Blacklist:</td><td><textarea form="user_config" id="blacklist" name="blacklist" rows=5 cols=81>'.$config['main']['blacklist'].'</textarea></td></tr>

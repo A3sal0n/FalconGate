@@ -152,8 +152,11 @@ class Network:
         self.tld_blacklist = ['zip', 'review', 'country', 'kim', 'cricket', 'science', 'work', 'party', 'gq', 'link',
                               'gdn', 'stream', 'download', 'top', 'us', 'study', 'click', 'biz']
         self.vt_api_key = None
+        self.fg_intel_key = None
         self.dst_emails = None
         self.email_watchlist = []
+        self.fg_api_ip_blacklist = None
+        self.fg_api_domain_blacklist = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None

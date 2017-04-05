@@ -15,6 +15,9 @@ require 'templates/header.html';
 <?php
 require_once 'Config/Lite.php';
 $config = new Config_Lite('user_config.ini', LOCK_EX);
+if (isset($_POST['fg_intel_key'])){
+    $config->set('main', 'fg_intel_key', $_POST['fg_intel_key']);
+}
 if (isset($_POST['vt_key'])){
     $config->set('main', 'vt_api_key', $_POST['vt_key']);
 }

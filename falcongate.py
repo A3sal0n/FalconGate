@@ -113,43 +113,48 @@ def main():
     homenet.executable = sys.executable
     homenet.args = sys.argv[:]
 
-    # Retrieving network configuration from local eth0 interface and storing in global variables
-    addrs = netifaces.ifaddresses(homenet.interface)
+    try:
 
-    ipinfo = addrs[socket.AF_INET][0]
+        # Retrieving network configuration from local eth0 interface and storing in global variables
+        addrs = netifaces.ifaddresses(homenet.interface)
 
-    # Get MAC for eth0
-    homenet.mac = addrs[netifaces.AF_LINK][0]['addr']
+        ipinfo = addrs[socket.AF_INET][0]
 
-    # IP address for eth0
-    homenet.ip = ipinfo['addr']
 
-    # Netmask for eth0
-    homenet.netmask = ipinfo['netmask']
+        # Get MAC for eth0
+        homenet.mac = addrs[netifaces.AF_LINK][0]['addr']
 
-    cidr = netaddr.IPNetwork('%s/%s' % (homenet.ip, homenet.netmask))
+        # IP address for eth0
+        homenet.ip = ipinfo['addr']
 
-    # Network CIDR for eth0
-    network = cidr.network
-    homenet.net_cidr = netaddr.IPNetwork('%s/%s' % (network, homenet.netmask))
+        # Netmask for eth0
+        homenet.netmask = ipinfo['netmask']
 
-    # Get default gateway for eth0
-    gws = netifaces.gateways()
-    cgw = gws['default'][netifaces.AF_INET][0]
-    if not homenet.gateway:
-        homenet.gateway = cgw
-    else:
-        if homenet.gateway != cgw:
-            utils.reconfigure_network(homenet.gateway, cgw)
+        cidr = netaddr.IPNetwork('%s/%s' % (homenet.ip, homenet.netmask))
+
+        # Network CIDR for eth0
+        network = cidr.network
+        homenet.net_cidr = netaddr.IPNetwork('%s/%s' % (network, homenet.netmask))
+
+        # Get default gateway for eth0
+        gws = netifaces.gateways()
+        cgw = gws['default'][netifaces.AF_INET][0]
+        if not homenet.gateway:
             homenet.gateway = cgw
-            try:
-                with lock:
-                    utils.save_pkl_object(homenet, "homenet.pkl")
-            except Exception as e:
-                log.debug(e.__doc__ + " - " + e.message)
-            utils.reboot_appliance()
         else:
-            pass
+            if homenet.gateway != cgw:
+                utils.reconfigure_network(homenet.gateway, cgw)
+                homenet.gateway = cgw
+                try:
+                    with lock:
+                        utils.save_pkl_object(homenet, "homenet.pkl")
+                except Exception as e:
+                    log.debug(e.__doc__ + " - " + e.message)
+                utils.reboot_appliance()
+            else:
+                pass
+    except Exception as e:
+        pass
 
     log.debug('FG-DEBUG: Starting main loop')
 

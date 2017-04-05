@@ -34,6 +34,8 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 with lock:
                     homenet.interface = core_config.get('main', 'iface')
+                    homenet.fg_api_ip_blacklist = core_config.get('api_urls', 'fg_api_ip_blacklist').strip('"')
+                    homenet.fg_api_domain_blacklist = core_config.get('api_urls', 'fg_api_domain_blacklist').strip('"')
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')
@@ -56,6 +58,7 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 homenet.dst_emails = (user_config.get('main', 'dst_emails').translate(None, '"\n\r ')).strip('"').split(",")
                 homenet.email_watchlist = (user_config.get('main', 'email_watchlist').translate(None, '"\n\r ')).strip('"').split(",")
+                homenet.fg_intel_key = user_config.get('main', 'fg_intel_key').translate(None, '"\n\r ').strip('"')
                 homenet.vt_api_key = user_config.get('main', 'vt_api_key').translate(None, '"\n\r ').strip('"')
                 homenet.blacklist = (user_config.get('main', 'blacklist').translate(None, '"\n\r ')).strip('"').split(",")
                 homenet.whitelist = (user_config.get('main', 'whitelist').translate(None, '"\n\r ')).strip('"').split(",")
