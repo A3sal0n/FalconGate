@@ -23,16 +23,17 @@ class DailyAlerts(threading.Thread):
 
     def get_pwnage(self):
         pwnings = {}
-        for a in homenet.email_watchlist:
-            try:
-                r = requests.get(homenet.hibp_api_url + a, headers=self.headers)
-                if r.status_code == 200:
-                    r_json = r.json()
-                    if len(r_json) >= 1:
-                        pwnings[a] = r_json
-            except Exception as e:
-                log.debug('FG-ERROR: ' + e.__doc__ + " - " + e.message)
-            time.sleep(1)
+        if len(homenet.email_watchlist) > 0:
+            for a in homenet.email_watchlist:
+                try:
+                    r = requests.get(homenet.hibp_api_url + a, headers=self.headers)
+                    if r.status_code == 200:
+                        r_json = r.json()
+                        if len(r_json) >= 1:
+                            pwnings[a] = r_json
+                except Exception as e:
+                    log.debug('FG-ERROR: ' + e.__doc__ + " - " + e.message)
+                time.sleep(1)
 
         if len(pwnings) > 0:
             for a in pwnings.keys():
