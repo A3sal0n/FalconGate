@@ -52,89 +52,11 @@ The devices's malware detection can be enhanced with the utilization of [VirusTo
 
 Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2) public API to detect whether credentials and/or other data from personal accounts have been stolen by hackers from third party sites.
 
-### Deploying FalconGate from a supported image
+### Deploying FalconGate
 
-This is the fastest way to get FalconGate up and running in your network. 
+- [From a supported image](https://github.com/A3sal0n/FalconGate/wiki/Deploy_from_image)
 
-- Download the correct system image for your device from the [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
-
-- Extract the image to a folder in your computer.
-
-- Write the image to your SD card.
-
-You can use the guides below as reference for Raspberry Pi:
-
-[Linux](https://www.raspberrypi.org/documentation/installation/installing-images/linux.md)
-
-[Mac OS](https://www.raspberrypi.org/documentation/installation/installing-images/mac.md)
-
-[Windows](https://www.raspberrypi.org/documentation/installation/installing-images/windows.md)
-
-- Insert the SD card in your device and plug it to any available ethernet port in your router.
-
-- Power on your device and wait few minutes until it will acquire the correct configuration for your network.
-
-- Login to your router and disable its DHCP server function
-
-- Login to FalconGate's web app and configure the email address(es) to be used as recipients for alerts and your VirusTotal API key
-```
-https://[FalconGate IP address]
-Username: admin
-Password: falcongate
-```
-*Usually FalconGate will assign to its administration interface an IP ending in ".2" (e.g. 192.168.0.2) which is derived from the network's gateway IP*
-*Change the default password after the first logon to the application*
-
-- Navigate to the "Configuration" page and fill in the correct fields
-
-This configuration it's not mandatory but highly desired if you want to unleash FalconGate's full power.
-In order to obtain a free VirusTotal API key you must register at (https://www.virustotal.com/).
-
-### Installing FalconGate from source
-
-Follow the steps below to configure your device and install FalconGate from this repository.
-
-- Download and install the OS image to your Raspberry Pi or other device
-
-This is well documented in multiple sources out there.
-
-- Connect to your device via SSH
-```
-$ ssh pi@<IP assigned to your RPi>
-```
-- Install Git if you don't have it yet
-```
-$ sudo apt-get update
-$ sudo apt-get install git
-```
-- Clone FalconGate's repository to a local folder
-```
-$ cd /opt
-$ sudo git clone https://github.com/A3sal0n/FalconGate.git
-```
-- Run the installation script inside FalconGate's folder
-```
-$ cd FalconGate/
-$ sudo python install.py
-```
-Now you can go for a walk and prepare a coffee or any other beverage of your choice because the installation usually takes some time. The script will print the progress to the console.
-
-The script should finish without issues if you're using the supported platforms. If you're attempting to install FalconGate experimentally to a new hardware platform/OS and you get some errors during the installation you could try to correct the issues manually and continue to execute the steps listed in the installation script.
-
-- Login to your router and disable its DHCP server function
-
-FalconGate was designed to work connected to a router over ethernet. It does not replaces the functions of your router. Instead it becomes a layer of security between your devices and your router. Disabling your router's DHCP allows FalconGate to become the new gateway for all the devices connected to the same router in your VLAN.
-
-- Reboot your device to apply all the configuration changes
-
-- Login to FalconGate's web app and configure the email address(es) to be used as recipients for alerts and your VirusTotal API key
-
-### Deployment
-
-Some important considerations to keep in mind when deploying FalconGate to a real environment: home or production network.
-
-- Always change the default SSH password in your Raspberry Pi
-- Always regenerate the openssh-server certificates for SSH encryption
+- [Install from scratch](https://github.com/A3sal0n/FalconGate/wiki/Install_from_source)
 
 ### Limitations
 
