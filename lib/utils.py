@@ -350,3 +350,16 @@ def get_syslogs(log_count):
             else:
                 break
     return json.dumps(logs_to_return)
+
+
+def reconfigure_network(old_gw, new_gw):
+    target_files = ['/etc/network/interfaces', '/etc/dnsmasq.conf', '/etc/nginx/sites-available/default']
+    octects = str(old_gw).split(".")
+    t_old_gw = '.'.join(octects[0:3])
+    octects = str(new_gw).split(".")
+    t_new_gw = '.'.join(octects[0:3])
+    for f in target_files:
+        for line in fileinput.input(f, inplace=1):
+            line = re.sub(old_gw, new_gw, line.rstrip())
+            line = re.sub(t_old_gw, t_new_gw, line.rstrip())
+            print(line)
