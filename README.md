@@ -58,6 +58,12 @@ Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 
 - [Install from scratch](https://github.com/A3sal0n/FalconGate/wiki/Install_from_source)
 
+### Public API
+
+FalconGate uses its own cloud based API engine to support the capabilities of the platform. Currently our API provides access to centrally collected lists of malicious IP addresses and domains used by Malware and cyber criminals. All the sources used to collect this information are open source and publicly available.
+
+You can register to get access to our public API [here](http://eepurl.com/cHtpQj). Once you receive your access key you can configure it in FalconGate's webgui to start receiving the updates.
+
 ### Limitations
 
 Currently the Raspberry Pi version 2 and 3 have both only one slow ethernet interface (10/100 Mbit). The traffic forwarding in the gateway it's done using only this interface. This has an impact in networks with fast internet connections (e.g. > 50Mb/s). However it's still good enough for the home networks of many people's  and even some small businesses. 
