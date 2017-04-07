@@ -33,11 +33,11 @@ class DownloadIntel(threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.ip_regex = re.compile(r'[0-9]+(?:\.[0-9]+){3}')
+        self.ip_regex = re.compile(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b')
         self.domain_regex = re.compile(r'(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}')
         self.headers = {'User-Agent': 'Mozilla/5.0'}
-        self.all_ips = []
-        self.all_domains = []
+        self.all_ips = set()
+        self.all_domains = set()
 
     def run(self):
         time.sleep(15)
@@ -45,19 +45,39 @@ class DownloadIntel(threading.Thread):
         while 1:
             log.debug('FG-INFO: Downloading daily blacklists')
 
-            del self.all_ips[:]
-            del self.all_domains[:]
+            # Clearing old intel
+            self.all_ips.clear()
+            self.all_domains.clear()
 
             with lock:
-                # Clear old intel
-                homenet.bad_ips.clear()
-                homenet.bad_domains.clear()
+                # Clearing old intel
+                for threat in homenet.bad_ips.keys():
+                    del homenet.bad_ips[threat][:]
+                for threat in homenet.bad_domains.keys():
+                    del homenet.bad_domains[threat][:]
+
                 # Retrieving intel from local sources
                 self.retrieve_bad_ips()
-                self.retrieve_bad_domains()
+                #self.retrieve_bad_domains()
+
                 # Retrieving intel from FalconGate public API
                 if homenet.fg_intel_key:
                     self.retrieve_fg_intel()
+
+                for threat in homenet.bad_ips.keys():
+                    for ip in homenet.bad_ips[threat]:
+                        if ip not in homenet.user_whitelist:
+                            self.all_ips.add(ip)
+
+                for threat in homenet.bad_domains.keys():
+                    for domain in homenet.bad_domains[threat]:
+                        self.all_domains.add(domain)
+
+                # Adding user blacklisted IP addresses
+                for ip in homenet.blacklist:
+                    homenet.bad_ips['User'].append(ip)
+                    self.all_ips.add(ip)
+
                 # Reconfiguring ipset and dnsmasq with the new block lists
                 self.configure_ipset()
                 self.configure_dnsmasq()
@@ -69,9 +89,7 @@ class DownloadIntel(threading.Thread):
 
         fout = open('/tmp/ip_blacklist', 'w')
 
-        myset = set(self.all_ips)
-
-        for entry in myset:
+        for entry in self.all_ips:
             if len(entry) >= 7:
                 fout.write('add blacklist ' + entry + '\n')
         fout.close()
@@ -96,14 +114,8 @@ class DownloadIntel(threading.Thread):
                     for ip in entries:
                         if ip not in homenet.user_whitelist:
                             homenet.bad_ips[threat].append(ip)
-                            self.all_ips.append(ip)
                 except Exception as e:
                     log.debug('FG-ERROR: Error while retrieving the bad IPs from: ' + url)
-
-        # Adding user blacklisted IP addresses
-        #homenet.bad_ips['user_blacklist'] = []
-        #homenet.bad_ips['user_blacklist'] = homenet.bad_ips['user_blacklist'] + homenet.blacklist
-        self.all_ips = self.all_ips + homenet.blacklist
 
     def retrieve_bad_domains(self):
         # Downloading Intel from open sources
@@ -118,7 +130,6 @@ class DownloadIntel(threading.Thread):
                             entries = re.findall(self.domain_regex, line)
                             for domain in entries:
                                 homenet.bad_domains[threat].append(domain)
-                                self.all_domains.append(domain)
                 except Exception as e:
                     log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
@@ -127,28 +138,25 @@ class DownloadIntel(threading.Thread):
                    "User-Agent": "Mozilla/5.0",
                    "x-api-key": homenet.fg_intel_key}
 
-        # Downloading IP address blacklist from FalconGate's public API
-        #try:
-        response = requests.get(homenet.fg_api_ip_blacklist, headers=headers)
-        rjson = response.json()
-        for threat in rjson.keys():
-            threat = threat.encode('ascii', 'ignore')
-            print threat, len(rjson[threat])
-            print homenet.bad_ips.keys()
-            set1 = set(homenet.bad_ips[threat])
-            set2 = set(rjson[threat])
-            homenet.bad_ips[threat] = list(set1 | set2)
-        #except Exception as e:
-        #    log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public API')
-        #    return None
+        try:
+            response = requests.get(homenet.fg_api_ip_blacklist, headers=headers)
+            rjson = response.json()
+            for threat in rjson.keys():
+                threat = threat.encode('ascii', 'ignore')
+                set1 = set(homenet.bad_ips[threat])
+                set2 = set(rjson[threat])
+                homenet.bad_ips[threat] = list(set1 | set2)
+        except Exception as e:
+            log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public API')
+            return None
 
-        # Downloading domain blacklist from FalconGate's public API
         try:
             response = requests.get(homenet.fg_api_domain_blacklist, headers=headers)
             rjson = response.json()
             for threat in rjson.keys():
-                tmp = list(set(homenet.bad_domains[threat]) | set(rjson[threat]))
-                homenet.bad_domains[threat] = tmp
+                set1 = set(homenet.bad_domains[threat])
+                set2 = set(rjson[threat])
+                homenet.bad_domains[threat] = list(set1 | set2)
         except Exception as e:
             log.debug('FG-ERROR: There were some issues while retrieving the domain blacklist from FalconGate public API')
             return None
