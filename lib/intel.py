@@ -58,7 +58,7 @@ class DownloadIntel(threading.Thread):
 
                 # Retrieving intel from local sources
                 self.retrieve_bad_ips()
-                #self.retrieve_bad_domains()
+                self.retrieve_bad_domains()
 
                 # Retrieving intel from FalconGate public API
                 if homenet.fg_intel_key:
