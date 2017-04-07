@@ -40,19 +40,26 @@ class DownloadIntel(threading.Thread):
         self.all_domains = []
 
     def run(self):
-        log.debug('FG-INFO: Downloading daily blacklists')
+        time.sleep(15)
 
         while 1:
+            log.debug('FG-INFO: Downloading daily blacklists')
+
             del self.all_ips[:]
             del self.all_domains[:]
 
             with lock:
+                # Clear old intel
                 homenet.bad_ips.clear()
                 homenet.bad_domains.clear()
+                # Retrieving intel from local sources
                 self.retrieve_bad_ips()
-                self.configure_ipset()
-
                 self.retrieve_bad_domains()
+                # Retrieving intel from FalconGate public API
+                if homenet.fg_intel_key:
+                    self.retrieve_fg_intel()
+                # Reconfiguring ipset and dnsmasq with the new block lists
+                self.configure_ipset()
                 self.configure_dnsmasq()
 
             time.sleep(14400)
@@ -82,7 +89,6 @@ class DownloadIntel(threading.Thread):
     def retrieve_bad_ips(self):
         # Downloading Intel from open sources
         for threat in homenet.blacklist_sources_ip.keys():
-            homenet.bad_ips[threat] = []
             for url in homenet.blacklist_sources_ip[threat]:
                 try:
                     response = requests.get(url, headers=self.headers)
@@ -95,14 +101,13 @@ class DownloadIntel(threading.Thread):
                     log.debug('FG-ERROR: Error while retrieving the bad IPs from: ' + url)
 
         # Adding user blacklisted IP addresses
-        homenet.bad_ips['user_blacklist'] = []
-        homenet.bad_ips['user_blacklist'] = homenet.bad_ips['user_blacklist'] + homenet.blacklist
+        #homenet.bad_ips['user_blacklist'] = []
+        #homenet.bad_ips['user_blacklist'] = homenet.bad_ips['user_blacklist'] + homenet.blacklist
         self.all_ips = self.all_ips + homenet.blacklist
 
     def retrieve_bad_domains(self):
         # Downloading Intel from open sources
         for threat in homenet.blacklist_sources_domain.keys():
-            homenet.bad_domains[threat] = []
             for url in homenet.blacklist_sources_domain[threat]:
                 try:
                     response = requests.get(url, headers=self.headers)
@@ -117,17 +122,35 @@ class DownloadIntel(threading.Thread):
                 except Exception as e:
                     log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
-    @staticmethod
     def retrieve_fg_intel(self):
         headers = {"Accept-Encoding": "gzip, deflate",
                    "User-Agent": "Mozilla/5.0",
                    "x-api-key": homenet.fg_intel_key}
 
+        # Downloading IP address blacklist from FalconGate's public API
+        #try:
+        response = requests.get(homenet.fg_api_ip_blacklist, headers=headers)
+        rjson = response.json()
+        for threat in rjson.keys():
+            threat = threat.encode('ascii', 'ignore')
+            print threat, len(rjson[threat])
+            print homenet.bad_ips.keys()
+            set1 = set(homenet.bad_ips[threat])
+            set2 = set(rjson[threat])
+            homenet.bad_ips[threat] = list(set1 | set2)
+        #except Exception as e:
+        #    log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public API')
+        #    return None
+
+        # Downloading domain blacklist from FalconGate's public API
         try:
-            response = requests.get(homenet.fg_api_ip_blacklist, headers=headers)
-            response_json = response.json()
+            response = requests.get(homenet.fg_api_domain_blacklist, headers=headers)
+            rjson = response.json()
+            for threat in rjson.keys():
+                tmp = list(set(homenet.bad_domains[threat]) | set(rjson[threat]))
+                homenet.bad_domains[threat] = tmp
         except Exception as e:
-            log.debug('FG-ERROR: There were some issues while connecting to FalconGate API')
+            log.debug('FG-ERROR: There were some issues while retrieving the domain blacklist from FalconGate public API')
             return None
 
     def write_to_db(self):
