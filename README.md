@@ -83,6 +83,8 @@ So far we have been running this project with money from our own pockets. We hav
 
 **Bitcoin wallet:** 14TdcLb2DYHZmcwqCUWP64v4g1UaTs8yK8
 
+![alt tag](https://github.com/A3sal0n/FalconGate/blob/master/html/images/bitcoin_wallet.png)
+
 ## License
 
 This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
