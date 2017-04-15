@@ -4,10 +4,10 @@ dns-forward-max=150
 no-resolv
 server=8.8.8.8
 server=8.8.4.4
-interface=$IFACE1$
+interface=$IFACE0$
 listen-address=$STATIP$
 bind-interfaces
-dhcp-range=$DHCPSTART$,$DHCPEND$,7d
+dhcp-range=$IFACE0$,$DHCPSTART$,$DHCPEND$,7d
 dhcp-authoritative
 cache-size=300
 log-queries

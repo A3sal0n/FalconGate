@@ -147,7 +147,8 @@ class DownloadIntel(threading.Thread):
                 set2 = set(rjson[threat])
                 homenet.bad_ips[threat] = list(set1 | set2)
         except Exception as e:
-            log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public API')
+            log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public '
+                      'API - ' + e)
             return None
 
         try:

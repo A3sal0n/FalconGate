@@ -24,7 +24,7 @@ class FlaskAPI(threading.Thread):
         self.threadID = threadID
 
     def run(self):
-        app.run(use_debugger=True, debug=app.debug, threaded=True)
+        app.run(host='127.0.0.1', port=5000, threaded=True)
 
     @staticmethod
     @app.route('/api/v1.0/falcongate/status', methods=['POST'])
