@@ -1,0 +1,1 @@
+Tested on Raspian Jessie Lite and Raspberry Pi 2/3 (https://downloads.raspberrypi.org/raspbian_lite_latest)
