@@ -35,7 +35,7 @@ bad_ips = []
 good_ips = []
 
 # Top domains whitelist
-top_domains = utils.get_top_domains("top_domains.sqlite")
+top_domains = utils.get_top_domains("db/top_domains.sqlite")
 
 # Create alert database if not there
 utils.create_alert_db()

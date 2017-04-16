@@ -30,7 +30,7 @@ def run_command(cmd):
     os.system(cmd)
 
 
-template_list = ["config.ini", "templates/interfaces.tpl", "templates/broctl.tpl", "templates/dnsmasq.conf.tpl",
+template_list = ["templates/config.ini.tpl", "templates/interfaces.tpl", "templates/broctl.tpl", "templates/dnsmasq.conf.tpl",
                  "templates/local.bro.tpl", "templates/nginx_default_site.tpl",
                  "templates/dhcpcd.conf.tpl", "templates/falcongate.service.tpl", "templates/node.cfg.tpl"]
 
@@ -77,7 +77,7 @@ def main():
 
     # Installing Bro
     print "Installing Bro..."
-    os.chdir("tmp/")
+    os.chdir("../../tmp")
     print "Cloning Bro repo..."
     run_command("git clone --recursive git://git.bro.org/bro")
     os.chdir("bro")
@@ -89,7 +89,7 @@ def main():
     print "Installing Bro..."
     run_command("make install")
     os.chdir(root_dir)
-    run_command("rm -rf tmp/bro*")
+    run_command("rm -rf ../../tmp/bro*")
     print "Configuring broctl service..."
     shutil.copy("templates/broctl.tpl", "/etc/init.d/broctl")
     run_command("chmod +x /etc/init.d/broctl")
@@ -106,6 +106,7 @@ def main():
 
     # Installing conf files
     print "Installing configuration files..."
+    shutil.copy("templates/config.ini.tpl", "../../config.ini")
     shutil.copy("templates/interfaces.tpl", "/etc/network/interfaces")
     shutil.copy("templates/update-exim4.conf.conf.tpl", "/etc/exim4/update-exim4.conf.conf")
     shutil.copy("templates/dnsmasq.conf.tpl", "/etc/dnsmasq.conf")
@@ -118,8 +119,8 @@ def main():
     #Creating domain block file for dnsmasq 
     run_command("touch /etc/dnsmasq.block")
 
-    run_command("chown www-data:www-data html/user_config.ini")
-    run_command("chown www-data:www-data html/pwd.db")
+    run_command("chown www-data:www-data ../../html/user_config.ini")
+    run_command("chown www-data:www-data ../../html/pwd.db")
 
     # Installing Python libraries
     print "Installing Python dependencies..."
