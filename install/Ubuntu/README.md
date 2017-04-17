@@ -1,1 +1,1 @@
-Tested on Raspian Jessie Lite and Raspberry Pi 2/3 (https://downloads.raspberrypi.org/raspbian_lite_latest)
+Tested on ARMBIAN's Ubuntu Xenial for Banana Pi M2+ (https://dl.armbian.com/bananapim2plus/Ubuntu_xenial_default.7z)

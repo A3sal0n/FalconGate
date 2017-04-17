@@ -39,7 +39,10 @@ def main():
     if not os.geteuid() == 0:
         exit('Script must be run as root')
 
+    install_dir = os.getcwd()
+    os.chdir("../../")
     root_dir = os.getcwd()
+    os.chdir(install_dir)
 
     # Detecting default gateway
     print "Detecting default gateway..."
@@ -88,7 +91,7 @@ def main():
     run_command("make -j2")
     print "Installing Bro..."
     run_command("make install")
-    os.chdir(root_dir)
+    os.chdir(install_dir)
     run_command("rm -rf ../../tmp/bro*")
     print "Configuring broctl service..."
     shutil.copy("templates/broctl.tpl", "/etc/init.d/broctl")
