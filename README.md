@@ -29,9 +29,8 @@ FalconGate was built on top of other open source software so it has multiple dep
 
 ### Supported Platforms
 
-Currently FalconGate has been successfully tested and implemented on Raspberry Pi (RPi 2 and 3) and Banana Pi (BPI-M2+) using Raspian Jessie Lite as base OS. You can download the base image for RPi [here](https://downloads.raspberrypi.org/raspbian_lite_latest).
+FalconGate has been successfully installed and tested in a number of platforms and devices. You can access the full list [here](https://github.com/A3sal0n/FalconGate/wiki/Tested_platforms_and_devices).
 
-It should be compatible with other Debian ARM images as well but this has not been tested yet.
 
 ### Prerequisites
 
