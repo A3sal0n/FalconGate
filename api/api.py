@@ -24,7 +24,7 @@ class FlaskAPI(threading.Thread):
         self.threadID = threadID
 
     def run(self):
-        app.run(host='127.0.0.1', port=5000, threaded=True)
+        app.run(use_debugger=True, debug=app.debug, threaded=True)
 
     @staticmethod
     @app.route('/api/v1.0/falcongate/status', methods=['POST'])
@@ -50,12 +50,28 @@ class FlaskAPI(threading.Thread):
                 return resp
             elif target == 'alerts':
                 timeframe = str(request.json['timeframe'])
+                rev_filter = str(request.json['filter'])
+                if rev_filter == "all":
+                    handledf = "all"
+                elif rev_filter == "reviewed":
+                    handledf = "1"
+                elif rev_filter == "notreviewed":
+                    handledf = "0"
                 if timeframe == "alerts_week":
-                    data = utils.get_alerts_within_time(604800)
+                    data = utils.get_alerts_within_time(604800, handledf)
                 elif timeframe == "alerts_month":
-                    data = utils.get_alerts_within_time(2592000)
+                    data = utils.get_alerts_within_time(2592000, handledf)
                 elif timeframe == "alerts_all":
-                    data = utils.get_alerts_within_time(172800000)
+                    data = utils.get_alerts_within_time(172800000, handledf)
+                resp = Response()
+                resp.data = data
+                resp.status_code = 200
+                resp.mimetype = "application/json"
+                return resp
+            elif target == 'alerts_review':
+                alert_id = str(request.json['alert_id'])
+                handled = str(request.json['handled'])
+                data = utils.update_alert_handled(alert_id, handled)
                 resp = Response()
                 resp.data = data
                 resp.status_code = 200

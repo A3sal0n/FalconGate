@@ -61,12 +61,33 @@ function getShowLinkText(currentText) {
 });//]]> 
 
 </script>
+<script type="text/javascript">
+function submitMe(dbid, handled)
+    {
+	   variableString = 'id=' + dbid + '&handled=' + handled;
+       jQuery.ajax({
+       type: "POST",
+       url: "alerts_review.php",
+       data: variableString,
+       success: function(msg){
+		 if(handled == 1) {  
+			alert( "Event ID " + dbid +" have been reviewed!");
+		 } else {
+			 alert( "Event ID " + dbid +" have been unreviewed!"); 
+		 }
+       }
+     });
+    }
+
+</script>
+
 
 <h1>Recent Alerts</h1>
 
 <?php
 $period = (!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
-$data = array("target" => "alerts", "timeframe" => $period);
+$filter = (!isset($_GET['filter'])) ? 'all': $_GET['filter'];
+$data = array("target" => "alerts", "timeframe" => $period, "filter" => $filter);
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));	
 if (!$result){
     echo ("<h3><span class=error_message>FalconGate API process seems to be down!</span></h3>");
@@ -82,24 +103,42 @@ if (!$result){
 	}
 ?>
 	
-    <h3>Alerts detected in <?php echo $display; ?></h3>
+    <h3>Displaying <?php echo $filter; ?> alerts in <?php echo $display; ?></h3>
     <p align="right"><a href="save-alerts-csv.php?period=<?php echo $period; ?>" target="_blank">download csv</a></p>
-	<p>For what period would you like to see alerts? <form action="" method="get">
-	<select name="period" onchange="this.form.submit()">
-		<option value="alerts_week" <?php echo ($period=='alerts_week') ? 'selected':'' ?>>Last 7 days</option>
-		<option value="alerts_month" <?php echo ($period=='alerts_month') ? 'selected':'' ?>>Last 30 days</option>
-		<option value="alerts_all" <?php echo ($period=='alerts_all') ? 'selected':'' ?>>All</option>
-	</select>
-	</form></p>
-<?php	
+	<table width="100%">
+	<tbody>
+		<tr>
+			<td>
+				For what period would you like to see alerts? 
+				<form action="" method="get">
+				<select name="period" onchange="this.form.submit()">
+					<option value="alerts_week" <?php echo ($period=='alerts_week') ? 'selected':'' ?>>Last 7 days</option>
+					<option value="alerts_month" <?php echo ($period=='alerts_month') ? 'selected':'' ?>>Last 30 days</option>
+					<option value="alerts_all" <?php echo ($period=='alerts_all') ? 'selected':'' ?>>All</option>
+				</select>
+				</form>
+			</td>
+			<td align="right">	
+				<a href="?period=<?php echo $period; ?>&filter=all">All</a> | <a href="?period=<?php echo $period; ?>&filter=reviewed">Reviewed </a>| <a href="?period=<?php echo $period; ?>&filter=notreviewed">Not Reviewed</a>
+			</td>
+		</tr>
+	</tbody>
+	</table>
+<?php
+	
     echo ('<table class=TFtable width=100% halign=left>');
         echo ('<tr>');
-			echo ('<td nowrap><b>First seen</b></td><td nowrap><b>Last seen</b></td><td nowrap><b>Host</b></td><td nowrap><b>Threat</b></td><td nowrap><b>Indicators</b></td>');
+			echo ('<td nowrap><b>First seen</b></td><td nowrap><b>Last seen</b></td><td nowrap><b>Host</b></td><td nowrap><b>Threat</b></td><td nowrap><b>Indicators</b></td><td nowrap><b>Is reviewed?</b></td>');
 		echo ('</tr>');
 		
     if ($obj[0] != 'none'){
-        foreach ($obj as $alert){    
-            echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td></tr>');
+        foreach ($obj as $alert){  
+				if ($alert[9] == "0"){
+					$checkbox = "<input type=checkbox name=handled id=".$alert[0]." value=0 onclick='submitMe(".$alert[0].", 1);'>";
+				}else{
+					$checkbox = "<input type=checkbox name=handled id=".$alert[0]." value=1 onclick='submitMe(".$alert[0].", 0);' checked>";
+				}
+            echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td><td nowrap>'.$checkbox.'</td></tr>');
         }
     }
     echo ('</table>');
