@@ -162,8 +162,9 @@ class ReadBroDNS(threading.Thread):
                                                     homenet.hosts[cip].dns[query].counter += 1
                                             elif fields[15] == 'NXDOMAIN':
                                                 try:
-                                                    if query not in homenet.hosts[cip].dga_domains:
-                                                        homenet.hosts[cip].dga_domains.append(query)
+                                                    if utils.get_sld(query) not in top_domains:
+                                                        if query not in homenet.hosts[cip].dga_domains:
+                                                            homenet.hosts[cip].dga_domains.append(query)
                                                 except KeyError:
                                                     pass
 

@@ -49,6 +49,7 @@ reporter.lock = lock
 api.lock = lock
 config.lock = lock
 logparser.homenet = homenet
+logparser.top_domains = top_domains
 intel.homenet = homenet
 alerts.homenet = homenet
 utils.homenet = homenet
