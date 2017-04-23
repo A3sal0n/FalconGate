@@ -92,7 +92,7 @@ def decode_base64(s):
 
 
 def get_vendor(mac):
-        con = lite.connect('vendors.sqlite')
+        con = lite.connect('db/vendors.sqlite')
         with con:
             cur = con.cursor()
             tmac = mac.replace(':', '').upper()

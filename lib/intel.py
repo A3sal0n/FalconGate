@@ -162,19 +162,6 @@ class DownloadIntel(threading.Thread):
             log.debug('FG-ERROR: There were some issues while retrieving the domain blacklist from FalconGate public API')
             return None
 
-    def write_to_db(self):
-        conn = lite.connect('ip_blacklist.sqlite')
-        cur = conn.cursor()
-        cur.execute("delete from ip_blacklist")
-        conn.commit()
-        for entry in self.ip_list:
-            try:
-                cur.execute("INSERT INTO ip_blacklist (ip) VALUES('%s')" % entry)
-            except lite.IntegrityError:
-                pass
-        conn.commit()
-        conn.close()
-
 
 class CheckVirusTotalIntel(threading.Thread):
     def __init__(self, threadID):

@@ -255,7 +255,7 @@ class ReadDHCPLeases(threading.Thread):
                 else:
                     pass
             except Exception as e:
-                log.debug('FG-WARN: read_dhcp_leases_log - ' + e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: read_dhcp_leases_log - Issues reading /var/log/dnsmasq.leases file')
             time.sleep(5)
 
     def create_alert(self, ts, ip, mac, hostname):
