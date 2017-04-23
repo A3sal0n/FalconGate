@@ -1,23 +1,10 @@
 import threading
 import requests
-import sqlite3 as lite
 from lib.logger import *
 import re
 from datetime import datetime
 from lib.config import *
 import lib.utils as utils
-
-url_list = {'Malware': ['http://malc0de.com/bl/IP_Blacklist.txt',
-                        'https://sslbl.abuse.ch/blacklist/sslipblacklist.csv',
-                        'http://rules.emergingthreats.net/blockrules/emerging-dshield.rules',
-                        'https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt'],
-            'Botnet': ['http://rules.emergingthreats.net/blockrules/emerging-botcc.rules'],
-            'Hacking': ['http://rules.emergingthreats.net/blockrules/compromised-ips.txt',
-                        'http://rules.emergingthreats.net/blockrules/emerging-ciarmy.rules',
-                        'https://sslbl.abuse.ch/blacklist/sslipblacklist_aggressive.csv'],
-            'Tor': ['https://check.torproject.org/exit-addresses',
-                    'https://www.dan.me.uk/torlist/',
-                    'https://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv']}
 
 
 class Domain:
@@ -147,8 +134,7 @@ class DownloadIntel(threading.Thread):
                 set2 = set(rjson[threat])
                 homenet.bad_ips[threat] = list(set1 | set2)
         except Exception as e:
-            log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public '
-                      'API - ' + e)
+            log.debug('FG-ERROR: There were some issues while retrieving the IP blacklist from FalconGate public API')
             return None
 
         try:
