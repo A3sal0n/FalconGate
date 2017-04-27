@@ -21,7 +21,8 @@ Currently FalconGate is able to:
 - Detect and report suspicious port scan and tracerouting activity on your network
 - Report details of all new devices connected to your network
 - Block ads based on open source lists
-- Monitor a custom list of personal or family accounts used in online services for public reports of hacking  
+- Monitor a custom list of personal or family accounts used in online services for public reports of hacking
+- Encrypts all your home DNS traffic to protect all your devices against DNS spoofing and stop your ISP from spying on your DNS requests (see https://dnscrypt.org/)
 
 ## Getting Started
 
@@ -42,6 +43,7 @@ FalconGate has a number of software dependencies:
 - Dnsmasq
 - Exim
 - PHP
+- DNSCrypt
 
 It depends also on several Python modules (see [requirements.txt](requirements.txt) file for details)
 

@@ -73,10 +73,10 @@ def main():
     print "Updating apt sources..."
     run_command("apt-get update")
 
-    # Installing Dnsmasq
+    # Installing dependencies
     print "Installing dependencies..."
     run_command("apt-get install -y dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset cmake make gcc "
-                "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip")
+                "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip dnscrypt-proxy")
 
     # Installing Bro
     print "Installing Bro..."
@@ -118,6 +118,7 @@ def main():
     shutil.copy("templates/kill-falcongate.sh.tpl", "/etc/init.d/kill-falcongate.sh")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
+    run_command("echo \"nameserver 127.0.2.1\" > /etc/resolv.conf")
     
     #Creating domain block file for dnsmasq 
     run_command("touch /etc/dnsmasq.block")

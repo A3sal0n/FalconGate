@@ -2,8 +2,7 @@ domain-needed
 bogus-priv
 dns-forward-max=150
 no-resolv
-server=8.8.8.8
-server=8.8.4.4
+server=127.0.2.1
 interface=$IFACE0$
 listen-address=$STATIP$
 bind-interfaces
