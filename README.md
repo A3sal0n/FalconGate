@@ -4,7 +4,7 @@ A smart gateway to stop hackers, Malware and more...
 
 ## Motivation
 
-Cyber attacks are on the raise. Hacker and cyber criminals are continuously improving their methods and building new tools and Malware with the purpose of hacking your network, spying on you and stealing valuable data. Recently a new business model has become popular among hackers: the use of Ransomware to encrypt your data and ask for a ransom to unlock it. These attacks have extended also to the Internet of Things (IoT) devices since many of them are vulnerable by design and hackers can leverage them to compromise other devices in your network or launch DDoS attacks towards other targets. Traditionally securing a network against such attacks has been an expensive item which could be afforded just by medium to large companies. With FalconGate we're aiming to change this and bring "out of the box" security for free to people, small businesses and anyone else in need.
+Cyber attacks are on the raise. The cyber criminals are continuously improving their methods and building new tools and Malware with the purpose of breaching your network, spying on you and stealing valuable data. Recently a new business model has become popular among cyber crooks: the use of Ransomware to encrypt your data and ask for a ransom to unlock it. These attacks have extended also to the Internet of Things (IoT) devices since many of them are vulnerable by design and criminals can leverage them to compromise other devices in your network or launch DDoS attacks towards other targets. Traditionally securing a network against such attacks has been an expensive item which could be afforded just by medium to large companies. With FalconGate we're aiming to change this and bring "out of the box" security for free to common people, small businesses and anyone else in need.
 
 ## Features
 
@@ -12,13 +12,13 @@ FalconGate is an open source smart gateway which can protect your home devices a
 
 Currently FalconGate is able to:
 
-- Block several types of Malware based on open source blacklists (see detailed list in file [intel-sources.md](intel-sources.md))
+- Block several types of Malware based on our free API Threat Intelligence feed and custom open source blacklists (see detailed list in file [intel-sources.md](intel-sources.md))
 - Block Malware using the Tor network
 - Detect and report potential Malware DNS requests based on VirusTotal reports
 - Detect and report the presence of Malware executables and other components based on VirusTotal reports
 - Detect and report Domain Generation Algorithm (DGA) Malware patterns
 - Detect and report on Malware spamming activity
-- Detect and report on internal and outbound port scans
+- Detect and report suspicious port scan and tracerouting activity on your network
 - Report details of all new devices connected to your network
 - Block ads based on open source lists
 - Monitor a custom list of personal or family accounts used in online services for public reports of hacking  
@@ -57,7 +57,7 @@ Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 
 - [Install from scratch](https://github.com/A3sal0n/FalconGate/wiki/Install_from_source)
 
-### Public API
+### Public API Threat Intel feed
 
 FalconGate uses its own cloud based API engine to support the capabilities of the platform. Currently our API provides access to centrally collected lists of malicious IP addresses and domains used by Malware and cyber criminals. All the sources used to collect this information are open source and publicly available.
 
