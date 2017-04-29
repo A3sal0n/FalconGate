@@ -96,8 +96,8 @@ def main():
     run_command("make")
     run_command("make install")
     run_command("useradd -r -d /var/dnscrypt -m -s /usr/sbin/nologin dnscrypt")
-    shutil.copy("templates/dnscrypt-proxy.service.tpl", "/etc/systemd/system/dnscrypt-proxy.service")
-    shutil.copy("templates/dnscrypt-proxy.socket.tpl", "/etc/systemd/system/dnscrypt-proxy.socket")
+    shutil.copy("../../install/Raspbian/templates/dnscrypt-proxy.service.tpl", "/etc/systemd/system/dnscrypt-proxy.service")
+    shutil.copy("../../install/Raspbian/templates/dnscrypt-proxy.socket.tpl", "/etc/systemd/system/dnscrypt-proxy.socket")
     run_command("systemctl enable dnscrypt-proxy.service")
 
     os.chdir("../")
