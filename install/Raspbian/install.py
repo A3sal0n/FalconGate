@@ -73,14 +73,24 @@ def main():
     print "Updating apt sources..."
     run_command("apt-get update")
 
-    # Installing Dnsmasq
+    # Installing dependencies
     print "Installing dependencies..."
     run_command("apt-get install -y dnsmasq nginx php5-fpm php5-curl exim4-daemon-light mailutils ipset cmake make gcc "
                 "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip")
 
+    os.chdir("../../tmp")
+
+    # Installing DNSCrypt from Raspbian's test packages
+    print "Installing DNSCrypt..."
+    run_command("http://mirrordirector.raspbian.org/raspbian/pool/main/d/dnscrypt-proxy/dnscrypt-proxy_1.9.4-1_armhf.deb")
+    run_command("wget http://mirrordirector.raspbian.org/raspbian/pool/main/libt/libtool/libltdl7_2.4.6-2_armhf.deb")
+    run_command("wget http://mirrordirector.raspbian.org/raspbian/pool/main/libs/libsodium/libsodium18_1.0.11-2_armhf.deb")
+    run_command("dpkg -i libltdl7_2.4.6-2_armhf.deb")
+    run_command("dpkg -i libsodium18_1.0.11-2_armhf.deb")
+    run_command("dpkg -i dnscrypt-proxy_1.9.4-1_armhf.deb")
+
     # Installing Bro
     print "Installing Bro..."
-    os.chdir("../../tmp")
     print "Cloning Bro repo..."
     run_command("git clone --recursive git://git.bro.org/bro")
     os.chdir("bro")
@@ -118,6 +128,7 @@ def main():
     shutil.copy("templates/kill-falcongate.sh.tpl", "/etc/init.d/kill-falcongate.sh")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
+    run_command("echo \"nameserver 127.0.2.1\" > /etc/resolv.conf")
     
     #Creating domain block file for dnsmasq 
     run_command("touch /etc/dnsmasq.block")
