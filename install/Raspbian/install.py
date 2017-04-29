@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import glob
 import shutil
 import fileinput
 import re
@@ -76,18 +77,30 @@ def main():
     # Installing dependencies
     print "Installing dependencies..."
     run_command("apt-get install -y dnsmasq nginx php5-fpm php5-curl exim4-daemon-light mailutils ipset cmake make gcc "
-                "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip")
+                "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip build-essential "
+                "dnsutils libsodium-dev locate bash-completion libsystemd-dev pkg-config")
 
     os.chdir("../../tmp")
 
     # Installing DNSCrypt from Raspbian's test packages
-    print "Installing DNSCrypt..."
-    run_command("http://mirrordirector.raspbian.org/raspbian/pool/main/d/dnscrypt-proxy/dnscrypt-proxy_1.9.4-1_armhf.deb")
-    run_command("wget http://mirrordirector.raspbian.org/raspbian/pool/main/libt/libtool/libltdl7_2.4.6-2_armhf.deb")
-    run_command("wget http://mirrordirector.raspbian.org/raspbian/pool/main/libs/libsodium/libsodium18_1.0.11-2_armhf.deb")
-    run_command("dpkg -i libltdl7_2.4.6-2_armhf.deb")
-    run_command("dpkg -i libsodium18_1.0.11-2_armhf.deb")
-    run_command("dpkg -i dnscrypt-proxy_1.9.4-1_armhf.deb")
+    print "Installing DNSCrypt from source..."
+    run_command("wget https://download.dnscrypt.org/dnscrypt-proxy/LATEST.tar.bz2")
+    run_command("tar -xf LATEST.tar.bz2")
+    files = glob.glob("dnscrypt-proxy*")
+    if len(files) == 0:
+        print "dnscrypt-proxy folder not found in path!"
+        exit()
+    os.chdir(files[0])
+    run_command("ldconfig")
+    run_command("./configure --with-systemd")
+    run_command("make")
+    run_command("make install")
+    run_command("useradd -r -d /var/dnscrypt -m -s /usr/sbin/nologin dnscrypt")
+    shutil.copy("templates/dnscrypt-proxy.service.tpl", "/etc/systemd/system/dnscrypt-proxy.service")
+    shutil.copy("templates/dnscrypt-proxy.socket.tpl", "/etc/systemd/system/dnscrypt-proxy.socket")
+    run_command("systemctl enable dnscrypt-proxy.service")
+
+    os.chdir("../")
 
     # Installing Bro
     print "Installing Bro..."
