@@ -73,6 +73,10 @@ def main():
     print "Updating apt sources..."
     run_command("apt-get update")
 
+    print "Upgrading system..."
+    run_command("apt-get upgrade -y")
+    run_command("apt dist-upgrade -y")
+
     # Installing dependencies
     print "Installing dependencies..."
     run_command("apt-get install -y dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset cmake make gcc "
