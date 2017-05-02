@@ -30,7 +30,7 @@ FalconGate was built on top of other open source software so it has multiple dep
 
 ### Supported Platforms
 
-FalconGate has been successfully installed and tested in a number of platforms and devices. You can access the full list [here](https://github.com/A3sal0n/FalconGate/wiki/Tested_platforms_and_devices).
+FalconGate has been successfully installed and tested in a number of platforms and devices. You can access the full list [here](https://github.com/A3sal0n/FalconGate/wiki/Tested-platforms-and-devices).
 
 
 ### Prerequisites
@@ -55,9 +55,9 @@ Currently FalconGate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 
 ### Deploying FalconGate
 
-- [From a supported image](https://github.com/A3sal0n/FalconGate/wiki/Deploy_from_image)
+- [From a supported image](https://github.com/A3sal0n/FalconGate/wiki/Deploy-from-image)
 
-- [Install from scratch](https://github.com/A3sal0n/FalconGate/wiki/Install_from_source)
+- [Install from scratch](https://github.com/A3sal0n/FalconGate/wiki/Install-from-source)
 
 ### Public API Threat Intel feed
 
