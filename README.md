@@ -1,10 +1,10 @@
 # FalconGate
 
-A smart gateway to stop hackers, Malware and more...
+A smart gateway to stop Malware, cyber criminals, and more...
 
 ## Motivation
 
-Cyber attacks are on the raise. The cyber criminals are continuously improving their methods and building new tools and Malware with the purpose of breaching your network, spying on you and stealing valuable data. Recently a new business model has become popular among cyber crooks: the use of Ransomware to encrypt your data and ask for a ransom to unlock it. These attacks have extended also to the Internet of Things (IoT) devices since many of them are vulnerable by design and criminals can leverage them to compromise other devices in your network or launch DDoS attacks towards other targets. Traditionally securing a network against such attacks has been an expensive item which could be afforded just by medium to large companies. With FalconGate we're aiming to change this and bring "out of the box" security for free to common people, small businesses and anyone else in need.
+Cyber attacks are on the raise and the cyber criminals are continuously improving their methods and building new tools and Malware with the purpose of breaching your network, spying on you and stealing valuable data. Recently a new business model has become popular among cyber crooks: the use of Ransomware to encrypt your data and ask for a ransom to unlock it. These attacks have extended also to the Internet of Things (IoT) devices since many of them are vulnerable by design and criminals can leverage them to compromise other devices in your network or launch DDoS attacks towards other targets. Traditionally securing a network against such attacks has been an expensive item which could be afforded just by medium to large companies. With FalconGate we're aiming to change this and bring "out of the box" security for free to common people, small businesses and anyone else in need.
 
 ## Features
 
