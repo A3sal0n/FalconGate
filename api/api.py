@@ -4,12 +4,10 @@ from flask import Flask
 from flask import request
 from flask import abort
 from flask import Response
-import time
 import threading
 import json
 import lib.utils as utils
 from lib.logger import *
-import os
 
 global app
 global homenet
@@ -35,14 +33,14 @@ class FlaskAPI(threading.Thread):
         target = str(request.json['target'])
         try:
             if target == 'devices':
-                data = get_active_devices()
+                data = utils.get_active_devices()
                 resp = Response()
                 resp.data = data
                 resp.status_code = 200
                 resp.mimetype = "application/json"
                 return resp
             elif target == 'network':
-                data = get_network_config()
+                data = utils.get_network_config()
                 resp = Response()
                 resp.data = data
                 resp.status_code = 200
@@ -171,20 +169,4 @@ class FlaskAPI(threading.Thread):
 
     @staticmethod
     def debug():
-        assert app.debug == False
-
-
-def get_active_devices():
-    devices = []
-    with lock:
-        for k in homenet.hosts.keys():
-            device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor)}
-            devices.append(device)
-    return json.dumps(devices)
-
-
-def get_network_config():
-    with lock:
-        netconfig = {'interface': str(homenet.interface), 'ip': str(homenet.ip), 'gateway': str(homenet.gateway),
-                     'netmask': str(homenet.netmask), 'mac': str(homenet.mac)}
-    return json.dumps(netconfig)
+        assert app.debug is False

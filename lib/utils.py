@@ -367,6 +367,7 @@ def reconfigure_network(old_gw, new_gw):
             line = re.sub(t_old_gw, t_new_gw, line.rstrip())
             print(line)
 
+
 def update_alert_handled(alert_id, handled):
     con = lite.connect('logs/alerts.sqlite')
     with con:
@@ -374,3 +375,28 @@ def update_alert_handled(alert_id, handled):
         cur.execute("update alerts set handled = ? where id = ?", (handled, alert_id))
     con.commit()
     con.close()
+
+
+def get_active_devices():
+    global homenet
+    devices = []
+    try:
+        for k in homenet.hosts.keys():
+            device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor)}
+            devices.append(device)
+    except Exception:
+        pass
+
+    return json.dumps(devices)
+
+
+def get_network_config():
+    global homenet
+    netconfig = []
+    try:
+        netconfig = {'interface': str(homenet.interface), 'ip': str(homenet.ip), 'gateway': str(homenet.gateway),
+                     'netmask': str(homenet.netmask), 'mac': str(homenet.mac)}
+    except Exception:
+        pass
+
+    return json.dumps(netconfig)
