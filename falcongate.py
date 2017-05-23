@@ -15,6 +15,7 @@ from lib.objects import *
 import lib.alerts as alerts
 import lib.utils as utils
 import lib.reporter as reporter
+import lib.recon as recon
 import api.api as api
 
 # Global variables
@@ -48,6 +49,7 @@ utils.lock = lock
 reporter.lock = lock
 api.lock = lock
 config.lock = lock
+recon.lock = lock
 logparser.homenet = homenet
 logparser.top_domains = top_domains
 intel.homenet = homenet
@@ -56,6 +58,7 @@ utils.homenet = homenet
 reporter.homenet = homenet
 api.homenet = homenet
 config.homenet = homenet
+recon.homenet = homenet
 intel.top_domains = top_domains
 
 # Master thread list
@@ -75,6 +78,7 @@ threads["alerts_daily"] = alerts.DailyAlerts("alerts_daily")
 threads["alerts_hourly"] = alerts.HourlyAlerts("alerts_hourly")
 threads["alerts_minute"] = alerts.MinuteAlerts("alerts_minute")
 threads["alert_reporter"] = reporter.AlertReporter("alert_reporter")
+threads["port_scanner"] = recon.PortScanner("port_scanner")
 threads["api"] = api.FlaskAPI("api")
 
 
