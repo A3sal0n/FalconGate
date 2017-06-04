@@ -22,7 +22,8 @@ Currently FalconGate is able to:
 - Report details of all new devices connected to your network
 - Block ads based on open source lists
 - Monitor a custom list of personal or family accounts used in online services for public reports of hacking
-- Encrypts all your home DNS traffic to protect all your devices against DNS spoofing and stop your ISP from spying on your DNS requests (see https://dnscrypt.org/)
+- Encrypt all your home DNS traffic to protect all your devices against DNS spoofing and stop your ISP from spying on your DNS requests (see https://dnscrypt.org/)
+- Discover and report open ports on your home devices
 
 ## Getting Started
 
