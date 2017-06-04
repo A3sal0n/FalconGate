@@ -106,7 +106,7 @@ class FlaskAPI(threading.Thread):
                     if (len(ip) >= 7) and (ip not in homenet.user_blacklist) and (ip not in homenet.user_whitelist):
                         homenet.user_blacklist.append(ip)
                         utils.add_ip_ipset_blacklist(ip, 'blacklist-user')
-                        print "Added ", ip
+                        log.debug('FG-INFO: IP ' + ip + 'added to user blacklist')
 
             resp = Response()
             resp.status_code = 200
