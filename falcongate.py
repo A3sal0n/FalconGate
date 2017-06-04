@@ -23,7 +23,7 @@ import api.api as api
 try:
     homenet = utils.load_pkl_object("homenet.pkl")
 except Exception as e:
-    log.debug('FG-ERROR: ' + e.__doc__ + " - " + e.message)
+    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
     homenet = Network()
 
 # Master lock for threads
@@ -154,7 +154,7 @@ def main():
                     with lock:
                         utils.save_pkl_object(homenet, "homenet.pkl")
                 except Exception as e:
-                    log.debug(e.__doc__ + " - " + e.message)
+                    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
                 utils.reboot_appliance()
             else:
                 pass
@@ -173,7 +173,7 @@ def main():
                         utils.save_pkl_object(homenet, "homenet.pkl")
                     flag = True
                 except Exception as e:
-                    log.debug('FG-ERROR: ' + e.__doc__ + " - " + e.message)
+                    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
                     time.sleep(2)
 
             time.sleep(30)
