@@ -45,6 +45,7 @@ FalconGate has a number of software dependencies:
 - Exim
 - PHP
 - DNSCrypt
+- NMAP
 
 It depends also on several Python modules (see [requirements.txt](requirements.txt) file for details)
 
