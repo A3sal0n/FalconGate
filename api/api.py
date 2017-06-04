@@ -86,7 +86,7 @@ class FlaskAPI(threading.Thread):
             else:
                 abort(400)
         except Exception as e:
-            log.debug('FG-WARN: ' + e.__doc__ + " - " + e.message)
+            log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e.message))
             resp = Response()
             resp.status_code = 500
             return resp
@@ -106,7 +106,7 @@ class FlaskAPI(threading.Thread):
                     if (len(ip) >= 7) and (ip not in homenet.user_blacklist) and (ip not in homenet.user_whitelist):
                         homenet.user_blacklist.append(ip)
                         utils.add_ip_ipset_blacklist(ip, 'blacklist-user')
-                        print "Added ", ip
+                        log.debug('FG-INFO: IP ' + ip + 'added to user blacklist')
 
             resp = Response()
             resp.status_code = 200

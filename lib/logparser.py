@@ -62,7 +62,7 @@ class ReadBroConn(threading.Thread):
                                                 homenet.hosts[cip].conns[cid].server_packets += int(fields[19])
                                                 homenet.hosts[cip].conns[cid].counter += 1
                         except Exception as e:
-                            log.debug('FG-WARN: read_bro_conn_log - ' + e.__doc__ + " - " + e.message)
+                            log.debug('FG-WARN: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -83,7 +83,7 @@ class ReadBroConn(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-WARN: read_bro_conn_log - ' + e.__doc__ + " - " + e.message)
+            log.debug('FG-WARN: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
 
     @staticmethod
@@ -172,7 +172,7 @@ class ReadBroDNS(threading.Thread):
                                                 if query not in homenet.hosts[cip].spammed_domains:
                                                     homenet.hosts[cip].spammed_domains.append(query)
                         except Exception as e:
-                            log.debug('FG-WARN: read_bro_dns_log - ' + e.__doc__ + " - " + e.message)
+                            log.debug('FG-WARN: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -193,7 +193,7 @@ class ReadBroDNS(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-WARN: read_bro_dns_log - ' + e.__doc__ + " - " + e.message)
+            log.debug('FG-WARN: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
 
 
@@ -336,7 +336,7 @@ class ReadBroNotice(threading.Thread):
                             self.recorded.append(uid)
 
             except (IOError, OSError) as e:
-                log.debug('FG-WARN: read_bro_notice_log - ' + e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e.message))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -393,9 +393,9 @@ class ReadBroFiles(threading.Thread):
                                                 homenet.hosts[fdst].files[sha1].lseen = ts
                                     self.recorded.append(fuid)
                             except Exception as e:
-                                log.debug('FG-WARN: read_bro_file_log - ' + e.__doc__ + " - " + e.message)
+                                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message))
             except (IOError, OSError) as e:
-                log.debug('FG-WARN: read_bro_file_log - ' + e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -454,7 +454,7 @@ class ReadBroHTTP(threading.Thread):
                                                     del homenet.hosts[sip].interesting_urls[0:50]
                                                     homenet.hosts[sip].interesting_urls.append(url)
                         except Exception as e:
-                            log.debug('FG-WARN: read_bro_http_log - ' + e.__doc__ + " - " + e.message)
+                            log.debug('FG-WARN: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):

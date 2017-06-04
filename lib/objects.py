@@ -114,6 +114,8 @@ class Host:
         self.scans = {}
         self.alerts = []
         self.interesting_urls = []
+        self.tcp_ports = []
+        self.udp_ports = []
 
 
 class Network:

@@ -31,7 +31,7 @@ class CleanOldHomenetObjects(threading.Thread):
             try:
                 self.clean_old_host_objects()
             except Exception as e:
-                log.debug('FG-WARN: ' + e.__doc__ + " - " + e.message)
+                log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(600)
 
     def clean_old_host_objects(self):
@@ -365,7 +365,6 @@ def reconfigure_network(old_gw, new_gw):
         for line in fileinput.input(f, inplace=1):
             line = re.sub(old_gw, new_gw, line.rstrip())
             line = re.sub(t_old_gw, t_new_gw, line.rstrip())
-            print(line)
 
 
 def update_alert_handled(alert_id, handled):
@@ -382,7 +381,8 @@ def get_active_devices():
     devices = []
     try:
         for k in homenet.hosts.keys():
-            device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor)}
+            device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor),
+                      'tcp_ports': homenet.hosts[k].tcp_ports, 'udp_ports': homenet.hosts[k].udp_ports}
             devices.append(device)
     except Exception:
         pass

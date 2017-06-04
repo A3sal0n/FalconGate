@@ -41,12 +41,19 @@ if (!$result){
     $obj = json_decode($result, true);
     echo ('<br><h2>Active home devices</h2>
     <table class=TFtable width=98% halign=left><tr>
-    <td><b>MAC</b></td><td><b>IP Address</b></td><td><b>Vendor</b></td></tr>');
+    <td><b>MAC</b></td><td><b>IP Address</b></td><td><b>Vendor</b></td><td><b>Open Ports</b></td></tr>');
     foreach ($obj as $device){
         if ($device['ip'] == $ip){
             echo ('<tr><td>'.$mac.'</td>'.'<td>'.$device['ip'].'</td>'.'<td>FalconGate</td></tr>');
         }else{
-            echo ('<tr><td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td></tr>');
+            $open_ports = array();
+            foreach ($device['tcp_ports'] as $port){
+                array_push($open_ports, 'TCP/'.$port);
+            }
+            foreach ($device['udp_ports'] as $port){
+                array_push($open_ports, 'UDP/'.$port);
+            }
+            echo ('<tr><td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td>'.implode(', ', $open_ports).'</td></tr>');
         }
     }
     echo ('</table>');
