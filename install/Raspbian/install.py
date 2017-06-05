@@ -127,7 +127,7 @@ def main():
 
     # Configuring ipset
     print "Configuring ipset..."
-    run_command("ipset create blacklist hash:ip")
+    run_command("ipset create blacklist hash:ip maxelem 500000")
     run_command("ipset create blacklist-user hash:ip")
 
     # Installing conf files
