@@ -16,11 +16,20 @@ require 'templates/header.html';
 ini_set('display_errors', 1);
 
 $issueID = $_POST['issue_type']. '_' .generateRandomString();
-$type = pathinfo($_FILES['attachedfile']['name'], PATHINFO_EXTENSION);
-$data = file_get_contents($_FILES['attachedfile']['tmp_name']);
-$b64 = 'data:image/'. $type .';base64,'.base64_encode($data);
 
+#Check if there is any attachment
 
+if ($_FILES['attachedfile']['error'] != "4"){
+    $type = pathinfo($_FILES['attachedfile']['name'], PATHINFO_EXTENSION);
+    $data = file_get_contents($_FILES['attachedfile']['tmp_name']);
+    $b64 = 'data:image/'. $type .';base64,'.base64_encode($data);
+    $unlink = unlink($_FILES['attachedfile']['tmp_name']);
+}else{
+    $b64 = "";
+    $unlink = "";
+}
+
+#TO BE DELETED
 if (isset($_POST['fg_intel_key'])){
     echo "Issue ID: ".$issueID."<br>";
     echo "User ID: ".$_POST['fg_intel_key']."<br>";
@@ -32,6 +41,8 @@ if (isset($_POST['fg_intel_key'])){
 }else{
     echo 'You must have register at FG Threat Intel API to be able report issues.';
 }
+
+#Put it all together here
 
 if (filesize($_FILES['attachedfile']['tmp_name']) <= 400000 || isset($_POST['fg_intel_key'])){
     $jsonData = array(
@@ -67,12 +78,13 @@ if (filesize($_FILES['attachedfile']['tmp_name']) <= 400000 || isset($_POST['fg_
         echo "<br><br>Thank you for reporting this to us. We will take a look at it and contact you if neccesary."; 
     }
     curl_close ($ch);
-    unlink($_FILES['attachedfile']['tmp_name']);
+    $unlink;
+    
 
 }elseif (empty($_POST['fg_intel_key'])){
-    echo 'You must have register at FG Threat Intel API to be able report issues.';
+    echo '<p><span class=error_message>You must have register at FG Threat Intel API to be able report issues.</span></p>';
 }elseif  (filesize($_FILES['attachedfile']['tmp_name']) > 400000){
-    echo "Maximum size of attachment is 400kB.";
+    echo "<p><span class=error_message>Maximum size of attachment is 400kB.</span></p>";
 }
 
 ?>

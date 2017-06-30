@@ -20,12 +20,16 @@ $gmail = '';
                 
 if(strlen($config['main']['fg_intel_key']) == 40){
     $fg_intel_key = $config['main']['fg_intel_key'];
+    $disabled = "";
+    $message = "";
 
 }else{
     $fg_intel_key = '';
+    $disabled = 'disabled="disabled"';
+    $message = '<p><span class=error_message>You must have register at FG Threat Intel API to be able report issues.</span></p><br>';
 }
 
-    echo ('<form name="report_issue" id="report_issue" action="send_issue.php" onsubmit="return ValidateInput();" method="post" enctype="multipart/form-data">
+    echo ($message.'<form name="report_issue" id="report_issue" action="send_issue.php" onsubmit="return VaildateIssueInput();" method="post" enctype="multipart/form-data">
           <table width=95% halign=left>
             <tr align=left>
               <td title="Select type of issue you have.">Type of Issue:</td>
@@ -40,7 +44,7 @@ if(strlen($config['main']['fg_intel_key']) == 40){
             </tr>
             <tr align=left>
               <td title="Description of your issue. Please provide as much details possible.">Description:</td>
-              <td><textarea form="report_issue" id="desc" name="description" rows=5 cols=81></textarea></td>
+              <td><textarea form="report_issue" id="description" name="description" rows=5 cols=81 required></textarea></td>
             </tr>
             <tr align=left>
               <td title="Attach screenshot or any other evidence. Max file size is 400kB">Attachment:</td>
@@ -50,7 +54,7 @@ if(strlen($config['main']['fg_intel_key']) == 40){
               </td>
             </tr>
           </table>
-          <input class="config_button" type="submit" value="Submit">
+          <input class="config_button" type="submit" value="Submit" '.$disabled.'>
            </form><br>');
 ?>
  
