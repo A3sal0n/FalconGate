@@ -23,7 +23,6 @@ if ($_FILES['attachedfile']['error'] != "4"){
     $type = pathinfo($_FILES['attachedfile']['name'], PATHINFO_EXTENSION);
     $data = file_get_contents($_FILES['attachedfile']['tmp_name']);
     $b64 = 'data:image/'. $type .';base64,'.base64_encode($data);
-    #$b64_final = str_replace("\/", "/", $b64);
     $unlink = unlink($_FILES['attachedfile']['tmp_name']);
 }else{
     $b64 = "";
@@ -36,7 +35,8 @@ if (isset($_POST['fg_intel_key'])){
     echo "User ID: ".$_POST['fg_intel_key']."<br>";
     echo "Description: ".$_POST['description']."<br>";
     echo "Attachment: ".$_FILES['attachedfile']['name']."<br>";
-    echo "Attachment type: ".$_FILES['attachedfile']['type'];
+    echo "Attachment type: ".$_FILES['attachedfile']['type']."<br>";
+    echo "Attachment size: ".$_FILES['attachedfile']['size'];
     echo "<br><br>";
 
 }else{
@@ -45,7 +45,7 @@ if (isset($_POST['fg_intel_key'])){
 
 #Put it all together here
 
-if (filesize($_FILES['attachedfile']['tmp_name']) <= 400000 || isset($_POST['fg_intel_key'])){
+if ($_FILES['attachedfile']['size'] <= 400000 && isset($_POST['fg_intel_key'])){
     $jsonData = array(
     'issueID' => $issueID,
     'userID' => $_POST['fg_intel_key'],
@@ -84,7 +84,7 @@ if (filesize($_FILES['attachedfile']['tmp_name']) <= 400000 || isset($_POST['fg_
 
 }elseif (empty($_POST['fg_intel_key'])){
     echo '<p><span class=error_message>You must have register at FG Threat Intel API to be able report issues.</span></p>';
-}elseif  (filesize($_FILES['attachedfile']['tmp_name']) > 400000){
+}elseif  ($_FILES['attachedfile']['size'] > 400000){
     echo "<p><span class=error_message>Maximum size of attachment is 400kB.</span></p>";
 }
 
