@@ -23,6 +23,7 @@ if ($_FILES['attachedfile']['error'] != "4"){
     $type = pathinfo($_FILES['attachedfile']['name'], PATHINFO_EXTENSION);
     $data = file_get_contents($_FILES['attachedfile']['tmp_name']);
     $b64 = 'data:image/'. $type .';base64,'.base64_encode($data);
+    #$b64_final = str_replace("\/", "/", $b64);
     $unlink = unlink($_FILES['attachedfile']['tmp_name']);
 }else{
     $b64 = "";
@@ -54,19 +55,19 @@ if (filesize($_FILES['attachedfile']['tmp_name']) <= 400000 || isset($_POST['fg_
     #'attachment' => curl_file_create($tmpfile, $_FILES['attachedfile']['type'], $filename));
 
     $jsonDataEncoded = json_encode($jsonData);
-
-    echo $jsonDataEncoded;
+    $fixed_jsonDataEncoded = str_replace("\/", "/", $jsonDataEncoded);
+    echo $fixed_jsonDataEncoded;
 
     #POST IT TO API
     $ch = curl_init();
 
     curl_setopt($ch, CURLOPT_URL, "https://2hir4s44b2.execute-api.eu-central-1.amazonaws.com/dev1/falcongate-user-feedback/".$issueID.".json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $fixed_jsonDataEncoded);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
 
     $headers = array();
-    $headers[] = "Content-Length:" . strlen($jsonDataEncoded);
+    $headers[] = "Content-Length:" . strlen($fixed_jsonDataEncoded);
     $headers[] = "X-Api-Key:" .$_POST['fg_intel_key'];
     $headers[] = "Content-Type: application/json";
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
