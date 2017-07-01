@@ -474,5 +474,6 @@ class ReadBroHTTP(threading.Thread):
             else:
                 f.close()
                 return False
-        except IOError:
+        except Exception as e:
+            log.debug('FG-WARN: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
