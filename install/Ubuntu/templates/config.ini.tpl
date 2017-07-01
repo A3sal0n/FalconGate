@@ -2,8 +2,7 @@
 iface = $IFACE0$
 
 [api_urls]
-fg_api_ip_blacklist = https://pb3271li6g.execute-api.eu-central-1.amazonaws.com/prod/falcongate-blacklists/ip_blacklist
-fg_api_domain_blacklist = https://pb3271li6g.execute-api.eu-central-1.amazonaws.com/prod/falcongate-blacklists/domain_blacklist
+fg_api_url = https://pb3271li6g.execute-api.eu-central-1.amazonaws.com/prod/
 vt_api_domain_url = https://www.virustotal.com/vtapi/v2/domain/report
 vt_api_ip_url = http://www.virustotal.com/vtapi/v2/ip-address/report
 vt_api_file_url = https://www.virustotal.com/vtapi/v2/file/report

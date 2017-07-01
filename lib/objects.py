@@ -135,6 +135,7 @@ class Network:
         self.bad_domains = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [], 'Ads': [], 'User': []}
         self.user_blacklist = []
         self.user_whitelist = []
+        self.default_credentials = {}
         self.target_mime_types = ["application/x-7z-compressed", "application/x-ace-compressed", "application/x-shockwave-flash",
                                   "application/pdf", "application/vnd.android.package-archive", "application/octet-stream",
                                   "application/x-bzip", "application/x-bzip2", "application/x-debian-package", "application/java-archive",
@@ -157,8 +158,7 @@ class Network:
         self.fg_intel_key = None
         self.dst_emails = None
         self.email_watchlist = []
-        self.fg_api_ip_blacklist = None
-        self.fg_api_domain_blacklist = None
+        self.fg_api_url = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None

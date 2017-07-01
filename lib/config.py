@@ -34,8 +34,7 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 with lock:
                     homenet.interface = core_config.get('main', 'iface')
-                    homenet.fg_api_ip_blacklist = core_config.get('api_urls', 'fg_api_ip_blacklist').strip('"')
-                    homenet.fg_api_domain_blacklist = core_config.get('api_urls', 'fg_api_domain_blacklist').strip('"')
+                    homenet.fg_api_url = core_config.get('api_urls', 'fg_api_url').strip('"')
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')

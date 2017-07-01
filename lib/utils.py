@@ -400,3 +400,17 @@ def get_network_config():
         pass
 
     return json.dumps(netconfig)
+
+
+def detect_service(sip, sport):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = s.connect_ex((sip, sport))
+
+    if result == 0:
+        data = s.recv(1024)
+        if 'SSH' in data:
+            s.close()
+            return 'ssh'
+        else:
+            s.close()
+            return None
