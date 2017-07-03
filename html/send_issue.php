@@ -11,9 +11,9 @@ if (login_check() != true){
 }
 require 'templates/header.html';
 ?>
+<h1>Report Issue</h1>
 
 <?php
-ini_set('display_errors', 1);
 
 $issueID = $_POST['issue_type']. '_' .generateRandomString();
 
@@ -30,22 +30,24 @@ if ($_FILES['attachedfile']['error'] != "4"){
 }
 
 #TO BE DELETED
+/*
 if (isset($_POST['fg_intel_key'])){
     echo "Issue ID: ".$issueID."<br>";
     echo "User ID: ".$_POST['fg_intel_key']."<br>";
     echo "Description: ".$_POST['description']."<br>";
     echo "Attachment: ".$_FILES['attachedfile']['name']."<br>";
     echo "Attachment type: ".$_FILES['attachedfile']['type']."<br>";
-    echo "Attachment size: ".$_FILES['attachedfile']['size'];
+    echo "Attachment size: ".$_FILES['attachedfile']['size']."<br>";
+    echo "Count of attached files: ".count($_FILES['attachedfile']['name']);
     echo "<br><br>";
 
 }else{
     echo 'You must have register at FG Threat Intel API to be able report issues.';
 }
-
+*/
 #Put it all together here
 
-if ($_FILES['attachedfile']['size'] <= 400000 && isset($_POST['fg_intel_key'])){
+if ($_FILES['attachedfile']['size'] <= 1000000 && isset($_POST['fg_intel_key']) && count($_FILES['attachedfile']['name']) == 1){
     $jsonData = array(
     'issueID' => $issueID,
     'userID' => $_POST['fg_intel_key'],
@@ -56,7 +58,7 @@ if ($_FILES['attachedfile']['size'] <= 400000 && isset($_POST['fg_intel_key'])){
 
     $jsonDataEncoded = json_encode($jsonData);
     $fixed_jsonDataEncoded = str_replace("\/", "/", $jsonDataEncoded);
-    echo $fixed_jsonDataEncoded;
+    #echo $fixed_jsonDataEncoded;
 
     #POST IT TO API
     $ch = curl_init();
@@ -83,9 +85,11 @@ if ($_FILES['attachedfile']['size'] <= 400000 && isset($_POST['fg_intel_key'])){
     
 
 }elseif (empty($_POST['fg_intel_key'])){
-    echo '<p><span class=error_message>You must have register at FG Threat Intel API to be able report issues.</span></p>';
-}elseif  ($_FILES['attachedfile']['size'] > 400000){
-    echo "<p><span class=error_message>Maximum size of attachment is 400kB.</span></p>";
+    echo '<p><span class=error_message>You must be registered at FG Threat Intel API to be able report issues.</span></p>';
+}elseif  ($_FILES['attachedfile']['size'] > 1000000){
+    echo "<p><span class=error_message>Maximum size of attachment is 1 MB.</span></p>";
+}elseif (count($_FILES['attachedfile']['name']) > 1){
+    echo "<p><span class=error_message>Only one file is allowed to attach.</span></p>";
 }
 
 ?>

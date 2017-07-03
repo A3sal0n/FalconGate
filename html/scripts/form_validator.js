@@ -90,13 +90,3 @@ function ValidateMailerInput(){
     return true;
 }
 
-function VaildateIssueInput(){
-    var description = document.forms["report_issue"]["description"].value;
-
-    if (description == ""){
-        alert("Description cannot be empty!");
-        return false;
-    }
-    
-    return true;     
-}
