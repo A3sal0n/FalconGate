@@ -150,11 +150,26 @@ class DownloadIntel(threading.Thread):
                 rjson = response.json()
                 for key in rjson.keys():
                     homenet.default_credentials[key] = rjson[key]
+                    self.save_temp_lists(key, rjson[key])
 
             else:
                 log.debug('FG-WARN: FalconGate API key wrong or missing')
         except Exception as e:
             log.debug('FG-ERROR: FalconGate public API is not available')
+
+    def save_temp_lists(self, target, items):
+        if target == 'username':
+            fout = open('/tmp/default_users.csv', 'w')
+            for item in items:
+                fout.write(item + '\n')
+            fout.close()
+        elif target == 'passwords':
+            fout = open('/tmp/default_passwords.csv', 'w')
+            for item in items:
+                fout.write(item + '\n')
+            fout.close()
+        else:
+            pass
 
 
 class CheckVirusTotalIntel(threading.Thread):

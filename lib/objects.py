@@ -116,6 +116,7 @@ class Host:
         self.interesting_urls = []
         self.tcp_ports = []
         self.udp_ports = []
+        self.vuln_accounts = []
 
 
 class Network:
@@ -203,3 +204,10 @@ class File:
         self.vt_positives = 0
         self.vt_report = None
 
+
+class DefaultCredentials:
+    def __init__(self):
+        self.service = ''
+        self.port = ''
+        self.user = ''
+        self.password = ''
