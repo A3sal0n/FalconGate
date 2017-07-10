@@ -63,7 +63,7 @@ if ($_FILES['attachedfile']['size'] <= 1000000 && isset($_POST['fg_intel_key']) 
     #POST IT TO API
     $ch = curl_init();
 
-    curl_setopt($ch, CURLOPT_URL, "https://2hir4s44b2.execute-api.eu-central-1.amazonaws.com/dev1/falcongate-user-feedback/".$issueID.".json");
+    curl_setopt($ch, CURLOPT_URL, "https://2hir4s44b2.execute-api.eu-central-1.amazonaws.com/prod/falcongate-user-feedback/".$issueID.".json");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $fixed_jsonDataEncoded);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
