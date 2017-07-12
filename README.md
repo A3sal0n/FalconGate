@@ -25,6 +25,8 @@ Currently FalconGate is able to:
 - Encrypt all your home DNS traffic to protect all your devices against DNS spoofing and stop your ISP from spying on your DNS requests (see https://dnscrypt.org/)
 - Discover and report open ports on your home devices
 
+![alt tag](https://github.com/A3sal0n/FalconGate/blob/master/html/images/FalconGate_Network.png)
+
 ## Getting Started
 
 FalconGate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get FalconGate up and running is to deploy one of the supported system images from our [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
