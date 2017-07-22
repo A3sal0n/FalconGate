@@ -124,52 +124,39 @@ class DownloadIntel(threading.Thread):
         headers = {"Accept-Encoding": "gzip, deflate",
                    "User-Agent": "Mozilla/5.0",
                    "x-api-key": homenet.fg_intel_key}
+
+        ready = False
         try:
             response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/intel_test', headers=headers)
             rjson = response.json()
             if rjson['message'] == 'Ready':
-                # Downloading the list of malicious IP addresses
-                response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/ip_blacklist', headers=headers)
-                rjson = response.json()
-                for threat in rjson.keys():
-                    threat = threat.encode('ascii', 'ignore')
-                    set1 = set(homenet.bad_ips[threat])
-                    set2 = set(rjson[threat])
-                    homenet.bad_ips[threat] = list(set1 | set2)
-
-                # Downloading the list of malicious domains
-                response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/ip_blacklist', headers=headers)
-                rjson = response.json()
-                for threat in rjson.keys():
-                    set1 = set(homenet.bad_domains[threat])
-                    set2 = set(rjson[threat])
-                    homenet.bad_domains[threat] = list(set1 | set2)
-
-                # Downloading the list of default user names and passwords
-                response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/default_credentials', headers=headers)
-                rjson = response.json()
-                for key in rjson.keys():
-                    homenet.default_credentials[key] = rjson[key]
-                    self.save_temp_lists(key, rjson[key])
-
-            else:
-                log.debug('FG-WARN: FalconGate API key wrong or missing')
+                ready = True
         except Exception as e:
-            log.debug('FG-ERROR: FalconGate public API is not available')
+            log.debug('FG-ERROR: FalconGate public API is not available or API key is missing')
 
-    def save_temp_lists(self, target, items):
-        if target == 'username':
-            fout = open('/tmp/default_users.csv', 'w')
-            for item in items:
-                fout.write(item + '\n')
+        if ready:
+            # Downloading the list of malicious IP addresses
+            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/ip_blacklist', headers=headers)
+            rjson = response.json()
+            for threat in rjson.keys():
+                threat = threat.encode('ascii', 'ignore')
+                set1 = set(homenet.bad_ips[threat])
+                set2 = set(rjson[threat])
+                homenet.bad_ips[threat] = list(set1 | set2)
+
+            # Downloading the list of malicious domains
+            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/domain_blacklist', headers=headers)
+            rjson = response.json()
+            for threat in rjson.keys():
+                set1 = set(homenet.bad_domains[threat])
+                set2 = set(rjson[threat])
+                homenet.bad_domains[threat] = list(set1 | set2)
+
+            # Downloading the list of default user names and passwords
+            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/default_credentials', headers=headers)
+            fout = open('/tmp/default_creds.csv', 'w')
+            fout.write(response.text)
             fout.close()
-        elif target == 'passwords':
-            fout = open('/tmp/default_passwords.csv', 'w')
-            for item in items:
-                fout.write(item + '\n')
-            fout.close()
-        else:
-            pass
 
 
 class CheckVirusTotalIntel(threading.Thread):

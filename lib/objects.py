@@ -19,7 +19,7 @@ class HostAlertTemplate:
                     "The following indicators were detected:\r\n" + str("\r\n".join(self.indicators)) + "\r\n\r\n" \
                     "References:\r\n" + str("\r\n".join(self.references)) + "\r\n\r\n" \
                     "This is the first time this incident is reported.\r\n" \
-                    "We recommend to investigate this issue asap."
+                    "We recommend to investigate this issue as soon as possible."
 
 
 class AccountBreachAlertTemplate:
@@ -39,6 +39,29 @@ class AccountBreachAlertTemplate:
                     "This is the first time this incident is reported.\r\n" \
                     "We recommend to change immediately the password for this account to prevent further misuse by" \
                     " malicious hackers."
+
+
+class DefaultCredsAlertTemplate:
+    def __init__(self, homenet, alert):
+        self.homenet = homenet
+        self.alert = alert
+        self.subject = "An account with default vendor credentials was found on host " + alert[7]
+        self.indicators = alert[8].replace('.', '[.]').split('|')
+        self.references = alert[11].split('|')
+        self.body = ''
+
+    def create_body(self):
+        self.body = "FalconGate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
+                    "IP address: " + self.alert[7] + "\r\n" \
+                    "Hostname: " + str(self.homenet.hosts[self.alert[7]].hostname) + "\r\n" \
+                    "MAC address: " + str(self.homenet.hosts[self.alert[7]].mac) + "\r\n" \
+                    "MAC vendor: " + str(self.homenet.hosts[self.alert[7]].vendor) + "\r\n" \
+                    "Operating system family: " + "\r\n".join(self.homenet.hosts[self.alert[7]].os_family) + "\r\n" \
+                    "Device family: " + str("\r\n".join(self.homenet.hosts[self.alert[7]].device_family)) + "\r\n\r\n" \
+                    "Description: " + self.alert[10] + "\r\n\r\n" \
+                    "The following indicators were detected:\r\n" + str("\r\n".join(self.indicators)) + "\r\n\r\n" \
+                    "References:\r\n" + str("\r\n".join(self.references)) + "\r\n\r\n" \
+                    "We recommend you to fix this issue as soon as possible."
 
 
 class DNSRequest:
@@ -136,7 +159,6 @@ class Network:
         self.bad_domains = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [], 'Ads': [], 'User': []}
         self.user_blacklist = []
         self.user_whitelist = []
-        self.default_credentials = {}
         self.target_mime_types = ["application/x-7z-compressed", "application/x-ace-compressed", "application/x-shockwave-flash",
                                   "application/pdf", "application/vnd.android.package-archive", "application/octet-stream",
                                   "application/x-bzip", "application/x-bzip2", "application/x-debian-package", "application/java-archive",

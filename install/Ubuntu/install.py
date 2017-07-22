@@ -80,7 +80,7 @@ def main():
     # Installing dependencies
     print "Installing dependencies..."
     run_command("apt-get install -y dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset cmake make gcc "
-                "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip dnscrypt-proxy nmap")
+                "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip dnscrypt-proxy nmap hydra")
 
     # Installing Bro
     print "Installing Bro..."
