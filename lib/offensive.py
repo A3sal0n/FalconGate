@@ -19,7 +19,7 @@ class ScheduledScans(threading.Thread):
         global lock
 
         # Wait until the port scan finished
-        time.sleep(180)
+        time.sleep(600)
 
         while 1:
             log.debug('FG-INFO: Default credentials assessment started')
@@ -27,25 +27,60 @@ class ScheduledScans(threading.Thread):
             # Finding targets for Ncrack
             try:
                 ssh_targets = []
+                ftp_targets = []
+                telnet_targets = []
+                rdp_targets = []
+                smb_targets = []
+                rlogin_targets = []
+                vnc_targets = []
+
                 for ip in homenet.hosts.keys():
-                    for port in homenet.hosts[ip].tcp_ports:
-                        if port == 22:
-                            ssh_targets.append(ip)
+                    if utils.ping_host(ip):
+                        for port in homenet.hosts[ip].tcp_ports:
+                            if port == 22:
+                                ssh_targets.append(ip)
+                            elif port == 21:
+                                ftp_targets.append(ip)
+                            elif port == 23:
+                                telnet_targets.append(ip)
+                            elif port == 445:
+                                smb_targets.append(ip)
+                            elif port == 3389:
+                                rdp_targets.append(ip)
+                            elif port >= 5800 and port <= 6000:
+                                vnc_targets.append(ip)
+
             except Exception as e:
                 log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
 
-            if len(ssh_targets) > 0:
-                for ip in ssh_targets:
-                    self.brute_force_ssh(ip)
+            for ip in ssh_targets:
+                self.brute_force_service(ip, 'ssh')
+
+            for ip in ftp_targets:
+                self.brute_force_service(ip, 'ftp')
+
+            for ip in telnet_targets:
+                self.brute_force_service(ip, 'telnet')
+
+            for ip in rdp_targets:
+                self.brute_force_service(ip, 'rdp')
+
+            for ip in smb_targets:
+                self.brute_force_service(ip, 'smb')
+
+            for ip in vnc_targets:
+                self.brute_force_service(ip, 'vnc')
 
             log.debug('FG-INFO: Default credentials assessment finished')
 
             time.sleep(86400)
 
-    def brute_force_ssh(self, tip):
+    def brute_force_service(self, tip, service):
         global homenet
         global lock
-        proc = subprocess.Popen(['/usr/bin/hydra', '-C', '/tmp/default_creds.csv', 'ssh://' + tip], stdout=subprocess.PIPE)
+
+        proc = subprocess.Popen(['/usr/bin/hydra', '-C', '/tmp/default_creds.csv', tip, service], stdout=subprocess.PIPE)
+
         while True:
             line = proc.stdout.readline()
             if line != '':

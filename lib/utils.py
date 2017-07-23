@@ -400,3 +400,12 @@ def get_network_config():
         pass
 
     return json.dumps(netconfig)
+
+
+def ping_host(ip):
+    response = os.system("ping -c 1 -w2 " + ip + " > /dev/null 2>&1")
+
+    if response == 0:
+        return True
+    else:
+        return False
