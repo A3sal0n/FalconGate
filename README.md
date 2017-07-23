@@ -25,6 +25,13 @@ Currently FalconGate is able to:
 - Encrypt all your home DNS traffic to protect all your devices against DNS spoofing and stop your ISP from spying on your DNS requests (see https://dnscrypt.org/)
 - Discover and report open ports on your home devices
 - Detect and alert on active default vendor accounts for all devices running SSH in your home network
+  - Protocols currently supported:
+    - SSH
+    - FTP
+    - Telnet
+    - RDP
+    - SMB
+    - VNC
 
 ![alt tag](https://github.com/A3sal0n/FalconGate/blob/master/html/images/FalconGate_Network.png)
 
