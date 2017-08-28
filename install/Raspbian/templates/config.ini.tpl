@@ -9,17 +9,17 @@ vt_api_file_url = https://www.virustotal.com/vtapi/v2/file/report
 hibp_api_url = https://haveibeenpwned.com/api/v2/breachedaccount/
 
 [blacklists_ip]
-Malware = http://malc0de.com/bl/IP_Blacklist.txt,https://sslbl.abuse.ch/blacklist/sslipblacklist.csv,http://rules.emergingthreats.net/blockrules/emerging-dshield.rules
+Malware =
 
-Ransomeware = https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt
+Ransomware =
 
-Botnet = http://rules.emergingthreats.net/blockrules/emerging-botcc.rules
+Botnet =
 
-Hacking = http://rules.emergingthreats.net/blockrules/compromised-ips.txt,http://rules.emergingthreats.net/blockrules/emerging-ciarmy.rules,https://sslbl.abuse.ch/blacklist/sslipblacklist_aggressive.csv
+Hacking =
 
-Tor = https://check.torproject.org/exit-addresses,https://www.dan.me.uk/torlist/,https://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv
+Tor =
 
 [blacklists_domain]
-Ads = http://winhelp2002.mvps.org/hosts.txt,http://hosts-file.net/ad_servers.txt,https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt,https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt,https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+Ads =
 
-Malware = http://mirror1.malwaredomains.com/files/immortal_domains.txt
+Malware =
