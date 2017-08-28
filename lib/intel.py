@@ -127,7 +127,7 @@ class DownloadIntel(threading.Thread):
 
         ready = False
         try:
-            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/intel_test', headers=headers)
+            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/intel_test', headers=headers)
             rjson = response.json()
             if rjson['message'] == 'Ready':
                 ready = True
@@ -136,7 +136,7 @@ class DownloadIntel(threading.Thread):
 
         if ready:
             # Downloading the list of malicious IP addresses
-            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/ip_blacklist', headers=headers)
+            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/ip_blacklist', headers=headers)
             rjson = response.json()
             for threat in rjson.keys():
                 threat = threat.encode('ascii', 'ignore')
@@ -145,7 +145,7 @@ class DownloadIntel(threading.Thread):
                 homenet.bad_ips[threat] = list(set1 | set2)
 
             # Downloading the list of malicious domains
-            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/domain_blacklist', headers=headers)
+            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/domain_blacklist', headers=headers)
             rjson = response.json()
             for threat in rjson.keys():
                 set1 = set(homenet.bad_domains[threat])
@@ -153,7 +153,7 @@ class DownloadIntel(threading.Thread):
                 homenet.bad_domains[threat] = list(set1 | set2)
 
             # Downloading the list of default user names and passwords
-            response = requests.get(homenet.fg_api_url + 'falcongate-blacklists/default_credentials', headers=headers)
+            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/default_credentials', headers=headers)
             fout = open('/tmp/default_creds.csv', 'w')
             fout.write(response.text)
             fout.close()
