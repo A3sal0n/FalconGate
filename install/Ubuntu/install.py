@@ -124,7 +124,7 @@ def main():
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
     run_command("echo \"nameserver 127.0.2.1\" > /etc/resolv.conf")
     
-    #Creating domain block file for dnsmasq 
+    # Creating domain block file for dnsmasq
     run_command("touch /etc/dnsmasq.block")
 
     run_command("chown www-data:www-data ../../html/user_config.ini")
@@ -135,6 +135,10 @@ def main():
     run_command("pip install --upgrade pip")
     run_command("pip install setuptools")
     run_command("pip install -r requirements.txt")
+
+    # Configure the system time according to IP geographical location
+    run_command("pip install -U tzupdate")
+    run_command("tzupdate")
 
     # Configuring falcongate service
     print "Configuring falcongate service..."
