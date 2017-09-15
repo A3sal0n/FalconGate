@@ -2,6 +2,10 @@
 session_start();
 include_once 'includes/functions.php';
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 ?>
 
 <?php
@@ -50,10 +54,19 @@ if (isset($_POST['selector'])){
             //$new_pwd = password_hash($_POST['mailer_pwd'], PASSWORD_DEFAULT);
             $config->set('main', 'mailer_pwd', $_POST['mailer_pwd']);
         }
+		$config->set('main', 'telegram_id', '');
+	}elseif($_POST['selector'] == 'cloud'){	
+		$config->set('main', 'mailer_mode', $_POST['selector']);
+		if (isset($_POST['telegram_id'])){
+			$config->set('main', 'telegram_id', $_POST['telegram_id']);
+			$config->set('main', 'mailer_address', '');
+			$config->set('main', 'mailer_pwd', '');
+		}
     }else{
         $config->set('main', 'mailer_mode', $_POST['selector']);
         $config->set('main', 'mailer_address', '');
         $config->set('main', 'mailer_pwd', '');
+		$config->set('main', 'telegram_id', '');
     }
 }
 $config->save();
