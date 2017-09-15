@@ -189,6 +189,7 @@ class Network:
         self.mailer_mode = None
         self.mailer_address = None
         self.mailer_pwd = None
+        self.telegram_id = None
         self.last_alert_id = 0
         self.blacklist_sources_ip = {}
         self.blacklist_sources_domain = {}

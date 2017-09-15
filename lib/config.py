@@ -64,6 +64,7 @@ class CheckConfigFileModification(threading.Thread):
                 homenet.mailer_mode = user_config.get('main', 'mailer_mode').translate(None, '"\n\r ').strip('"')
                 homenet.mailer_address = user_config.get('main', 'mailer_address').translate(None, '"\n\r ').strip('"')
                 homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').translate(None, '"\n\r ').strip('"')
+                homenet.telegram_id = user_config.get('main', 'telegram_id').translate(None, '"\n\r ').strip('"')
 
             if flag:
                 counter += 1
