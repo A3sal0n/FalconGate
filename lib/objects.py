@@ -182,6 +182,7 @@ class Network:
         self.dst_emails = None
         self.email_watchlist = []
         self.fg_api_intel_url = None
+        self.fg_api_alert_url = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None
