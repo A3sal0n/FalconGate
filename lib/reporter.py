@@ -109,7 +109,7 @@ class AlertReporter(threading.Thread):
         alert = {'alertID': alertID, 'apiKey': homenet.fg_intel_key, 'threatType': alert[6].encode('utf-8'), 'description': alert[10].encode('utf-8'),
                  'sourceHost': homenet.hosts[alert[7]].hostname, 'sourceIP': alert[7].encode('utf-8'), 'indicators': alert[8].encode('utf-8').replace(':', '-'),
                  'reported': 'False', 'send_email': 'True', 'send_telegram': [lambda: 'False', lambda: 'True'][homenet.telegram_id is not None](),
-                 'telegram_id': str(homenet.telegram_id)}
+                 'telegram_id': str(homenet.telegram_id), 'reference': alert[11].encode('utf-8'), 'detected': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(alert[2]))}
         alert_json = json.dumps(alert)
         try:
             response = requests.post(homenet.fg_api_alert_url, headers=headers, data=alert_json)

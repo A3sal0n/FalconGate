@@ -264,7 +264,7 @@ class ReadDHCPLeases(threading.Thread):
         description = 'A new device was connected to your network. If this device was not ' \
                       'connected or authorized by you we recommend to check your router ' \
                       'configuration and disallow the access to this device.'
-        reference = ''
+        reference = 'https://en.wikipedia.org/wiki/Networking_hardware'
         vendor = utils.get_vendor(mac)
         indicators = ip + '|' + mac + '|' + hostname + '|' + [lambda:vendor, lambda:''][not vendor]()
         a = [0, 'new_device', ts, ctime, 0, 0, 'New Device', ip, indicators, 0, description, reference]
