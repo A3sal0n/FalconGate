@@ -21,11 +21,7 @@ import api.api as api
 
 # Global variables
 # Master network object
-try:
-    homenet = utils.load_pkl_object("homenet.pkl")
-except Exception as e:
-    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
-    homenet = Network()
+homenet = Network()
 
 # Master lock for threads
 lock = threading.Lock()
@@ -148,40 +144,17 @@ def main():
         # Get default gateway for eth0
         gws = netifaces.gateways()
         cgw = gws['default'][netifaces.AF_INET][0]
-        if not homenet.gateway:
-            homenet.gateway = cgw
-        else:
-            if homenet.gateway != cgw:
-                utils.reconfigure_network(homenet.gateway, cgw)
-                homenet.gateway = cgw
-                try:
-                    with lock:
-                        utils.save_pkl_object(homenet, "homenet.pkl")
-                except Exception as e:
-                    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
-                utils.reboot_appliance()
-            else:
-                pass
+
+        homenet.gateway = cgw
+
     except Exception as e:
-        pass
+        log.debug('FG-ERROR: FalconGate had issues detecting your network configuration')
 
     log.debug('FG-DEBUG: Starting main loop')
 
     while True:
-
         try:
-            flag = False
-            while not flag:
-                try:
-                    with lock:
-                        utils.save_pkl_object(homenet, "homenet.pkl")
-                    flag = True
-                except Exception as e:
-                    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
-                    time.sleep(2)
-
             time.sleep(30)
-
         except KeyboardInterrupt:
             log.debug('FG-INFO: Process terminated by keyboard interrupt')
             print 'Have a nice day!'

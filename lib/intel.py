@@ -27,7 +27,7 @@ class DownloadIntel(threading.Thread):
         self.all_domains = set()
 
     def run(self):
-        time.sleep(15)
+        time.sleep(60)
 
         while 1:
             log.debug('FG-INFO: Downloading daily blacklists')
@@ -95,30 +95,32 @@ class DownloadIntel(threading.Thread):
         # Downloading Intel from open sources
         for threat in homenet.blacklist_sources_ip.keys():
             for url in homenet.blacklist_sources_ip[threat]:
-                try:
-                    response = requests.get(url, headers=self.headers)
-                    entries = re.findall(self.ip_regex, response.content)
-                    for ip in entries:
-                        if ip not in homenet.user_whitelist:
-                            homenet.bad_ips[threat].append(ip)
-                except Exception as e:
-                    log.debug('FG-ERROR: Error while retrieving the bad IPs from: ' + url)
+                if len(url) > 0:
+                    try:
+                        response = requests.get(url, headers=self.headers)
+                        entries = re.findall(self.ip_regex, response.content)
+                        for ip in entries:
+                            if ip not in homenet.user_whitelist:
+                                homenet.bad_ips[threat].append(ip)
+                    except Exception as e:
+                        log.debug('FG-ERROR: Error while retrieving the bad IPs from: ' + url)
 
     def retrieve_bad_domains(self):
         # Downloading Intel from open sources
         for threat in homenet.blacklist_sources_domain.keys():
             for url in homenet.blacklist_sources_domain[threat]:
-                try:
-                    response = requests.get(url, headers=self.headers)
-                    txt = response.text
-                    lines = txt.split('\n')
-                    for line in lines:
-                        if (len(line) > 0) and (line[0] != '#'):
-                            entries = re.findall(self.domain_regex, line)
-                            for domain in entries:
-                                homenet.bad_domains[threat].append(domain)
-                except Exception as e:
-                    log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
+                if len(url) > 0:
+                    try:
+                        response = requests.get(url, headers=self.headers)
+                        txt = response.text
+                        lines = txt.split('\n')
+                        for line in lines:
+                            if (len(line) > 0) and (line[0] != '#'):
+                                entries = re.findall(self.domain_regex, line)
+                                for domain in entries:
+                                    homenet.bad_domains[threat].append(domain)
+                    except Exception as e:
+                        log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
     def retrieve_fg_intel(self):
         headers = {"Accept-Encoding": "gzip, deflate",
