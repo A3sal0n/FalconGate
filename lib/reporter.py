@@ -9,6 +9,7 @@ from lib.objects import AccountBreachAlertTemplate, HostAlertTemplate, DefaultCr
 import requests
 import json
 import uuid
+import base64
 
 
 class AlertReporter(threading.Thread):
@@ -102,17 +103,30 @@ class AlertReporter(threading.Thread):
             return False
 
     def send_alert_cloud(self, alert):
-        alertID = str(uuid.uuid4())
-        headers = {"content-type": "application/json",
+        try:
+            alertID = str(uuid.uuid4())
+            headers = {"content-type": "application/json",
                    "User-Agent": "Mozilla/5.0",
                    "x-api-key": homenet.fg_intel_key}
-        alert = {'alertID': alertID, 'apiKey': homenet.fg_intel_key, 'threatType': alert[6].encode('utf-8'), 'description': alert[10].encode('utf-8'),
-                 'sourceHost': homenet.hosts[alert[7]].hostname, 'sourceIP': alert[7].encode('utf-8'), 'indicators': alert[8].encode('utf-8').replace(':', '-'),
-                 'reported': 'False', 'send_email': 'True', 'send_telegram': [lambda: 'False', lambda: 'True'][homenet.telegram_id is not None](),
-                 'telegram_id': str(homenet.telegram_id), 'reference': alert[11].encode('utf-8'), 'detected': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(alert[2]))}
-        alert_json = json.dumps(alert)
-        try:
-            response = requests.post(homenet.fg_api_alert_url, headers=headers, data=alert_json)
+
+            if alert[6] == "Data Breach":
+                sourceHost = "N/A"
+                sourceIP = "N/A"
+            else:
+                sourceHost = homenet.hosts[alert[7]].hostname
+                sourceIP = alert[7].encode('utf-8')
+
+            description = base64.b64encode(alert[10].encode('utf-8'))
+
+            report = {'alertID': alertID, 'apiKey': homenet.fg_intel_key, 'threatType': alert[6].encode('utf-8'), 'description': description,
+                      'sourceHost': sourceHost, 'sourceIP': sourceIP, 'indicators': alert[8].encode('utf-8').replace(':', '-'),
+                      'reported': 'False', 'send_email': 'True', 'send_telegram': [lambda: 'False', lambda: 'True'][homenet.telegram_id is not None](),
+                      'telegram_id': str(homenet.telegram_id), 'reference': alert[11].encode('utf-8'), 'detected': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(alert[2]))}
+
+            report_json = json.dumps(report)
+
+            response = requests.post(homenet.fg_api_alert_url, headers=headers, data=report_json)
+
             if response.status_code == 200:
                 return True
             else:
