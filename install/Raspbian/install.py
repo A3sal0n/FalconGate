@@ -31,7 +31,7 @@ def run_command(cmd):
     os.system(cmd)
 
 
-template_list = ["templates/config.ini.tpl", "templates/interfaces.tpl", "templates/broctl.tpl", "templates/dnsmasq.conf.tpl",
+template_list = ["templates/config.ini.tpl", "templates/interfaces.tpl", "templates/broctl.service.tpl", "templates/dnsmasq.conf.tpl",
                  "templates/local.bro.tpl", "templates/nginx_default_site.tpl",
                  "templates/dhcpcd.conf.tpl", "templates/falcongate.service.tpl", "templates/node.cfg.tpl"]
 
@@ -76,7 +76,7 @@ def main():
 
     # Installing dependencies
     print "Installing dependencies..."
-    run_command("apt-get install -y dnsmasq nginx php5-fpm php5-curl exim4-daemon-light mailutils ipset cmake make gcc "
+    run_command("aptitude install -y dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset cmake make gcc "
                 "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip build-essential "
                 "dnsutils libsodium-dev locate bash-completion libsystemd-dev pkg-config nmap libssh-dev hydra")
 
@@ -117,9 +117,8 @@ def main():
     os.chdir(install_dir)
     run_command("rm -rf ../../tmp/bro*")
     print "Configuring broctl service..."
-    shutil.copy("templates/broctl.tpl", "/etc/init.d/broctl")
-    run_command("chmod +x /etc/init.d/broctl")
-    run_command("update-rc.d broctl defaults")
+    shutil.copy("templates/broctl.service.tpl", "/etc/systemd/system/broctl.service")
+    run_command("systemctl enable broctl.service")
     print "Copying and installing default Bro policies..."
     shutil.copy("templates/local.bro.tpl", "/usr/local/bro/share/bro/site/local.bro")
     shutil.copy("templates/node.cfg.tpl", "/usr/local/bro/etc/node.cfg")
