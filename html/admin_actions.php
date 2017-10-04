@@ -27,5 +27,16 @@ if (isset($_POST["reboot"])){
     $data = array("action" => "reboot");
     $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/admin/actions', json_encode($data));
 }
+
+if (isset($_POST["reset"])){
+    echo ("This page will be automatically reloaded in approximately 120 seconds...");
+    echo ('<script>
+           setTimeout(function(){
+           window.location="home.php";
+           }, 120000);
+           </script>');
+    $data = array("action" => "reset");
+    $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/admin/actions', json_encode($data));
+}
 ?>
 

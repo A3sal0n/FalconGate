@@ -116,11 +116,11 @@ echo ('<p class=notes>Note: Multiple recipient emails can be added to the "Alert
            </table>
 		   <br>
            <input class="config_button" type="submit" value="Save" name="mailer_submit" id="mailer_submit">
-           </form>');
+           </form><br>');
 if (isset($_GET['updated'])){
     if ($_GET['updated'] == 'True'){
         echo ('<p>Configuration saved!</p>
-        <p>FalconGate process restarted...</p>');
+        <p>FalconGate process restarted...</p><br>');
     }
 }
 ?>

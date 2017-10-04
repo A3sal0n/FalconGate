@@ -154,6 +154,11 @@ class FlaskAPI(threading.Thread):
             resp = Response()
             resp.status_code = 200
             return resp
+        elif action == 'reset':
+            utils.reset_appliance()
+            resp = Response()
+            resp.status_code = 200
+            return resp
         else:
             abort(400)
 

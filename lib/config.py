@@ -71,7 +71,7 @@ class CheckConfigFileModification(threading.Thread):
                 counter += 1
 
             if counter > 1:
-                utils.kill_falcongate(homenet.pid)
+                utils.restart_falcongate_service()
 
             time.sleep(5)
 

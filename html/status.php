@@ -56,7 +56,7 @@ if (!$result){
             echo ('<tr><td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td>'.implode(', ', $open_ports).'</td></tr>');
         }
     }
-    echo ('</table>');
+    echo ('</table><br>');
 }
 
 ?>

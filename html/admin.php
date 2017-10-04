@@ -28,11 +28,15 @@ echo ('<script type="text/javascript">
   {
   var pwd = document.forms["admin_actions"]["pwd"].value;
       if(!checkPassword(pwd)) {
-        alert("The password you have entered is not valid!\n\nThe password must contain lowercase, uppercase, digits and must be longer than 6 characters.");
+        alert("The password you have entered is not enough complex!\n\nThe password must contain lowercase, uppercase, digits and must be longer than 6 characters.");
         return false;
       }
 
     return true;
+  }
+
+  function confirmFormSubmission(){
+       return confirm("Do you really want to execute this action?");
   }
 
 </script>
@@ -44,13 +48,18 @@ echo ('<script type="text/javascript">
            </table>
 
     <br>
-    <form name="admin_actions" action="admin_actions.php" method="post">
+    <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return confirmFormSubmission();">
+           <table width=40% halign=left>
+           <tr align=left><td>Reboot device:</td><td><input class="config_button" type="submit" value="Reboot" name="reboot"></form></td></tr>
+           </table>
+    <br>
+    <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return confirmFormSubmission();">
            <table width=35% halign=left>
-           <tr align=left><td>Reboot device</td><td><input class="config_button" type="submit" value="Reboot" name="reboot"></form></td></tr>
-           </table>');
+           <tr align=left><td>Reset FalconGate:</td><td><input class="config_button" type="submit" value="Reset" name="reset"></form></td></tr>
+           </table><br>');
 if (isset($_GET['updated'])){
     if ($_GET['updated'] == 'True'){
-        echo ('<p>Configuration saved!</p>');
+        echo ('<p>Configuration saved!</p><br>');
     }
 }
 ?>

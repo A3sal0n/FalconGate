@@ -310,16 +310,22 @@ def reboot_appliance():
     output, err = p.communicate()
 
 
-def kill_falcongate(pid):
+def reset_appliance():
+    os.system("rm -f logs/alerts.sqlite")
+    os.system("cp install/Raspbian/templates/user_config.ini.tpl html/user_config.ini")
+    os.system("cp install/Raspbian/templates/pwd.db.tpl html/pwd.db")
+    os.system("chmod www-data: html/user_config.ini")
+    os.system("chmod www-data: html/pwd.db")
+    restart_falcongate_service()
+
+
+def restart_falcongate_service():
     global homenet
-    global lock
-    with lock:
-        sys.stdout.flush()
-        del homenet
-        time.sleep(5)
-        gc.collect()
-        devnull = open(os.devnull, 'wb')
-        subprocess.Popen(['nohup', '/etc/init.d/kill-falcongate.sh', str(pid)], stdout=devnull, stderr=devnull, shell=False)
+    sys.stdout.flush()
+    del homenet
+    time.sleep(1)
+    gc.collect()
+    os.system("service falcongate restart")
 
 
 def save_pkl_object(obj, filename):

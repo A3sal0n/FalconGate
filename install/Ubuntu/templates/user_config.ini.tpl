@@ -1,0 +1,11 @@
+[main]
+dst_emails = ""
+email_watchlist = ""
+fg_intel_key = ""
+vt_api_key = ""
+blacklist = ""
+whitelist = ""
+mailer_mode = "standalone"
+mailer_address = ""
+mailer_pwd = ""
+telegram_id = ""

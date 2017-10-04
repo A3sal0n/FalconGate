@@ -114,12 +114,13 @@ def main():
     # Installing conf files
     print "Installing configuration files..."
     shutil.copy("templates/config.ini.tpl", "../../config.ini")
+    shutil.copy("templates/user_config.ini.tpl", "../../html/user_config.ini")
+    shutil.copy("templates/pwd.db.tpl", "../../html/pwd.db")
     shutil.copy("templates/interfaces.tpl", "/etc/network/interfaces")
     shutil.copy("templates/update-exim4.conf.conf.tpl", "/etc/exim4/update-exim4.conf.conf")
     shutil.copy("templates/dnsmasq.conf.tpl", "/etc/dnsmasq.conf")
     shutil.copy("templates/nginx_default_site.tpl", "/etc/nginx/sites-available/default")
     shutil.copy("templates/falcongate.service.tpl", "/etc/systemd/system/falcongate.service")
-    shutil.copy("templates/kill-falcongate.sh.tpl", "/etc/init.d/kill-falcongate.sh")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
     run_command("echo \"nameserver 127.0.2.1\" > /etc/resolv.conf")
@@ -143,7 +144,6 @@ def main():
     # Configuring falcongate service
     print "Configuring falcongate service..."
     run_command("systemctl enable falcongate.service")
-    run_command("chmod +x /etc/init.d/kill-falcongate.sh")
 
     # Installing FW scripts
     print "Installing and configuring FW scripts..."
