@@ -17,6 +17,7 @@ require_once 'Config/Lite.php';
 $config = new Config_Lite('user_config.ini');
 $standalone = '';
 $gmail = '';
+$cloud = '';
                 
 if($config['main']['mailer_mode'] == 'standalone'){
     $standalone = 'selected';
@@ -74,9 +75,21 @@ $(document).ready(function (e) {
         }
     });
 });
+
+function torAlert() {
+    if (document.getElementById('allow_tor').checked) {
+        alert("Sure you want to allow Tor in your network? Malware can use Tor to hide its traffic!");
+    }
+}
+
 </script>
 
 <?php
+    if ($config['main']['allow_tor'] == 'true'){
+        $tor_value = "value=1 checked=checked";
+    }else{
+        $tor_value = "value=0";
+    }
     echo ('<form name="user_config" id="user_config" action="save_config.php" onsubmit="return ValidateInput();" method="post">
            <table width=95% halign=left>
            <tr align=left><td title="Your personal FalconGate Intel API key.">FalconGate Intel API key:</td><td><input type=text size=71 name="fg_intel_key" value='.$config['main']['fg_intel_key'].'></td></tr>
@@ -85,6 +98,7 @@ $(document).ready(function (e) {
            <tr align=left><td title="This is the customized list of IP addresses you wish to block.">Blacklist:</td><td><textarea form="user_config" id="blacklist" name="blacklist" rows=5 cols=81>'.$config['main']['blacklist'].'</textarea></td></tr>
            <tr align=left><td title="This is the list of IP addresses to be whitelisted from blocking by FalconGuard.">Whitelist:</td><td><textarea form="user_config" id="whitelist" name="whitelist" rows=5 cols=81>'.$config['main']['whitelist'].'</textarea></td></tr>
            <tr align=left><td title="This is the list of email addresses to be monitored for potential compromise due to hacking breaches in third party online services.">Email watchlist:</td><td><textarea form="user_config" id="email_watchlist" name="email_watchlist" rows=5 cols=81>'.$config['main']['email_watchlist'].'</textarea></td></tr>
+           <tr align=left><td title="Allow traffic towards the Tor network.">Allow Tor</td><td><input type=checkbox name=allow_tor id=allow_tor value='.$tor_value.' onchange="torAlert()"</td></tr>
            </table>
            <br>');
 echo ('<p class=notes>Note: Multiple recipient emails can be added to the "Alerts recipients" field using commas as separator.</p>');

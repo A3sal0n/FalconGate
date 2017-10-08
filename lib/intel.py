@@ -142,9 +142,12 @@ class DownloadIntel(threading.Thread):
             rjson = response.json()
             for threat in rjson.keys():
                 threat = threat.encode('ascii', 'ignore')
-                set1 = set(homenet.bad_ips[threat])
-                set2 = set(rjson[threat])
-                homenet.bad_ips[threat] = list(set1 | set2)
+                if threat == 'Tor' and homenet.allow_tor == 'true':
+                    pass
+                else:
+                    set1 = set(homenet.bad_ips[threat])
+                    set2 = set(rjson[threat])
+                    homenet.bad_ips[threat] = list(set1 | set2)
 
             # Downloading the list of malicious domains
             response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/domain_blacklist', headers=headers)

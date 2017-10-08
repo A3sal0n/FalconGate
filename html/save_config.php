@@ -43,6 +43,11 @@ if (isset($_POST['whitelist'])){
     $data = array("action" => "whitelist", "target" => $target);
     $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 }
+if (isset($_POST['allow_tor'])){
+    $config->set('main', 'allow_tor', 'true');
+}else{
+    $config->set('main', 'allow_tor', 'false');
+}
 if (isset($_POST['selector'])){
     if($_POST['selector'] == 'gmail'){
         $config->set('main', 'mailer_mode', $_POST['selector']);
