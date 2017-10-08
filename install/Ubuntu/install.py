@@ -123,7 +123,6 @@ def main():
     shutil.copy("templates/falcongate.service.tpl", "/etc/systemd/system/falcongate.service")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
-    run_command("echo \"nameserver 127.0.2.1\" > /etc/resolv.conf")
     
     # Creating domain block file for dnsmasq
     run_command("touch /etc/dnsmasq.block")
@@ -157,6 +156,9 @@ def main():
 
     # Loading default FW rules
     run_command("iptables-restore < fw/iptables.rules")
+
+    # Configuring default DNS server for FalconGate
+    run_command("echo \"nameserver 127.0.2.1\" > /etc/resolv.conf")
 
     # Restarting device
     print "Installation finished!\n" \
