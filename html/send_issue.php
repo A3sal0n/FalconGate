@@ -52,13 +52,10 @@ if ($_FILES['attachedfile']['size'] <= 1000000 && isset($_POST['fg_intel_key']) 
     'issueID' => $issueID,
     'userID' => $_POST['fg_intel_key'],
     'issueDescription' => base64_encode($_POST['description']),
-    #'attachment' => base64_encode(file_get_contents(realpath($_FILES['attachedfile']['tmp_name']))));
     'attachment' => $b64);
-    #'attachment' => curl_file_create($tmpfile, $_FILES['attachedfile']['type'], $filename));
 
     $jsonDataEncoded = json_encode($jsonData);
     $fixed_jsonDataEncoded = str_replace("\/", "/", $jsonDataEncoded);
-    #echo $fixed_jsonDataEncoded;
 
     #POST IT TO API
     $ch = curl_init();

@@ -89,6 +89,9 @@
 # Enable mining pe information
 @load base/files/pe/main.bro
 
+# Extract files from traffic
+@load frameworks/files/extract-important-files
+
 # Enable http logging
 @load base/protocols/http/main.bro
 

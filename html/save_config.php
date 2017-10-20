@@ -43,6 +43,11 @@ if (isset($_POST['whitelist'])){
     $data = array("action" => "whitelist", "target" => $target);
     $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 }
+if (isset($_POST['enable_cloud_scan'])){
+    $config->set('main', 'cloud_malware_sandbox', 'true');
+}else{
+    $config->set('main', 'cloud_malware_sandbox', 'false');
+}
 if (isset($_POST['allow_tor'])){
     $config->set('main', 'allow_tor', 'true');
 }else{
