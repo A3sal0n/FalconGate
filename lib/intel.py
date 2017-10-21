@@ -325,3 +325,17 @@ class CheckVirusTotalIntel(threading.Thread):
             return True
         else:
             return False
+
+
+class MalwareCloudScan(threading.Thread):
+    def __init__(self, threadID):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+
+    def run(self):
+        global homenet
+        global lock
+        global top_domains
+
+        while 1:
+            pass
