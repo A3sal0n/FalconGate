@@ -6,6 +6,11 @@ from lib.logger import *
 from user_agents import parse
 import os
 import lib.utils as utils
+import glob
+import requests
+import base64
+import json
+import sys
 
 
 class ReadBroConn(threading.Thread):
@@ -351,6 +356,7 @@ class ReadBroFiles(threading.Thread):
         self._cached_stamp = 0
         self.target_mime_types = homenet.target_mime_types
         self.recorded = []
+        self.bro_file_path = '/usr/local/bro/logs/current/extract_files/'
 
     def run(self):
         global homenet
@@ -369,38 +375,84 @@ class ReadBroFiles(threading.Thread):
                                 fuid = fields[1]
                                 if fuid not in self.recorded:
                                     ts = float(fields[0])
-                                    fsrc = fields[2]
-                                    fdst = fields[3]
+                                    tx_hosts = fields[2]
+                                    rx_hosts = fields[3]
                                     conn_id = fields[4]
                                     mime = fields[8]
                                     size = int(fields[13])
                                     md5 = fields[19]
                                     sha1 = fields[20]
                                     with lock:
-                                        if (fdst in homenet.hosts) and (mime in self.target_mime_types) and (sha1 != "-"):
-                                            if sha1 not in homenet.hosts[fdst].files:
+                                        if (rx_hosts in homenet.hosts) and (mime in self.target_mime_types) and (sha1 != "-"):
+                                            if sha1 not in homenet.hosts[rx_hosts].files:
                                                 file_obj = File()
                                                 file_obj.ts = ts
+                                                file_obj.fuid = fuid
                                                 file_obj.lseen = ts
-                                                file_obj.source = fsrc
+                                                file_obj.tx_hosts = tx_hosts
+                                                file_obj.rx_hosts = rx_hosts
                                                 file_obj.conn_id = conn_id
                                                 file_obj.mime_type = mime
                                                 file_obj.size = size
                                                 file_obj.md5 = md5
                                                 file_obj.sha1 = sha1
-                                                homenet.hosts[fdst].files[sha1] = file_obj
+                                                homenet.hosts[rx_hosts].files[sha1] = file_obj
+                                                fpath = self.find_file(fuid)
+                                                if fpath:
+                                                    if rx_hosts != homenet.ip:
+                                                        if (homenet.cloud_malware_sandbox == 'true') and (utils.is_file_executable(fpath) is True):
+                                                            res = self.cloud_submit_file(fpath, sha1, rx_hosts, tx_hosts)
+                                                            if res is False:
+                                                                log.debug('FG-ERROR: File submission for ' + sha1 + 'was not successful')
+                                                        os.remove(fpath)
+                                                    else:
+                                                        os.remove(fpath)
                                             else:
-                                                homenet.hosts[fdst].files[sha1].lseen = ts
+                                                homenet.hosts[rx_hosts].files[sha1].lseen = ts
                                     self.recorded.append(fuid)
                             except Exception as e:
-                                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message))
+                                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
             except (IOError, OSError) as e:
-                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
 
             time.sleep(5)
+
+    def find_file(self, fuid):
+        files = glob.glob(self.bro_file_path + "*")
+        for i in range(3):
+            for f in files:
+                if fuid in f:
+                    return f
+            time.sleep(1)
+
+        return False
+
+    @staticmethod
+    def cloud_submit_file(f, sha1, lhost, rhost):
+        try:
+            with open(f, "rb") as target_file:
+                encoded_file = base64.b64encode(target_file.read())
+        except IOError:
+            return False
+
+        data = {'userID': homenet.fg_intel_key, 'sha1': sha1, 'local_host': lhost, 'remote_host': rhost, 'file': encoded_file}
+
+        json_data = json.dumps(data)
+
+        headers = {"User-Agent": "Mozilla/5.0",
+                   "X-Api-Key": homenet.fg_intel_key}
+
+        try:
+            response = requests.put(homenet.fg_api_malware_url + 'falcongate-samples/' + sha1 + '.json', headers=headers, data=json_data)
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+        except Exception as e:
+            log.debug('FG-ERROR: FalconGate public API is not available or API key is missing')
 
 
 class ReadBroHTTP(threading.Thread):

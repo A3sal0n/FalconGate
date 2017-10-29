@@ -36,6 +36,7 @@ class CheckConfigFileModification(threading.Thread):
                     homenet.interface = core_config.get('main', 'iface')
                     homenet.fg_api_intel_url = core_config.get('api_urls', 'fg_api_intel_url').strip('"')
                     homenet.fg_api_alert_url = core_config.get('api_urls', 'fg_api_alert_url').strip('"')
+                    homenet.fg_api_malware_url = core_config.get('api_urls', 'fg_api_malware_url').strip('"')
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')

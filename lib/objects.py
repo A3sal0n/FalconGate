@@ -170,7 +170,7 @@ class Network:
                                   "application/vnd.ms-powerpoint.presentation.macroenabled.12", "application/vnd.ms-powerpoint.slideshow.macroenabled.12",
                                   "application/vnd.ms-powerpoint.template.macroenabled.12", "application/msword", "application/vnd.ms-word.document.macroenabled.12",
                                   "application/vnd.ms-word.template.macroenabled.12", "application/x-rar-compressed", "application/x-tar", "application/zip", "application/x-dosexec",
-                                  "application/x-ms-installer", "application/x-elf", "application/x-sh", "text/x-perl", "text/x-python"]
+                                  "application/x-ms-installer", "application/x-elf", "application/x-sh", "text/x-perl", "text/x-python", "image/x-icon"]
         self.tld_whitelist = ['local', 'test', 'localhost', 'example', 'invalid', 'arpa']
         # Malicious TLDs
         # https://www.tripwire.com/state-of-security/security-data-protection/cyber-security/most-suspicious-tlds-revealed-by-blue-coat-systems/
@@ -183,6 +183,7 @@ class Network:
         self.email_watchlist = []
         self.fg_api_intel_url = None
         self.fg_api_alert_url = None
+        self.fg_api_malware_url = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None
@@ -219,8 +220,10 @@ class Indicator:
 class File:
     def __init__(self):
         self.ts = None
+        self.fuid = None
         self.lseen = None
-        self.source = None
+        self.tx_hosts = None
+        self.rx_hosts = None
         self.conn_id = None
         self.mime_type = None
         self.md5 = None

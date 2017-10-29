@@ -4,6 +4,7 @@ iface = $IFACE0$
 [api_urls]
 fg_api_intel_url = https://intel.falcongate.cz/
 fg_api_alert_url = https://comms.falcongate.cz/new-alert
+fg_api_malware_url = https://malware.falcongate.cz/
 vt_api_domain_url = https://www.virustotal.com/vtapi/v2/domain/report
 vt_api_ip_url = http://www.virustotal.com/vtapi/v2/ip-address/report
 vt_api_file_url = https://www.virustotal.com/vtapi/v2/file/report

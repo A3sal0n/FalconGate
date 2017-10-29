@@ -105,12 +105,6 @@ def main():
 
     log.debug('FG-INFO: main.py started')
 
-    # Starting threads
-    for key in threads.keys():
-        threads[key].daemon = True
-        threads[key].start()
-        log.debug('FG-INFO: Started thread ' + key)
-
     time.sleep(15)
 
     # Store process ID and other parameters for the main thread
@@ -149,6 +143,12 @@ def main():
 
     except Exception as e:
         log.debug('FG-ERROR: FalconGate had issues detecting your network configuration')
+
+    # Starting threads
+    for key in threads.keys():
+        threads[key].daemon = True
+        threads[key].start()
+        log.debug('FG-INFO: Started thread ' + key)
 
     log.debug('FG-DEBUG: Starting main loop')
 

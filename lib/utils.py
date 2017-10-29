@@ -21,6 +21,7 @@ class CleanOldHomenetObjects(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.ctime = int(time.time())
+        self.bro_file_path = '/usr/local/bro/logs/current/extract_files/'
 
     def run(self):
         global homenet
@@ -35,6 +36,9 @@ class CleanOldHomenetObjects(threading.Thread):
             time.sleep(600)
 
     def clean_old_host_objects(self):
+        global homenet
+        global lock
+
         with lock:
             for k in homenet.hosts.keys():
                 # Cleaning old DNS entries
@@ -47,19 +51,22 @@ class CleanOldHomenetObjects(threading.Thread):
                     if (self.ctime - homenet.hosts[k].conns[l].lseen) > 3600:
                         del homenet.hosts[k].conns[l]
 
-                # Cleaning old alerts
-                for l in homenet.hosts[k].alerts.keys():
-                    if ((self.ctime - homenet.hosts[k].alerts[l].last_seen) > 604800) and homenet.hosts[k].alerts[l].last_reported:
-                        del homenet.hosts[k].alerts[l]
-
                 # Cleaning old files
-                for l in homenet.hosts[k].dns.keys():
+                for l in homenet.hosts[k].files.keys():
                     if (self.ctime - homenet.hosts[k].files[l].ts) > 604800:
                         del homenet.hosts[k].files[l]
 
+                # Cleaning Bro carved files older than 10 minutes
+                now = time.time()
+        try:
+            for f in os.listdir(self.bro_file_path):
+                target = os.path.join(self.bro_file_path, f)
+                if os.stat(target).st_mtime < now - 600:
+                    os.remove(target)
+        except Exception:
+            pass
 
-# Resolves all the IP addresses for a specific domain
-# Returns an array with the addresses
+
 def domain_resolver(domain):
     record = socket.gethostbyname_ex(domain)
     return record[2]
@@ -412,6 +419,14 @@ def ping_host(ip):
     response = os.system("ping -c 1 -w2 " + ip + " > /dev/null 2>&1")
 
     if response == 0:
+        return True
+    else:
+        return False
+
+
+def is_file_executable(file):
+    output = subprocess.check_output(['file', file])
+    if ("MSI Installer" in output) or ("executable" in output):
         return True
     else:
         return False
