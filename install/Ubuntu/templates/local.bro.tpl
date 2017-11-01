@@ -92,4 +92,7 @@
 # Enable http logging
 @load base/protocols/http/main.bro
 
+# Enable SMB ransomware detection
+@load /opt/FalconGate/bro/rules/smb-ransomware.bro
+
 redef ignore_checksums = T;
