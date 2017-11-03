@@ -122,6 +122,8 @@ def main():
     print "Copying and installing default Bro policies..."
     shutil.copy("templates/local.bro.tpl", "/usr/local/bro/share/bro/site/local.bro")
     shutil.copy("templates/node.cfg.tpl", "/usr/local/bro/etc/node.cfg")
+    run_command("mkdir /usr/local/bro/share/bro/policy/FalconGate")
+    run_command("cp -R ../../common/bro/rules/* /usr/local/bro/share/bro/policy/FalconGate/")
     run_command("/usr/local/bro/bin/broctl install")
 
     # Configuring ipset
