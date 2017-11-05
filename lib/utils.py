@@ -426,7 +426,7 @@ def ping_host(ip):
 
 def is_file_executable(file):
     output = subprocess.check_output(['file', file])
-    if ("MSI Installer" in output) or ("executable" in output):
+    if ("Installer" in output) or ("executable" in output):
         return True
     else:
         return False

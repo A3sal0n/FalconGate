@@ -170,7 +170,7 @@ class Network:
                                   "application/vnd.ms-powerpoint.presentation.macroenabled.12", "application/vnd.ms-powerpoint.slideshow.macroenabled.12",
                                   "application/vnd.ms-powerpoint.template.macroenabled.12", "application/msword", "application/vnd.ms-word.document.macroenabled.12",
                                   "application/vnd.ms-word.template.macroenabled.12", "application/x-rar-compressed", "application/x-tar", "application/zip", "application/x-dosexec",
-                                  "application/x-ms-installer", "application/x-elf", "application/x-sh", "text/x-perl", "text/x-python", "image/x-icon"]
+                                  "application/x-ms-installer", "application/x-elf", "application/x-sh", "text/x-perl", "text/x-python", "image/x-icon", "application/x-executable"]
         self.tld_whitelist = ['local', 'test', 'localhost', 'example', 'invalid', 'arpa']
         # Malicious TLDs
         # https://www.tripwire.com/state-of-security/security-data-protection/cyber-security/most-suspicious-tlds-revealed-by-blue-coat-systems/

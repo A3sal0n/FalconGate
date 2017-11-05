@@ -11,6 +11,7 @@ import requests
 import base64
 import json
 import sys
+import hashlib
 
 
 class ReadBroConn(threading.Thread):
@@ -401,9 +402,10 @@ class ReadBroFiles(threading.Thread):
                                                 if fpath:
                                                     if rx_hosts != homenet.ip:
                                                         if (homenet.cloud_malware_sandbox == 'true') and (utils.is_file_executable(fpath) is True):
-                                                            res = self.cloud_submit_file(fpath, sha1, rx_hosts, tx_hosts)
-                                                            if res is False:
-                                                                log.debug('FG-ERROR: File submission for ' + sha1 + 'was not successful')
+                                                            if not self.is_top_domain(tx_hosts):
+                                                                res = self.cloud_submit_file(fpath, sha1, rx_hosts, tx_hosts)
+                                                                if res is False:
+                                                                    log.debug('FG-ERROR: File submission for ' + sha1 + 'was not successful')
                                                         os.remove(fpath)
                                                     else:
                                                         os.remove(fpath)
@@ -431,14 +433,35 @@ class ReadBroFiles(threading.Thread):
         return False
 
     @staticmethod
+    def is_top_domain(ip):
+        global top_domains
+
+        f = open('/usr/local/bro/logs/current/dns.log', 'r')
+        lines = f.readlines()
+        f.close()
+
+        for line in lines:
+            if ip in line:
+                fields = line.split('\t')
+                query = fields[9]
+                sld = utils.get_sld(query)
+                if sld in top_domains:
+                    return True
+
+        return False
+
+    @staticmethod
     def cloud_submit_file(f, sha1, lhost, rhost):
+        global homenet
         try:
             with open(f, "rb") as target_file:
                 encoded_file = base64.b64encode(target_file.read())
         except IOError:
             return False
 
-        data = {'userID': homenet.fg_intel_key, 'sha1': sha1, 'local_host': lhost, 'remote_host': rhost, 'file': encoded_file}
+        ip_hash = hashlib.sha1(rhost.encode("UTF-8")).hexdigest()
+
+        data = {'userID': homenet.fg_intel_key, 'telegram': str(homenet.telegram_id), 'sha1': sha1, 'local_host': lhost, 'remote_host': rhost, 'file': encoded_file}
 
         json_data = json.dumps(data)
 
@@ -446,7 +469,7 @@ class ReadBroFiles(threading.Thread):
                    "X-Api-Key": homenet.fg_intel_key}
 
         try:
-            response = requests.put(homenet.fg_api_malware_url + 'falcongate-samples/' + sha1 + '.json', headers=headers, data=json_data)
+            response = requests.put(homenet.fg_api_malware_url + 'falcongate-samples/' + sha1 + '-' + ip_hash[:10] + '.json', headers=headers, data=json_data)
             if response.status_code == 200:
                 return True
             else:
