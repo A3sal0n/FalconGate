@@ -26,6 +26,14 @@ if($config['main']['mailer_mode'] == 'standalone'){
 }elseif($config['main']['mailer_mode'] == 'cloud'){
     $cloud = 'selected';
 }
+
+//check if user has configured FG API to be able use cloud alerting
+$fg_intel_key = $config['main']['fg_intel_key'];
+if($fg_intel_key == ''){
+	$fg_intel_alert = '<p><span class=error_message>You have to subscribe to FalconGate API to be able use Cloud Alerts!<br></span></p>';
+}else{
+	$fg_intel_alert =  '';
+}
 ?>
 
 <script type='text/javascript'>
@@ -42,14 +50,20 @@ hideStuff = function() {
 		echo '$(\'.standaloneTextBox\').show();';
 		echo '$(\'.gmailTextBox\').hide();';
 		echo '$(\'.cloudTextBox\').hide();';
+		$required_c = "";
+		$required_g = "";
 	}elseif($current_method == "cloud"){
 		echo '$(\'.standaloneTextBox\').hide();';
 		echo '$(\'.gmailTextBox\').hide();';
 		echo '$(\'.cloudTextBox\').show();';
+		$required_c = "required";
+		$required_g = "";
 	}elseif($current_method == "gmail"){
 		echo '$(\'.standaloneTextBox\').hide();';
 		echo '$(\'.gmailTextBox\').show();';
 		echo '$(\'.cloudTextBox\').hide();';
+		$required_c = "";
+		$required_g = "required";
 	}else{
 		echo 'hideAll();';
 	}
@@ -84,6 +98,17 @@ function torAlert() {
 
 </script>
 
+<!-- Function to display hints to the users in alerts delivery configuration -->
+<script>
+$(document).ready(function () {
+    $('.para').hide();
+    $(".button").click(function () {
+        $('.para').hide();
+        $('#' + $(this).data('id')).show();
+    });
+});
+</script>
+
 <?php
     if ($config['main']['allow_tor'] == 'true'){
         $tor_value = "value=1 checked=checked";
@@ -114,14 +139,29 @@ echo ('<p class=notes>Note: Multiple recipient emails can be added to the "Alert
 			<br><br>
            </td>
            </table>
-           <table width=40% halign=left>
+           <table width=60% halign=left>
            <tr align=left>
-			<td>
+			<td>				
 				<div class="cloudTextBox">
-					Telegram Chat ID: <input type=text size=20 name="telegram_id" id="telegram_id" value='.$config['main']['telegram_id'].'><br>
-				</div>
+					'.$fg_intel_alert.'
+					<table>
+						<tr>
+							<td>
+								Telegram Chat ID: <input type=text size=20 name="telegram_id" id="telegram_id" '.$required_c.' value='.$config['main']['telegram_id'].'>
+							</td>
+							<td align="left">
+								<div class=button data-id=text1><div class=button float_1><a href=#><img src="images/hint2_s.png" title="Click for hint"></a></div></div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="para" id="text1">For more information how to obtain your Telegram ID, please follow <a target="_blank" href="https://github.com/A3sal0n/FalconGate/wiki/Get-Telegram-Chat-ID">this link</a>.</div>
+							</td>
+						</tr>
+					</table>
+				</div>	
 				<div class="gmailTextBox">
-					Gmail Address: <input type=text size=20 name="mailer_address" id="mailer_address" value='.$config['main']['mailer_address'].'><br>
+					Gmail Address: <input type=text size=20 name="mailer_address" id="mailer_address" '.$required_g.' value='.$config['main']['mailer_address'].'><br>
 					Password: <input type="password" name="mailer_pwd" id="mailer_pwd" size="20" maxlength="500">
 				</div>
 				<div class="standaloneTextBox">Standalone</div>
