@@ -227,15 +227,6 @@ def get_top_domains(dbname):
         return domains
 
 
-# Iptables manipulation routines
-def block_ip(target, falcongate_ip):
-    subprocess.call(["/sbin/iptables", "-t", "nat", "-A", "BlockIP", "-d", str(target), "-p", "tcp", "-m", "tcp", "--dport", "1:65535", "-j", "DNAT", "--to-destination", str(falcongate_ip)+":8080"])
-
-
-def clean_blocked_ip(target, falcongate_ip):
-    subprocess.call(["/sbin/iptables", "-t", "nat", "-D", "BlockIP", "-d", str(target), "-p", "tcp", "-m", "tcp", "--dport", "1:65535", "-j", "DNAT", "--to-destination", str(falcongate_ip)+":8080"])
-
-
 def validate_ip(ip):
     aa = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ip)
     if aa:

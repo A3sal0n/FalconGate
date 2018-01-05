@@ -61,12 +61,14 @@ class DownloadIntel(threading.Thread):
                         self.all_domains.add(domain)
 
                 # Adding user blacklisted IP addresses
-                for ip in homenet.blacklist:
-                    homenet.bad_ips['User'].append(ip)
-                    self.all_ips.add(ip)
+                utils.flush_ipset_list('blacklist-user')
+                for ip in homenet.user_blacklist:
+                    if ip not in homenet.user_whitelist:
+                        utils.add_ip_ipset_blacklist(ip, 'blacklist-user')
 
                 # Reconfiguring ipset and dnsmasq with the new block lists
-                self.configure_ipset()
+                # Blocking IP addresses from threat intel open sources it's disabled by default. Remove the comment in the line below to enable at your own risk :)
+                #self.configure_ipset()
                 self.configure_dnsmasq()
 
             time.sleep(14400)
