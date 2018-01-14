@@ -227,15 +227,6 @@ def get_top_domains(dbname):
         return domains
 
 
-# Iptables manipulation routines
-def block_ip(target, falcongate_ip):
-    subprocess.call(["/sbin/iptables", "-t", "nat", "-A", "BlockIP", "-d", str(target), "-p", "tcp", "-m", "tcp", "--dport", "1:65535", "-j", "DNAT", "--to-destination", str(falcongate_ip)+":8080"])
-
-
-def clean_blocked_ip(target, falcongate_ip):
-    subprocess.call(["/sbin/iptables", "-t", "nat", "-D", "BlockIP", "-d", str(target), "-p", "tcp", "-m", "tcp", "--dport", "1:65535", "-j", "DNAT", "--to-destination", str(falcongate_ip)+":8080"])
-
-
 def validate_ip(ip):
     aa = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ip)
     if aa:
@@ -430,3 +421,44 @@ def is_file_executable(file):
         return True
     else:
         return False
+
+def add_domain_blacklist(domain):
+    if domain_blacklist_check_if_exists(domain):
+        fout = open('/etc/dnsmasq.block', 'a')
+        fout.write('\n' + '127.0.0.1' + '\t' + domain)
+        fout.close()
+        log.debug('FG-INFO: Domain ' + domain + ' added to user blacklist')
+    else:
+        log.debug('FG-INFO: Something went wrong when adding Domain ' + domain + ' to user blacklist')
+    #utils.restart_dnsmasq()
+
+def domain_blacklist_check_if_exists(domain):
+    f = open("/etc/dnsmasq.block", "r")
+    d = f.readlines()
+    f.seek(0)
+    for i in d:
+        check_entry = '127.0.0.1' + '\t' + domain + '\n'
+        check_entry2 = '127.0.0.1' + '\t' + domain
+        if i == check_entry:
+            return False
+        elif i == check_entry2:
+            return False
+    f.close()
+    return True
+
+def del_domain_blacklist(domain):
+    if not domain_blacklist_check_if_exists(domain):
+        f = open("/etc/dnsmasq.block", "r+")
+        d = f.readlines()
+        f.seek(0)
+        for i in d:
+            check_domain = '127.0.0.1' + '\t' + domain + '\n'
+            check_domain2 = '127.0.0.1' + '\t' + domain
+            if check_domain2 not in i:
+                f.write(i)
+        f.truncate()
+        f.close()
+        log.debug('FG-INFO: Domain ' + domain + ' removed from user blacklist')
+    else:
+        log.debug('FG-INFO: Something went wrong when deleting Domain ' + domain + ' to user blacklist')
+    #utils.restart_dnsmasq()
