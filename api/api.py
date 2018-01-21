@@ -102,7 +102,7 @@ class FlaskAPI(threading.Thread):
         target = request.json['target']
         if action == 'blacklist':
             for entry in target:
-                if re.search('[a-zA-Z]', entry):
+                if utils.validate_domain(entry):
                     with lock:
                         if (entry not in homenet.user_domain_whitelist) and (entry not in homenet.user_domain_blacklist):
                             homenet.user_domain_blacklist.append(entry)
@@ -119,7 +119,7 @@ class FlaskAPI(threading.Thread):
             return resp
         elif action == 'unblock':
             for entry in target:
-                if re.search('[a-zA-Z]', entry):
+                if utils.validate_domain(entry):
                     with lock:
                         utils.del_domain_blacklist(entry)
                 else:
@@ -131,7 +131,7 @@ class FlaskAPI(threading.Thread):
             return resp
         elif action == 'whitelist':
             for entry in target:
-                if re.search('[a-zA-Z]', entry):
+                if utils.validate_domain(entry):
                     with lock:
                         if entry not in homenet.user_domain_whitelist:
                             homenet.user_domain_whitelist.append(entry)
