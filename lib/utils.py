@@ -430,7 +430,7 @@ def add_domain_blacklist(domain):
         log.debug('FG-INFO: Domain ' + domain + ' added to user blacklist')
     else:
         log.debug('FG-INFO: Something went wrong when adding Domain ' + domain + ' to user blacklist')
-    #utils.restart_dnsmasq()
+    utils.restart_dnsmasq()
 
 def domain_blacklist_check_if_exists(domain):
     f = open("/etc/dnsmasq.block", "r")
@@ -461,4 +461,4 @@ def del_domain_blacklist(domain):
         log.debug('FG-INFO: Domain ' + domain + ' removed from user blacklist')
     else:
         log.debug('FG-INFO: Something went wrong when deleting Domain ' + domain + ' to user blacklist')
-    #utils.restart_dnsmasq()
+    utils.restart_dnsmasq()

@@ -101,50 +101,48 @@ class FlaskAPI(threading.Thread):
         action = str(request.json['action'])
         target = request.json['target']
         if action == 'blacklist':
-            if re.search('[a-zA-Z]', target):
-                for domain in target:
+            for entry in target:
+                if re.search('[a-zA-Z]', entry):
                     with lock:
-                        if (domain not in homenet.user_whitelist) and (domain not in homenet.user_blacklist):
-                            homenet.user_blacklist.append(domain)
-                            log.debug('FG-INFO: Domain ' + domain + ' added to user blacklist')
-            else:
-                utils.flush_ipset_list('blacklist-user')
-                for ip in target:
+                        if (entry not in homenet.user_domain_whitelist) and (entry not in homenet.user_domain_blacklist):
+                            homenet.user_domain_blacklist.append(entry)
+                            utils.add_domain_blacklist(entry)
+                else:
+                    utils.flush_ipset_list('blacklist-user')
                     with lock:
-                        if (len(ip) >= 7) and (ip not in homenet.user_blacklist) and (ip not in homenet.user_whitelist):
-                            homenet.user_blacklist.append(ip)
-                            utils.add_ip_ipset_blacklist(ip, 'blacklist-user')
-                            log.debug('FG-INFO: IP ' + ip + 'added to user blacklist')
+                        if (len(entry) >= 7) and (entry not in homenet.user_blacklist) and (entry not in homenet.user_whitelist):
+                            homenet.user_blacklist.append(entry)
+                            utils.add_ip_ipset_blacklist(entry, 'blacklist-user')
 
             resp = Response()
             resp.status_code = 200
             return resp
         elif action == 'unblock':
-            if re.search('[a-zA-Z]', target):
-                for domain in target:
-                    utils.del_domain_blacklist(domain)
-            else:
-                for ip in target:
+            for entry in target:
+                if re.search('[a-zA-Z]', entry):
                     with lock:
-                        if (len(ip) >= 7) and (ip in homenet.user_blacklist):
-                            utils.del_ip_ipset_blacklist(ip, 'blacklist-user')
-                    resp = Response()
-                    resp.status_code = 200
-                    return resp
+                        utils.del_domain_blacklist(entry)
+                else:
+                    with lock:
+                        if (len(entry) >= 7) and (entry in homenet.user_blacklist):
+                            utils.del_ip_ipset_blacklist(entry, 'blacklist-user')
+            resp = Response()
+            resp.status_code = 200
+            return resp
         elif action == 'whitelist':
-            if re.search('[a-zA-Z]', target):
-                for domain in target:
+            for entry in target:
+                if re.search('[a-zA-Z]', entry):
                     with lock:
-                        if domain not in homenet.user_whitelist:
-                            homenet.user_whitelist.append(domain)
-            else:
-                for ip in target:
-                    if len(ip) >= 7:
-                        utils.del_ip_ipset_blacklist(ip, 'blacklist')
-                        utils.del_ip_ipset_blacklist(ip, 'blacklist-user')
+                        if entry not in homenet.user_domain_whitelist:
+                            homenet.user_domain_whitelist.append(entry)
+                            utils.del_domain_blacklist(entry)
+                else:
+                    if len(entry) >= 7:
+                        utils.del_ip_ipset_blacklist(entry, 'blacklist')
+                        utils.del_ip_ipset_blacklist(entry, 'blacklist-user')
                         with lock:
-                            if ip not in homenet.user_whitelist:
-                                homenet.user_whitelist.append(ip)
+                            if entry not in homenet.user_whitelist:
+                                homenet.user_whitelist.append(entry)
             resp = Response()
             resp.status_code = 200
             return resp
