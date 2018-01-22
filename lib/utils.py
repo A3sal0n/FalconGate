@@ -318,9 +318,7 @@ def reset_appliance():
 
 
 def restart_falcongate_service():
-    global homenet
     sys.stdout.flush()
-    del homenet
     time.sleep(1)
     gc.collect()
     os.system("service falcongate restart")
