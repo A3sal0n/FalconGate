@@ -100,12 +100,16 @@ class Conn:
         self.dst_port = None
         self.proto = None
         self.service = None
+        self.direction = None
         self.duration = 0
         self.client_bytes = 0
         self.server_bytes = 0
         self.client_packets = 0
         self.server_packets = 0
-        self.country_code = None
+        self.src_country_code = None
+        self.src_country_name = None
+        self.dst_country_code = None
+        self.dst_country_name = None
         self.counter = 0
 
 

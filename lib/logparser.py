@@ -12,6 +12,7 @@ import base64
 import json
 import sys
 import hashlib
+import GeoIP
 
 
 class ReadBroConn(threading.Thread):
@@ -22,6 +23,7 @@ class ReadBroConn(threading.Thread):
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
+        self.gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 
     def run(self):
         global homenet
@@ -92,16 +94,31 @@ class ReadBroConn(threading.Thread):
             log.debug('FG-WARN: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
 
-    @staticmethod
-    def map_conn_fields(fields):
+    def map_conn_fields(self, fields):
         conn = Conn()
         conn.ts = float(fields[0])
         conn.lseen = float(fields[0])
         conn.src_ip = fields[2]
+        src_cn = self.gi.country_name_by_addr(fields[2])
+        src_cc = self.gi.country_code_by_addr(fields[2])
+        if src_cc and src_cn:
+            conn.src_country_code = src_cc
+            conn.src_country_name = src_cn
         conn.dst_ip = fields[4]
+        dst_cn = self.gi.country_name_by_addr(fields[4])
+        dst_cc = self.gi.country_code_by_addr(fields[4])
+        if dst_cc and dst_cn:
+            conn.dst_country_code = dst_cc
+            conn.dst_country_name = dst_cn
         conn.dst_port = int(fields[5])
         conn.proto = fields[6]
         conn.service = fields[7]
+        if fields[12] == "T":
+            conn.direction = "outbound"
+        elif fields[12] == "F":
+            conn.direction = "inbound"
+        else:
+            pass
         try:
             conn.duration = float(fields[8])
         except ValueError:

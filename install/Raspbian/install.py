@@ -78,7 +78,7 @@ def main():
     print "Installing dependencies..."
     run_command("aptitude install -y dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset cmake make gcc "
                 "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip build-essential "
-                "dnsutils libsodium-dev locate bash-completion libsystemd-dev pkg-config nmap libssh-dev hydra")
+                "dnsutils libsodium-dev locate bash-completion libsystemd-dev pkg-config nmap libssh-dev hydra libgeoip-dev")
 
     os.chdir("../../tmp")
 
