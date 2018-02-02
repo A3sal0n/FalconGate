@@ -5,6 +5,7 @@ import time
 import lib.utils as utils
 import netifaces
 from lib.logger import *
+from lib.settings import homenet, lock
 
 
 class CheckConfigFileModification(threading.Thread):
@@ -17,8 +18,6 @@ class CheckConfigFileModification(threading.Thread):
         self.user_conf_file = 'html/user_config.ini'
 
     def run(self):
-        global homenet
-        global lock
 
         counter = 0
         while 1:
@@ -85,8 +84,6 @@ class CheckNetworkModifications(threading.Thread):
         self.threadID = threadID
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             gws = netifaces.gateways()

@@ -10,6 +10,7 @@ import requests
 import json
 import uuid
 import base64
+from lib.settings import homenet, lock
 
 
 class AlertReporter(threading.Thread):
@@ -19,8 +20,6 @@ class AlertReporter(threading.Thread):
         self.ctime = int(time.time())
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             self.ctime = int(time.time())

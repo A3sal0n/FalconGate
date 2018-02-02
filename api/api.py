@@ -8,10 +8,9 @@ import threading
 import json
 import lib.utils as utils
 from lib.logger import *
+from lib.settings import homenet, lock
 
 global app
-global homenet
-global lock
 
 app = Flask(__name__)
 

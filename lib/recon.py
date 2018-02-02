@@ -3,6 +3,7 @@ from lib.logger import *
 import time
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser
+from lib.settings import homenet, lock
 
 
 class PortScanner(threading.Thread):
@@ -11,8 +12,6 @@ class PortScanner(threading.Thread):
         self.threadID = threadID
 
     def run(self):
-        global homenet
-        global lock
 
         # Wait until all active devices have been populated during boot
         time.sleep(30)

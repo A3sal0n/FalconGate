@@ -14,6 +14,7 @@ import sys
 import gc
 import json
 import fileinput
+from lib.settings import homenet, lock
 
 
 class CleanOldHomenetObjects(threading.Thread):
@@ -24,8 +25,6 @@ class CleanOldHomenetObjects(threading.Thread):
         self.bro_file_path = '/usr/local/bro/logs/current/extract_files/'
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             self.ctime = int(time.time())
@@ -36,8 +35,6 @@ class CleanOldHomenetObjects(threading.Thread):
             time.sleep(600)
 
     def clean_old_host_objects(self):
-        global homenet
-        global lock
 
         with lock:
             for k in homenet.hosts.keys():
@@ -132,8 +129,6 @@ def create_alert_db():
 
 
 def add_alert_to_db(alert):
-    global homenet
-    global lock
     con = lite.connect('logs/alerts.sqlite')
     with con:
         cur = con.cursor()
@@ -209,22 +204,6 @@ def update_alert_nrep(alert_id, nrep):
         cur.execute("update alerts set nrep = ? where id = ?", (nrep, alert_id))
     con.commit()
     con.close()
-
-
-def get_top_domains(dbname):
-    con = lite.connect(dbname)
-    con.text_factory = str
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT domain FROM domains")
-        rows = cur.fetchall()
-        domains = []
-        if rows:
-            for row in rows:
-                domains.append(row[0])
-        else:
-            pass
-        return domains
 
 
 def validate_ip(ip):
@@ -379,7 +358,6 @@ def update_alert_handled(alert_id, handled):
 
 
 def get_active_devices():
-    global homenet
     devices = []
     try:
         for k in homenet.hosts.keys():
@@ -393,7 +371,6 @@ def get_active_devices():
 
 
 def get_network_config():
-    global homenet
     netconfig = []
     try:
         netconfig = {'interface': str(homenet.interface), 'ip': str(homenet.ip), 'gateway': str(homenet.gateway),

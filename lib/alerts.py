@@ -3,6 +3,7 @@ from lib.logger import *
 import lib.utils as utils
 import time
 import requests
+from lib.settings import homenet, lock
 
 
 class DailyAlerts(threading.Thread):
@@ -13,8 +14,6 @@ class DailyAlerts(threading.Thread):
         self.ctime = None
 
     def run(self):
-        global lock
-        global homenet
 
         while 1:
             self.ctime = int(time.time())
@@ -57,8 +56,6 @@ class HourlyAlerts(threading.Thread):
         self.ctime = None
 
     def run(self):
-        global lock
-        global homenet
 
         while 1:
             self.ctime = int(time.time())
@@ -104,8 +101,6 @@ class MinuteAlerts(threading.Thread):
         self.ctime = int(time.time())
 
     def run(self):
-        global lock
-        global homenet
 
         while 1:
             self.ctime = int(time.time())

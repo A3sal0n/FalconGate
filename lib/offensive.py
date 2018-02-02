@@ -5,6 +5,7 @@ import subprocess
 import re
 from lib.objects import *
 import lib.utils as utils
+from lib.settings import homenet, lock
 
 
 class ScheduledScans(threading.Thread):
@@ -15,8 +16,6 @@ class ScheduledScans(threading.Thread):
         self.hydra_regex = re.compile(r"^\[(\d+)\]\[(\w+)\]\shost\:\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+login\:\s(\b.+\b)\s+password\:\s\b(.+)\b$")
 
     def run(self):
-        global homenet
-        global lock
 
         # Wait until the port scan finished
         time.sleep(600)
@@ -76,8 +75,6 @@ class ScheduledScans(threading.Thread):
             time.sleep(86400)
 
     def brute_force_service(self, tip, service):
-        global homenet
-        global lock
 
         proc = subprocess.Popen(['/usr/bin/hydra', '-C', '/tmp/default_creds.csv', tip, service], stdout=subprocess.PIPE)
 

@@ -13,6 +13,7 @@ import json
 import sys
 import hashlib
 import GeoIP
+from lib.settings import homenet, lock, top_domains
 
 
 class ReadBroConn(threading.Thread):
@@ -26,8 +27,6 @@ class ReadBroConn(threading.Thread):
         self.gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             res = self.get_new_lines()
@@ -70,7 +69,7 @@ class ReadBroConn(threading.Thread):
                                                 homenet.hosts[cip].conns[cid].server_packets += int(fields[19])
                                                 homenet.hosts[cip].conns[cid].counter += 1
                         except Exception as e:
-                            log.debug('FG-WARN: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
+                            log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -91,7 +90,7 @@ class ReadBroConn(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-WARN: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
 
     def map_conn_fields(self, fields):
@@ -148,9 +147,6 @@ class ReadBroDNS(threading.Thread):
         self.new_lines = []
 
     def run(self):
-        global homenet
-        global lock
-        global top_domains
 
         while 1:
             res = self.get_new_lines()
@@ -195,7 +191,7 @@ class ReadBroDNS(threading.Thread):
                                                 if query not in homenet.hosts[cip].spammed_domains:
                                                     homenet.hosts[cip].spammed_domains.append(query)
                         except Exception as e:
-                            log.debug('FG-WARN: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
+                            log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -216,7 +212,7 @@ class ReadBroDNS(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-WARN: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
 
 
@@ -227,8 +223,6 @@ class ReadDHCPLeases(threading.Thread):
         self.ctime = None
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             self.ctime = int(time.time())
@@ -279,7 +273,7 @@ class ReadDHCPLeases(threading.Thread):
                 else:
                     pass
             except Exception as e:
-                log.debug('FG-WARN: read_dhcp_leases_log - Issues reading /var/log/dnsmasq.leases file')
+                log.debug('FG-DEBUG: read_dhcp_leases_log - Issues reading /var/log/dnsmasq.leases file')
             time.sleep(5)
 
     def create_alert(self, ts, ip, mac, hostname):
@@ -307,8 +301,6 @@ class ReadBroNotice(threading.Thread):
         self.recorded = []
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             try:
@@ -359,7 +351,7 @@ class ReadBroNotice(threading.Thread):
                             self.recorded.append(uid)
 
             except (IOError, OSError) as e:
-                log.debug('FG-WARN: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e.message))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -377,8 +369,6 @@ class ReadBroFiles(threading.Thread):
         self.bro_file_path = '/usr/local/bro/logs/current/extract_files/'
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             try:
@@ -430,9 +420,9 @@ class ReadBroFiles(threading.Thread):
                                                 homenet.hosts[rx_hosts].files[sha1].lseen = ts
                                     self.recorded.append(fuid)
                             except Exception as e:
-                                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
+                                log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
             except (IOError, OSError) as e:
-                log.debug('FG-WARN: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
+                log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -451,7 +441,6 @@ class ReadBroFiles(threading.Thread):
 
     @staticmethod
     def is_top_domain(ip):
-        global top_domains
 
         f = open('/usr/local/bro/logs/current/dns.log', 'r')
         lines = f.readlines()
@@ -469,7 +458,6 @@ class ReadBroFiles(threading.Thread):
 
     @staticmethod
     def cloud_submit_file(f, sha1, lhost, rhost):
-        global homenet
         try:
             with open(f, "rb") as target_file:
                 encoded_file = base64.b64encode(target_file.read())
@@ -506,8 +494,6 @@ class ReadBroHTTP(threading.Thread):
         self.new_lines = []
 
     def run(self):
-        global homenet
-        global lock
 
         while 1:
             res = self.get_new_lines()
@@ -546,7 +532,7 @@ class ReadBroHTTP(threading.Thread):
                                                     del homenet.hosts[sip].interesting_urls[0:50]
                                                     homenet.hosts[sip].interesting_urls.append(url)
                         except Exception as e:
-                            log.debug('FG-WARN: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
+                            log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -567,5 +553,5 @@ class ReadBroHTTP(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-WARN: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
             return False
