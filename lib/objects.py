@@ -159,8 +159,10 @@ class Network:
         self.gateway = None
         self.netmask = None
         self.net_cidr = None
-        self.bad_ips = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [], 'Ads': [], 'User': []}
-        self.bad_domains = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [], 'Ads': [], 'User': []}
+        self.bad_ips = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [],
+                        'Ads': [], 'User': []}
+        self.bad_domains = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [],
+                            'Ads': [], 'Crypto-miners': [], 'User': []}
         self.user_blacklist = []
         self.user_whitelist = []
         self.target_mime_types = ["application/x-7z-compressed", "application/x-ace-compressed", "application/x-shockwave-flash",
