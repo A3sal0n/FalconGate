@@ -17,6 +17,8 @@ import lib.reporter as reporter
 import lib.recon as recon
 import lib.offensive as offensive
 import api.api as api
+import lib.stats as stats
+
 
 # Create alert database if not there
 utils.create_alert_db()
@@ -39,6 +41,7 @@ sett.threads["alerts_minute"] = alerts.MinuteAlerts("alerts_minute")
 sett.threads["alert_reporter"] = reporter.AlertReporter("alert_reporter")
 sett.threads["port_scanner"] = recon.PortScanner("port_scanner")
 sett.threads["vuln_scanner"] = offensive.ScheduledScans("vuln_scanner")
+sett.threads["net_stats"] = stats.HourlyStats("net_stats")
 sett.threads["api"] = api.FlaskAPI("api")
 
 
@@ -111,7 +114,9 @@ def main():
 
     while True:
         try:
-            time.sleep(30)
+            time.sleep(60)
+            for k, v in sett.country_stats:
+                print k, v.get_stats(int(time.time()) - 10800, int(time.time()))
         except KeyboardInterrupt:
             log.debug('FG-INFO: Process terminated by keyboard interrupt')
             print 'Have a nice day!'

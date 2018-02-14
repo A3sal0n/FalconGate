@@ -1,3 +1,6 @@
+import collections
+
+
 class HostAlertTemplate:
     def __init__(self, homenet, alert):
         self.homenet = homenet
@@ -159,8 +162,10 @@ class Network:
         self.gateway = None
         self.netmask = None
         self.net_cidr = None
-        self.bad_ips = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [], 'Ads': [], 'User': []}
-        self.bad_domains = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [], 'Ads': [], 'User': []}
+        self.bad_ips = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [],
+                        'Ads': [], 'User': []}
+        self.bad_domains = {'Tor': [], 'Malware': [], 'Botnet': [], 'Hacking': [], 'Phishing': [], 'Ransomware': [],
+                            'Ads': [], 'Crypto-miners': [], 'User': []}
         self.user_blacklist = []
         self.user_whitelist = []
         self.target_mime_types = ["application/x-7z-compressed", "application/x-ace-compressed", "application/x-shockwave-flash",
@@ -244,3 +249,40 @@ class DefaultCredentials:
         self.port = ''
         self.user = ''
         self.password = ''
+
+
+class Country:
+    def __init__(self, code, name):
+        self.code = code
+        self.name = name
+        self.is_risky = self.is_risky(code)
+        self.hourly_stats = {}
+
+    @staticmethod
+    def is_risky(ccode):
+        risk_countries = ["CN", "US", "TR", "BR", "RU", "VN", "JP", "IN", "TW", "RO", "HU"]
+        if ccode in risk_countries:
+            return True
+        else:
+            return False
+
+    def get_stats(self, stime, etime):
+        sout = {"bsent": 0, "breceived": 0, "psent": 0, "preceived": 0, "nconn": 0}
+        st = collections.OrderedDict(sorted(self.hourly_stats))
+        for k, v in st.iteritems():
+            if stime <= k <= etime:
+                sout["bsent"] += v.data_sent
+                sout["breceived"] += v.data_received
+                sout["psent"] += v.pqt_sent
+                sout["preceived"] += v.pqt_received
+                sout["nconn"] += v.nconn
+        return sout
+
+
+class HourlyStats:
+    def __init__(self):
+        self.data_sent = 0
+        self.data_received = 0
+        self.pqt_sent = 0
+        self.pqt_received = 0
+        self.nconn = 0
