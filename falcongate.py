@@ -115,8 +115,6 @@ def main():
     while True:
         try:
             time.sleep(60)
-            for k, v in sett.country_stats:
-                print k, v.get_stats(int(time.time()) - 10800, int(time.time()))
         except KeyboardInterrupt:
             log.debug('FG-INFO: Process terminated by keyboard interrupt')
             print 'Have a nice day!'

@@ -47,6 +47,8 @@ threads = {}
 # Stats globals
 global country_stats
 country_stats = {}
+for k in CC.keys():
+    country_stats[k] = Country(k, CC[k])
 
 global hosts_stats
 hosts_stats = {}
