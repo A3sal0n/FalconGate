@@ -38,12 +38,21 @@ good_ips = []
 
 # Top domains whitelist
 global top_domains
-
 top_domains = get_top_domains("db/top_domains.sqlite")
 
 # Master thread list
 global threads
 threads = {}
+
+# Stats globals
+global country_stats
+country_stats = {}
+for k in CC.keys():
+    country_stats[k] = Country(k, CC[k])
+
+global hosts_stats
+hosts_stats = {}
+
 
 
 
