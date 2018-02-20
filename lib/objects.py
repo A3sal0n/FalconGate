@@ -169,6 +169,8 @@ class Network:
                             'Ads': [], 'Crypto-miners': [], 'User': []}
         self.user_blacklist = []
         self.user_whitelist = []
+        self.user_domain_blacklist = []
+        self.user_domain_whitelist = []
         self.target_mime_types = ["application/x-7z-compressed", "application/x-ace-compressed", "application/x-shockwave-flash",
                                   "application/pdf", "application/vnd.android.package-archive", "application/octet-stream",
                                   "application/x-bzip", "application/x-bzip2", "application/x-debian-package", "application/java-archive",

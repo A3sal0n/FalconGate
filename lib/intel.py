@@ -59,7 +59,13 @@ class DownloadIntel(threading.Thread):
 
                 for threat in homenet.bad_domains.keys():
                     for domain in homenet.bad_domains[threat]:
-                        self.all_domains.add(domain)
+                        if domain not in homenet.user_domain_whitelist:
+                            self.all_domains.add(domain)
+
+                # Adding user blacklisted domains
+                for entry in homenet.user_domain_blacklist:
+                    if entry not in homenet.user_domain_whitelist:
+                        self.all_domains.add(entry)
 
                 # Adding user blacklisted IP addresses
                 utils.flush_ipset_list('blacklist-user')
@@ -173,6 +179,9 @@ class CheckVirusTotalIntel(threading.Thread):
         self.threadID = threadID
 
     def run(self):
+        global homenet
+        global lock
+        global top_domains
 
         while 1:
             dns_lookup_list = {}
