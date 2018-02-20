@@ -8,7 +8,7 @@ import threading
 import json
 import lib.utils as utils
 from lib.logger import *
-from lib.settings import homenet, lock
+from lib.settings import homenet, lock, country_stats
 
 global app
 
@@ -161,16 +161,30 @@ class FlaskAPI(threading.Thread):
         else:
             abort(400)
 
-    @staticmethod
-    @app.route('/api/v1.0/falcongate/wit/ask', methods=['POST'])
-    def wit_bot_ask():
+    @app.route('/api/v1.0/falcongate/stats', methods=['POST'])
+    def get_stats(self):
         if not request.json:
             abort(400)
 
-        resp = Response()
-        resp.status_code = 200
-        return resp
+        stype = str(request.json['stats_type'])
+        stime = int(request.json['start_time'])
+        etime = int(request.json['end_time'])
+        if stype == 'country':
+            data = self.get_country_stats(stime, etime)
+            data = json.dumps(data)
+            resp = Response()
+            resp.data = data
+            resp.status_code = 200
+            resp.mimetype = "application/json"
+            return resp
+        else:
+            abort(400)
 
     @staticmethod
-    def debug():
-        assert app.debug is False
+    def get_country_stats(stime, etime):
+        countries = {}
+        for k in country_stats.keys():
+                stats = country_stats[k].get_stats(stime, etime)
+                if stats["nconn"] > 0:
+                    countries[k] = stats
+        return countries
