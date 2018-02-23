@@ -40,6 +40,7 @@ hideAll = function() {
 	$('.gmailTextBox').hide();
 	$('.cloudTextBox').hide();
 };
+
 hideStuff = function() {
 	<?php
 	$current_method = $config['main']['mailer_mode'];
@@ -66,6 +67,7 @@ hideStuff = function() {
 	}
 	?>
 };
+
 $(document).ready(function (e) {
 	hideStuff();
 	

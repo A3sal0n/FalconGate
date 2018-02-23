@@ -389,50 +389,10 @@ def ping_host(ip):
     else:
         return False
 
+
 def is_file_executable(file):
     output = subprocess.check_output(['file', file])
     if ("Installer" in output) or ("executable" in output):
         return True
     else:
         return False
-
-def add_domain_blacklist(domain):
-    if domain_blacklist_check_if_exists(domain):
-        fout = open('/etc/dnsmasq.block', 'a')
-        fout.write('\n' + '127.0.0.1' + '\t' + domain)
-        fout.close()
-        log.debug('FG-INFO: Domain ' + domain + ' added to user blacklist')
-    else:
-        log.debug('FG-INFO: Something went wrong when adding Domain ' + domain + ' to user blacklist')
-    utils.restart_dnsmasq()
-
-def domain_blacklist_check_if_exists(domain):
-    f = open("/etc/dnsmasq.block", "r")
-    d = f.readlines()
-    f.seek(0)
-    for i in d:
-        check_entry = '127.0.0.1' + '\t' + domain + '\n'
-        check_entry2 = '127.0.0.1' + '\t' + domain
-        if i == check_entry:
-            return False
-        elif i == check_entry2:
-            return False
-    f.close()
-    return True
-
-def del_domain_blacklist(domain):
-    if not domain_blacklist_check_if_exists(domain):
-        f = open("/etc/dnsmasq.block", "r+")
-        d = f.readlines()
-        f.seek(0)
-        for i in d:
-            check_domain = '127.0.0.1' + '\t' + domain + '\n'
-            check_domain2 = '127.0.0.1' + '\t' + domain
-            if check_domain2 not in i:
-                f.write(i)
-        f.truncate()
-        f.close()
-        log.debug('FG-INFO: Domain ' + domain + ' removed from user blacklist')
-    else:
-        log.debug('FG-INFO: Something went wrong when deleting Domain ' + domain + ' to user blacklist')
-    utils.restart_dnsmasq()

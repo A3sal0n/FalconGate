@@ -179,9 +179,6 @@ class CheckVirusTotalIntel(threading.Thread):
         self.threadID = threadID
 
     def run(self):
-        global homenet
-        global lock
-        global top_domains
 
         while 1:
             dns_lookup_list = {}
