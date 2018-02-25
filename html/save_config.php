@@ -2,10 +2,6 @@
 session_start();
 include_once 'includes/functions.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 ?>
 
 <?php
@@ -43,8 +39,6 @@ if (isset($_POST['blacklist'])){
 		}
 	}
 	$config->set('main', 'domain_blacklist', implode(",", $bl_domain_data));
-	$data = array("action" => "blacklist", "target" => implode(",", $bl_domain_data));
-	$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 	$config->set('main', 'blacklist', implode(",", $bl_ip_data));
 	$data = array("action" => "blacklist", "target" => implode(",", $bl_ip_data));
 	$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
@@ -61,8 +55,6 @@ if (isset($_POST['whitelist'])){
 		}
 	}
 	$config->set('main', 'domain_whitelist', implode(",", $wl_domain_data));
-	$data = array("action" => "whitelist", "target" => implode(",", $wl_domain_data));
-	$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 	$config->set('main', 'whitelist', implode(",", $wl_ip_data));
 	$data = array("action" => "whitelist", "target" => implode(",", $wl_ip_data));
 	$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
