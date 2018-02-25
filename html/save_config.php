@@ -2,10 +2,6 @@
 session_start();
 include_once 'includes/functions.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 ?>
 
 <?php
@@ -32,16 +28,36 @@ if (isset($_POST['email_watchlist'])){
     $config->set('main', 'email_watchlist', $_POST['email_watchlist']);
 }
 if (isset($_POST['blacklist'])){
-    $config->set('main', 'blacklist', $_POST['blacklist']);
     $target = explode(",", $_POST['blacklist']);
-    $data = array("action" => "blacklist", "target" => $target);
-    $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
+	$bl_domain_data = array();
+	$bl_ip_data = array();
+	foreach ($target as $entry){
+		if(preg_match("/[a-z][A-Z]/i", $entry)){
+			array_push($bl_domain_data, $entry);	
+		}else{
+			array_push($bl_ip_data, $entry);
+		}
+	}
+	$config->set('main', 'domain_blacklist', implode(",", $bl_domain_data));
+	$config->set('main', 'blacklist', implode(",", $bl_ip_data));
+	$data = array("action" => "blacklist", "target" => implode(",", $bl_ip_data));
+	$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 }
 if (isset($_POST['whitelist'])){
-    $config->set('main', 'whitelist', $_POST['whitelist']);
     $target = explode(",", $_POST['whitelist']);
-    $data = array("action" => "whitelist", "target" => $target);
-    $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
+	$wl_domain_data = array();
+	$wl_ip_data = array();
+	foreach ($target as $entry){
+		if(preg_match("/[a-z][A-Z]/i", $entry)){
+			array_push($wl_domain_data, $entry);	
+		}else{
+			array_push($wl_ip_data, $entry);
+		}
+	}
+	$config->set('main', 'domain_whitelist', implode(",", $wl_domain_data));
+	$config->set('main', 'whitelist', implode(",", $wl_ip_data));
+	$data = array("action" => "whitelist", "target" => implode(",", $wl_ip_data));
+	$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/response/host', json_encode($data));
 }
 if (isset($_POST['enable_cloud_scan'])){
     $config->set('main', 'cloud_malware_sandbox', 'true');
