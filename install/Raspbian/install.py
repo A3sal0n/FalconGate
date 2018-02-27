@@ -82,25 +82,14 @@ def main():
 
     os.chdir("../../tmp")
 
-    # Installing DNSCrypt from Raspbian's test packages
-    print "Installing DNSCrypt from source..."
-    run_command("wget https://download.dnscrypt.org/dnscrypt-proxy/LATEST.tar.bz2")
-    run_command("tar -xf LATEST.tar.bz2")
-    files = glob.glob("dnscrypt-proxy*")
-    if len(files) == 0:
-        print "dnscrypt-proxy folder not found in path!"
-        exit()
-    os.chdir(files[0])
-    run_command("ldconfig")
-    run_command("./configure --with-systemd")
-    run_command("make")
-    run_command("make install")
-    run_command("useradd -r -d /var/dnscrypt -m -s /usr/sbin/nologin dnscrypt")
-    shutil.copy("../../install/Raspbian/templates/dnscrypt-proxy.service.tpl", "/etc/systemd/system/dnscrypt-proxy.service")
-    shutil.copy("../../install/Raspbian/templates/dnscrypt-proxy.socket.tpl", "/etc/systemd/system/dnscrypt-proxy.socket")
-    run_command("systemctl enable dnscrypt-proxy.service")
-
-    os.chdir("../")
+    # Installing DNSCrypt
+    print "Installing DNSCrypt from its repository..."
+    run_command("mkdir /opt/dnscrypt-proxy")
+    run_command("wget https://github.com/jedisct1/dnscrypt-proxy/releases/download/2.0.4/dnscrypt-proxy-linux_arm-2.0.4.tar.gz")
+    run_command("tar -xf dnscrypt-proxy-linux_arm-2.0.4.tar.gz")
+    run_command("cp -R linux-arm/* /opt/dnscrypt-proxy/")
+    shutil.copy("../install/Raspbian/templates/dnscrypt-proxy.toml.tpl", "/opt/dnscrypt-proxy/dnscrypt-proxy.toml")
+    run_command("/opt/dnscrypt-proxy/dnscrypt-proxy -service install")
 
     # Installing Bro
     print "Installing Bro..."
