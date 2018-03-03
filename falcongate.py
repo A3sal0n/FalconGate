@@ -65,12 +65,18 @@ def main():
 
     log.debug('FG-INFO: main.py started')
 
-    time.sleep(15)
-
     # Store process ID and other parameters for the main thread
     sett.homenet.pid = os.getpid()
     sett.homenet.executable = sys.executable
     sett.homenet.args = sys.argv[:]
+
+    # Starting threads
+    for key in sett.threads.keys():
+        sett.threads[key].daemon = True
+        sett.threads[key].start()
+        log.debug('FG-INFO: Started thread ' + key)
+
+    time.sleep(15)
 
     try:
 
@@ -103,12 +109,6 @@ def main():
 
     except Exception as e:
         log.debug('FG-ERROR: FalconGate had issues detecting your network configuration')
-
-    # Starting threads
-    for key in sett.threads.keys():
-        sett.threads[key].daemon = True
-        sett.threads[key].start()
-        log.debug('FG-INFO: Started thread ' + key)
 
     log.debug('FG-DEBUG: Starting main loop')
 
