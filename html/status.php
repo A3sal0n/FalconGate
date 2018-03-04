@@ -1,4 +1,8 @@
 <?php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 session_start();
 
 include_once 'includes/functions.php';
@@ -12,6 +16,13 @@ if (login_check() != true){
 }
 require 'templates/header.html';
 ?>
+
+<script type="text/javascript">
+function show_hide_row(row)
+{
+ $("#"+row).toggle();
+}
+</script>
 
 <h1>Status</h1>
 
@@ -40,12 +51,15 @@ if (!$result){
     $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
     $obj = json_decode($result, true);
     echo ('<br><h2>Active home devices</h2>
-    <table class=TFtable width=98% halign=left><tr>
-    <td><b>MAC</b></td><td><b>IP Address</b></td><td><b>Vendor</b></td><td><b>Open Ports</b></td></tr>');
-    foreach ($obj as $device){
+    <table class=TFtable width=98% halign=left id=table_detail><tr>
+    <td><b>Hostname</b></td><td><b>MAC</b></td><td><b>IP Address</b></td><td><b>Vendor</b></td><td><b>Details</b></td></tr>');
+    $i = 0;
+	foreach ($obj as $device){
+		$i++;
         if ($device['ip'] == $ip){
             echo ('<tr><td>'.$mac.'</td>'.'<td>'.$device['ip'].'</td>'.'<td>FalconGate</td></tr>');
         }else{
+			$hostname = $device['hostname'];
             $open_ports = array();
             foreach ($device['tcp_ports'] as $port){
                 array_push($open_ports, 'TCP/'.$port);
@@ -53,7 +67,11 @@ if (!$result){
             foreach ($device['udp_ports'] as $port){
                 array_push($open_ports, 'UDP/'.$port);
             }
-            echo ('<tr><td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td>'.implode(', ', $open_ports).'</td></tr>');
+            echo ('<tr onclick=show_hide_row("hidden_row'.$i.'");><td>'.$device['hostname'].'</td>'.'<td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td><a href="#" onclick=show_hide_row("hidden_row'.$i.'");">Show more</a></td></tr>');
+			echo ('<tr id=hidden_row'.$i.' class=hidden_row><td colspan=5>');
+			echo ('<b>Hostname:</b> '.$device['hostname'].'<br><b>MAC Address: </b>'.$device['mac'].'<br><b>IP Address: </b>'.$device['ip'].'<br><b>Vendor: </b>'.$device['vendor'].'<br><b>Open Ports: </b>'.implode(', ', $open_ports).'');			
+			echo ('</td></tr>');
+			
         }
     }
     echo ('</table><br>');
