@@ -173,7 +173,6 @@ class FlaskAPI(threading.Thread):
         if stype == 'country':
             data = get_country_stats(stime, etime)
             data = json.dumps(data)
-            print data
             resp = Response()
             resp.data = data
             resp.status_code = 200
