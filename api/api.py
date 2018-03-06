@@ -161,8 +161,9 @@ class FlaskAPI(threading.Thread):
         else:
             abort(400)
 
+    @staticmethod
     @app.route('/api/v1.0/falcongate/stats', methods=['POST'])
-    def get_stats(self):
+    def get_stats():
         if not request.json:
             abort(400)
 
@@ -170,7 +171,7 @@ class FlaskAPI(threading.Thread):
         stime = int(request.json['start_time'])
         etime = int(request.json['end_time'])
         if stype == 'country':
-            data = self.get_country_stats(stime, etime)
+            data = get_country_stats(stime, etime)
             data = json.dumps(data)
             resp = Response()
             resp.data = data
@@ -180,11 +181,11 @@ class FlaskAPI(threading.Thread):
         else:
             abort(400)
 
-    @staticmethod
-    def get_country_stats(stime, etime):
-        countries = {}
-        for k in country_stats.keys():
-                stats = country_stats[k].get_stats(stime, etime)
-                if stats["nconn"] > 0:
-                    countries[k] = stats
-        return countries
+
+def get_country_stats(stime, etime):
+    countries = {}
+    for k in country_stats.keys():
+            stats = country_stats[k].get_stats(stime, etime)
+            if stats["nconn"] > 0:
+                countries[k] = stats
+    return countries
