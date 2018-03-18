@@ -362,7 +362,8 @@ def get_active_devices():
     try:
         for k in homenet.hosts.keys():
             device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor),
-                      'tcp_ports': homenet.hosts[k].tcp_ports, 'udp_ports': homenet.hosts[k].udp_ports}
+                      'tcp_ports': homenet.hosts[k].tcp_ports, 'udp_ports': homenet.hosts[k].udp_ports,
+                      'hostname': str(homenet.hosts[k].hostname)}
             devices.append(device)
     except Exception:
         pass

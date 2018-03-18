@@ -150,6 +150,24 @@ ul.vert-one li a.current:hover{
 .TFtable tr:nth-child(even){
 		background: #ffffff;
 	}
+	
+/* Content - Status (Show / Hide details)
+------------------*/	
+#table_detail
+{
+ text-align:left;
+ border-collapse: collapse;
+ color:#2E2E2E;
+ border:#A4A4A4;
+}
+#table_detail tr:hover
+{
+ background-color:#F2F2F2;
+}
+#table_detail .hidden_row
+{
+ display:none;
+}
 
 /* Content - Get Alerts (Show / Hide More)
 ------------------*/	
