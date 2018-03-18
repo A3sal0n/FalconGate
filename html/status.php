@@ -61,7 +61,7 @@ if (!$result){
             foreach ($device['udp_ports'] as $port){
                 array_push($open_ports, 'UDP/'.$port);
             }
-            echo ('<tr onclick=show_hide_row("hidden_row'.$i.'");><td>'.$device['hostname'].'</td>'.'<td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td><a href="#" onclick=show_hide_row("hidden_row'.$i.'");">Show more</a></td></tr>');
+            echo ('<tr style="cursor: pointer;" onclick=show_hide_row("hidden_row'.$i.'");><td>'.$device['hostname'].'</td>'.'<td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td><a href="#" onclick=show_hide_row("hidden_row'.$i.'");">Show more</a></td></tr>');
 			echo ('<tr id=hidden_row'.$i.' class=hidden_row><td colspan=5>');
 			echo ('<b>Hostname:</b> '.$device['hostname'].'<br><b>MAC Address: </b>'.$device['mac'].'<br><b>IP Address: </b>'.$device['ip'].'<br><b>Vendor: </b>'.$device['vendor'].'<br><b>Open Ports: </b>'.implode(', ', $open_ports).'');			
 			echo ('</td></tr>');
