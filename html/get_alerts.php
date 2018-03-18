@@ -80,6 +80,12 @@ function submitMe(dbid, handled)
     }
 
 </script>
+<script type="text/javascript">
+function show_hide_row(row)
+{
+ $("#"+row).toggle();
+}
+</script>
 
 
 <h1>Recent Alerts</h1>
@@ -126,19 +132,26 @@ if (!$result){
 	</table>
 <?php
 	
-    echo ('<table class=TFtable width=100% halign=left>');
+    echo ('<table class=TFtable width=100% halign=left id=table_detail>');
         echo ('<tr>');
 			echo ('<td nowrap><b>First seen</b></td><td nowrap><b>Last seen</b></td><td nowrap><b>Host</b></td><td nowrap><b>Threat</b></td><td nowrap><b>Indicators</b></td><td nowrap><b>Is reviewed?</b></td>');
 		echo ('</tr>');
 		
     if ($obj[0] != 'none'){
-        foreach ($obj as $alert){  
+		$i = 0;
+        foreach ($obj as $alert){
+				$i++;
 				if ($alert[9] == "0"){
 					$checkbox = "<input type=checkbox name=handled id=".$alert[0]." value=0 onclick='submitMe(".$alert[0].", 1);'>";
+					$rev = "No";
 				}else{
 					$checkbox = "<input type=checkbox name=handled id=".$alert[0]." value=1 onclick='submitMe(".$alert[0].", 0);' checked>";
+					$rev = "Yes";
 				}
-            echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td><td nowrap>'.$checkbox.'</td></tr>');
+            echo ('<tr onclick=show_hide_row("hidden_row'.$i.'");><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td><td nowrap>'.$checkbox.'</td></tr>');
+			echo ('<tr id=hidden_row'.$i.' class=hidden_row><td colspan=6>');
+			echo ('<b>Alert ID: </b>'.$alert[0].'<br><b>Threat Category: </b>'.$alert[6].'<br><b>First Seen: </b>'.date('Y/m/d H:i:s', $alert[2]).'<br><b>Last Seen: </b>'.date('Y/m/d H:i:s', $alert[3]).'<br><b>Source IP: </b>'.$alert[7].'<br><b>Alert Indicators: </b>'.str_replace('|','| ',$alert[8]).'<br><b>Alert reviewed? : </b>'.$rev.'<br><b>Alert description :</b>'.$alert[10].'<br><b>VirusTotal Link: </b><a target="_blank" href='.$alert[11].'>'.$alert[11].'</a>');
+			echo ('</td></tr>');
         }
     }
     echo ('</table><br>');

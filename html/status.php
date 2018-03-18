@@ -1,10 +1,5 @@
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 session_start();
-
 include_once 'includes/functions.php';
 
 ?>
@@ -59,7 +54,6 @@ if (!$result){
         if ($device['ip'] == $ip){
             echo ('<tr><td>'.$mac.'</td>'.'<td>'.$device['ip'].'</td>'.'<td>FalconGate</td></tr>');
         }else{
-			$hostname = $device['hostname'];
             $open_ports = array();
             foreach ($device['tcp_ports'] as $port){
                 array_push($open_ports, 'TCP/'.$port);
