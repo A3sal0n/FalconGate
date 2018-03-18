@@ -150,7 +150,7 @@ if (!$result){
 				}
             echo ('<tr style="cursor: pointer;" onclick=show_hide_row("hidden_row'.$i.'"); title="Click for more details"><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td><td nowrap>'.$checkbox.'</td></tr>');
 			echo ('<tr id=hidden_row'.$i.' class=hidden_row><td colspan=6>');
-			echo ('<b>Alert ID: </b>'.$alert[0].'<br><b>Threat Category: </b>'.$alert[6].'<br><b>First Seen: </b>'.date('Y/m/d H:i:s', $alert[2]).'<br><b>Last Seen: </b>'.date('Y/m/d H:i:s', $alert[3]).'<br><b>Source IP: </b>'.$alert[7].'<br><b>Alert Indicators: </b>'.str_replace('|','| ',$alert[8]).'<br><b>Alert reviewed? : </b>'.$rev.'<br><b>Alert description :</b>'.$alert[10].'<br><b>VirusTotal Link: </b><a target="_blank" href='.$alert[11].'>'.$alert[11].'</a>');
+			echo ('<b>Alert ID: </b>'.$alert[0].'<br><b>Threat Category: </b>'.$alert[6].'<br><b>First Seen: </b>'.date('Y/m/d H:i:s', $alert[2]).'<br><b>Last Seen: </b>'.date('Y/m/d H:i:s', $alert[3]).'<br><b>Source IP: </b>'.$alert[7].'<br><b>Alert Indicators: </b>'.str_replace('|','| ',$alert[8]).'<br><b>Alert reviewed? : </b>'.$rev.'<br><b>Alert description :</b>'.$alert[10].'<br><b>Reference: </b><a target="_blank" href='.$alert[11].'>'.$alert[11].'</a>');
 			echo ('</td></tr>');
         }
     }
