@@ -35,8 +35,7 @@ class ReadBroConn(threading.Thread):
                     fields = json.loads(line)
                     try:
                         cip = fields["id.orig_h"]
-                        cid = fields["id.orig_h"] + fields["id.resp_h"] + fields["id.resp_p"]
-                        cid = cid.strip(".")
+                        cid = fields["id.orig_h"] + "|" + fields["id.resp_h"] + "|" + str(fields["id.resp_p"])
                         with lock:
                             if cip in homenet.hosts:
                                 if cid not in homenet.hosts[cip].conns:
@@ -53,7 +52,7 @@ class ReadBroConn(threading.Thread):
                                             homenet.hosts[cip].conns[cid].lseen = float(fields["ts"])
                                             try:
                                                 homenet.hosts[cip].conns[cid].duration += float(fields["duration"])
-                                            except ValueError:
+                                            except KeyError:
                                                 pass
                                             try:
                                                 homenet.hosts[cip].conns[cid].client_bytes += int(fields["orig_ip_bytes"])
@@ -109,7 +108,10 @@ class ReadBroConn(threading.Thread):
             conn.dst_country_name = dst_cn
         conn.dst_port = int(fields["id.resp_p"])
         conn.proto = fields["proto"]
-        conn.service = fields["service"]
+        try:
+            conn.service = fields["service"]
+        except KeyError:
+            conn.service = None
         if fields["local_orig"] == "true":
             conn.direction = "outbound"
         elif fields["local_orig"] == "false":
@@ -118,7 +120,7 @@ class ReadBroConn(threading.Thread):
             pass
         try:
             conn.duration = float(fields["duration"])
-        except ValueError:
+        except KeyError:
             conn.duration = 0
         try:
             conn.client_bytes = int(fields["orig_ip_bytes"])
@@ -153,41 +155,52 @@ class ReadBroDNS(threading.Thread):
                     line = line.strip()
                     fields = json.loads(line)
                     try:
-                        if fields["query"] != '-' and utils.validate_domain(fields["query"]):
-                            query = fields["query"]
-                            sld = utils.get_sld(query)
-                            tld = utils.get_tld(query)
-                            cip = fields["id.orig_h"]
-                            if tld not in self.tld_whitelist:
-                                with lock:
-                                    if cip in homenet.hosts:
-                                        if fields["rcode_name"] != 'NXDOMAIN':
-                                            if query not in homenet.hosts[cip].dns:
-                                                request = DNSRequest()
-                                                request.ts = float(fields["ts"])
-                                                request.cip = cip
-                                                request.query = query
-                                                request.tld = utils.get_tld(query)
-                                                request.sld = sld
-                                                request.sip = fields["id.orig_h"]
-                                                request.qresult = fields["rcode_name"]
-                                                homenet.hosts[cip].dns[query] = request
-                                            else:
-                                                homenet.hosts[cip].dns[query].lseen = float(fields["ts"])
-                                                homenet.hosts[cip].dns[query].counter += 1
-                                        elif fields["rcode_name"] == 'NXDOMAIN':
+                        query = fields["query"]
+                    except KeyError:
+                        query = None
+                    #try:
+                    if (query is not None) and (query != '-') and utils.validate_domain(query):
+                        sld = utils.get_sld(query)
+                        tld = utils.get_tld(query)
+                        cip = fields["id.orig_h"]
+                        if tld not in self.tld_whitelist:
+                            with lock:
+                                if cip in homenet.hosts:
+                                    try:
+                                        rcode = fields["rcode_name"]
+                                    except KeyError:
+                                        rcode = None
+                                    if (rcode is not None) and (rcode != 'NXDOMAIN'):
+                                        if query not in homenet.hosts[cip].dns:
+                                            request = DNSRequest()
+                                            request.ts = float(fields["ts"])
+                                            request.cip = cip
+                                            request.query = query
+                                            request.tld = utils.get_tld(query)
+                                            request.sld = sld
+                                            request.sip = fields["id.orig_h"]
                                             try:
-                                                if utils.get_sld(query) not in top_domains:
-                                                    if query not in homenet.hosts[cip].dga_domains:
-                                                        homenet.hosts[cip].dga_domains.append(query)
+                                                request.qtype = fields["qtype_name"]
                                             except KeyError:
-                                                pass
+                                                request.qtype = None
+                                            request.qresult = rcode
+                                            homenet.hosts[cip].dns[query] = request
+                                        else:
+                                            homenet.hosts[cip].dns[query].lseen = float(fields["ts"])
+                                            homenet.hosts[cip].dns[query].counter += 1
+                                    elif rcode == 'NXDOMAIN':
+                                        try:
+                                            if utils.get_sld(query) not in top_domains:
+                                                if query not in homenet.hosts[cip].dga_domains:
+                                                    homenet.hosts[cip].dga_domains.append(query)
+                                        except KeyError:
+                                            pass
 
-                                        if query.startswith('mail.'):
-                                            if query not in homenet.hosts[cip].spammed_domains:
-                                                homenet.hosts[cip].spammed_domains.append(query)
-                    except Exception as e:
-                        log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
+                                    if (request.qtype == "MX") or query.startswith('mail.'):
+                                        if query not in homenet.hosts[cip].spammed_domains:
+                                            homenet.hosts[cip].spammed_domains.append(query)
+                    #except Exception as e:
+                    #    log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -371,12 +384,15 @@ class ReadBroFiles(threading.Thread):
                             tx_hosts = fields["tx_hosts"][0]
                             rx_hosts = fields["rx_hosts"][0]
                             conn_id = fields["conn_uids"][0]
-                            mime = fields["mime_type"]
-                            size = int(fields["total_bytes"])
+                            try:
+                                mime = fields["mime_type"]
+                            except KeyError:
+                                mime = None
+                            size = int(fields["seen_bytes"])
                             md5 = fields["md5"]
                             sha1 = fields["sha1"]
                             with lock:
-                                if (rx_hosts in homenet.hosts) and (mime in self.target_mime_types) and (sha1 != "-"):
+                                if (rx_hosts in homenet.hosts) and ((mime in self.target_mime_types) or (mime is None)) and (sha1 != "-"):
                                     if sha1 not in homenet.hosts[rx_hosts].files:
                                         file_obj = File()
                                         file_obj.ts = ts
