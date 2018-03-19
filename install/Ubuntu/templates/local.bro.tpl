@@ -95,4 +95,7 @@
 # Enable http logging
 @load base/protocols/http/main.bro
 
+# Enable json logging
+@load policy/tuning/json-logs.bro
+
 redef ignore_checksums = T;
