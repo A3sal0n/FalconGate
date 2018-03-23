@@ -112,10 +112,12 @@ class ReadBroConn(threading.Thread):
             conn.service = fields["service"]
         except KeyError:
             conn.service = None
-        if fields["local_orig"] == "true":
+        if (fields["local_orig"] is True) and (fields["local_resp"] is False):
             conn.direction = "outbound"
-        elif fields["local_orig"] == "false":
+        elif (fields["local_orig"] is False) and (fields["local_resp"] is True):
             conn.direction = "inbound"
+        elif (fields["local_orig"] is True) and (fields["local_resp"] is True):
+            conn.direction = "internal"
         else:
             pass
         try:
