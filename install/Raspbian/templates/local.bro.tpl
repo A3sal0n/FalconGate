@@ -51,7 +51,7 @@
 @load protocols/conn/known-hosts
 @load protocols/conn/known-services
 @load protocols/ssl/known-certs
-@load policy/misc/known-devices
+#@load policy/misc/known-devices
 
 # This script enables SSL/TLS certificate validation.
 @load protocols/ssl/validate-certs
