@@ -32,8 +32,8 @@ class ReadBroConn(threading.Thread):
             if res:
                 for line in self.new_lines:
                     line = line.strip()
-                    fields = json.loads(line)
                     try:
+                        fields = json.loads(line)
                         cip = fields["id.orig_h"]
                         cid = fields["id.orig_h"] + "|" + fields["id.resp_h"] + "|" + str(fields["id.resp_p"])
                         with lock:
@@ -155,54 +155,55 @@ class ReadBroDNS(threading.Thread):
             if res:
                 for line in self.new_lines:
                     line = line.strip()
-                    fields = json.loads(line)
                     try:
-                        query = fields["query"]
-                    except KeyError:
-                        query = None
-                    #try:
-                    if (query is not None) and (query != '-') and utils.validate_domain(query):
-                        sld = utils.get_sld(query)
-                        tld = utils.get_tld(query)
-                        cip = fields["id.orig_h"]
-                        if tld not in self.tld_whitelist:
-                            with lock:
-                                if cip in homenet.hosts:
-                                    try:
-                                        rcode = fields["rcode_name"]
-                                    except KeyError:
-                                        rcode = None
-                                    if (rcode is not None) and (rcode != 'NXDOMAIN'):
-                                        if query not in homenet.hosts[cip].dns:
-                                            request = DNSRequest()
-                                            request.ts = float(fields["ts"])
-                                            request.cip = cip
-                                            request.query = query
-                                            request.tld = utils.get_tld(query)
-                                            request.sld = sld
-                                            request.sip = fields["id.orig_h"]
-                                            try:
-                                                request.qtype = fields["qtype_name"]
-                                            except KeyError:
-                                                request.qtype = None
-                                            request.qresult = rcode
-                                            homenet.hosts[cip].dns[query] = request
-                                        else:
-                                            homenet.hosts[cip].dns[query].lseen = float(fields["ts"])
-                                            homenet.hosts[cip].dns[query].counter += 1
-                                    elif rcode == 'NXDOMAIN':
+                        fields = json.loads(line)
+                        if 'query' in fields:
+                            query = fields["query"]
+                        else:
+                            query = None
+                        if (query is not None) and (query != '-') and utils.validate_domain(query):
+                            sld = utils.get_sld(query)
+                            tld = utils.get_tld(query)
+                            cip = fields["id.orig_h"]
+                            if tld not in self.tld_whitelist:
+                                with lock:
+                                    if cip in homenet.hosts:
                                         try:
-                                            if utils.get_sld(query) not in top_domains:
-                                                if query not in homenet.hosts[cip].dga_domains:
-                                                    homenet.hosts[cip].dga_domains.append(query)
+                                            rcode = fields["rcode_name"]
                                         except KeyError:
-                                            pass
+                                            rcode = None
+                                        if rcode is not None:
+                                            if query not in homenet.hosts[cip].dns:
+                                                request = DNSRequest()
+                                                request.ts = float(fields["ts"])
+                                                request.cip = cip
+                                                request.query = query
+                                                request.tld = utils.get_tld(query)
+                                                request.sld = sld
+                                                request.sip = fields["id.orig_h"]
+                                                try:
+                                                    request.qtype = fields["qtype_name"]
+                                                except KeyError:
+                                                    request.qtype = None
+                                                request.qresult = rcode
+                                                homenet.hosts[cip].dns[query] = request
+                                            else:
+                                                homenet.hosts[cip].dns[query].lseen = float(fields["ts"])
+                                                homenet.hosts[cip].dns[query].counter += 1
 
-                                    if (request.qtype == "MX") or query.startswith('mail.'):
-                                        if query not in homenet.hosts[cip].spammed_domains:
-                                            homenet.hosts[cip].spammed_domains.append(query)
-                    #except Exception as e:
-                    #    log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
+                                        if rcode == 'NXDOMAIN':
+                                            try:
+                                                if utils.get_sld(query) not in top_domains:
+                                                    if query not in homenet.hosts[cip].dga_domains:
+                                                        homenet.hosts[cip].dga_domains.append(query)
+                                            except KeyError:
+                                                pass
+
+                                        if (request.qtype == "MX") or query.startswith('mail.'):
+                                            if query not in homenet.hosts[cip].spammed_domains:
+                                                homenet.hosts[cip].spammed_domains.append(query)
+                    except Exception as e:
+                        log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -352,7 +353,7 @@ class ReadBroNotice(threading.Thread):
                                     homenet.hosts[src].alerts.append(alert_id)
                         self.recorded.append(uid)
 
-            except (IOError, OSError) as e:
+            except Exception as e:
                 log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e.message))
 
             if len(self.recorded) > 100000:
@@ -378,8 +379,8 @@ class ReadBroFiles(threading.Thread):
                 lines = f.readlines()
                 for line in lines:
                     line = line.strip()
-                    fields = json.loads(line)
                     try:
+                        fields = json.loads(line)
                         fuid = fields["fuid"]
                         if fuid not in self.recorded:
                             ts = float(fields["ts"])
@@ -451,11 +452,14 @@ class ReadBroFiles(threading.Thread):
 
         for line in lines:
             if ip in line:
-                fields = json.loads(line)
-                query = fields["query"]
-                sld = utils.get_sld(query)
-                if sld in top_domains:
-                    return True
+                try:
+                    fields = json.loads(line)
+                    query = fields["query"]
+                    sld = utils.get_sld(query)
+                    if sld in top_domains:
+                        return True
+                except ValueError:
+                    pass
 
         return False
 
@@ -503,8 +507,8 @@ class ReadBroHTTP(threading.Thread):
             if res:
                 for line in self.new_lines:
                     line = line.strip()
-                    fields = json.loads(line)
                     try:
+                        fields = json.loads(line)
                         sip = fields["id.orig_h"]
                         with lock:
                             if sip in homenet.hosts:
