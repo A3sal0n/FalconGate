@@ -6,33 +6,32 @@ import fileinput
 import re
 from subprocess import Popen, PIPE
 
-
-def get_default_gateway():
-    proc = Popen(['ip', 'route'], stdout=PIPE)
-    out, err = proc.communicate()
-    lines = out.split("\n")
-    flag = False
-    for line in lines:
-        fields = line.split()
-        try:
-            if fields[0] == 'default' and len(fields) >= 5:
-                gw = fields[2]
-                iface = fields[4]
-                flag = True
-                return (iface, gw)
-        except Exception:
-            pass
-    if not flag:
-        print 'It was not possible to detect the default gateway. Try to configure manually your device.'
+# Edit the variables below to reflect your own configuration
+# Static interface
+IFACE0 = 'ens33'
+# DHCP interface
+IFACE1 = 'ens34'
+# IP address of the static interface
+STATIP = '192.168.0.2'
+# Gateway for the static interface
+GATEWAY = '192.168.0.1'
+# Network mask for the static interface
+NETMASK = '255.255.255.0'
+# Start IP for Falcongate DHCP range
+DHCPSTART = '192.168.0.4'
+# Final IP for Falcongate DHCP range
+DHCPEND = '192.168.0.100'
 
 
 def run_command(cmd):
     os.system(cmd)
 
 
-template_list = ["templates/config.ini.tpl", "templates/interfaces.tpl", "templates/broctl.tpl", "templates/dnsmasq.conf.tpl",
+template_list = ["templates/config.ini.tpl", "templates/interfaces.tpl", "templates/broctl.tpl",
+                 "templates/dnsmasq.conf.tpl",
                  "templates/local.bro.tpl", "templates/nginx_default_site.tpl",
-                 "templates/dhcpcd.conf.tpl", "templates/falcongate.service.tpl", "templates/node.cfg.tpl"]
+                 "templates/dhcpcd.conf.tpl", "templates/falcongate.service.tpl", "templates/node.cfg.tpl",
+                 "fw/iptables.rules"]
 
 
 def main():
@@ -44,30 +43,16 @@ def main():
     root_dir = os.getcwd()
     os.chdir(install_dir)
 
-    # Detecting default gateway
-    print "Detecting default gateway..."
-    (iface0, gw) = get_default_gateway()
-
-    print iface0, gw
-
-    iface1 = iface0 + ':1'
-
-    octects = str(gw).split(".")
-    STATIP = octects[0] + "." + octects[1] + "." + octects[2] + ".2"
-    dhcpstart = octects[0] + "." + octects[1] + "." + octects[2] + ".4"
-    dhcpend = octects[0] + "." + octects[1] + "." + octects[2] + ".254"
-    netmask = '255.255.255.0'
-
     for f in template_list:
         for line in fileinput.input(f, inplace=1):
             line = re.sub("\$FALCONGATEDIR\$", root_dir, line.rstrip())
-            line = re.sub("\$IFACE0\$", iface0, line.rstrip())
-            line = re.sub("\$IFACE1\$", iface1, line.rstrip())
+            line = re.sub("\$IFACE0\$", IFACE0, line.rstrip())
+            line = re.sub("\$IFACE1\$", IFACE1, line.rstrip())
             line = re.sub("\$STATIP\$", STATIP, line.rstrip())
-            line = re.sub("\$NETMASK\$", netmask, line.rstrip())
-            line = re.sub("\$GATEWAY\$", gw, line.rstrip())
-            line = re.sub("\$DHCPSTART\$", dhcpstart, line.rstrip())
-            line = re.sub("\$DHCPEND\$", dhcpend, line.rstrip())
+            line = re.sub("\$NETMASK\$", NETMASK, line.rstrip())
+            line = re.sub("\$GATEWAY\$", GATEWAY, line.rstrip())
+            line = re.sub("\$DHCPSTART\$", DHCPSTART, line.rstrip())
+            line = re.sub("\$DHCPEND\$", DHCPEND, line.rstrip())
             print(line)
 
     print "Updating apt sources..."
@@ -126,7 +111,7 @@ def main():
     shutil.copy("templates/falcongate.service.tpl", "/etc/systemd/system/falcongate.service")
     shutil.copy("templates/dhcpcd.conf.tpl", "/etc/dhcpcd.conf")
     shutil.copy("templates/sysctl.conf.tpl", "/etc/sysctl.conf")
-    
+
     # Creating domain block file for dnsmasq
     run_command("touch /etc/dnsmasq.block")
 
@@ -167,6 +152,7 @@ def main():
     print "Installation finished!\n" \
           "Disable your router's DHCP function and reboot the FalconGate server to start protecting your network.\n" \
           "Have a good day!"
+
 
 if __name__ == '__main__':
     main()
