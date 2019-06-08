@@ -74,11 +74,6 @@ Currently Falcongate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 - [Install from source on Raspberry Pi and Raspbian](https://github.com/A3sal0n/FalconGate/wiki/Install-from-source#installing-falcongate-from-source-on-raspberry-pi-with-raspbian)
 - [Install from source on Ubuntu 16.04](https://github.com/A3sal0n/FalconGate/wiki/Install-from-source#installing-falcongate-from-source-on-ubuntu-1604)
 
-### Falcongate Public API
-
-Falcongate uses its own cloud based API engine to support the capabilities of the platform. Currently our API provides access to centrally collected lists of malicious IP addresses and domains used by malware and cyber criminals. All the sources used to collect this information are open source and publicly available. Our API also allows the access to our online malware sandbox which can be used to scan suspicious files downloaded in your network and detect malware attacks.
-
-You can register to get access to our public API [here](http://eepurl.com/cHtpQj). Once you receive your access key you can configure it in Falcongate's webgui to start receiving the updates.
 
 ### Limitations
 
@@ -93,7 +88,7 @@ You can subscribe to our [newsletter](http://eepurl.com/cvwEYj) to receive news 
 
 ### Donate
 
-So far we have been running this project with money from our own pockets. We have plans to continue expanding the capabilities of FalconGate but unfortunately many of the things we have in mind will require some additional level of investment. If you like our project or you have found it useful please consider donating some money to support us.
+If you like our project or you have found it useful please consider donating some money to support us.
 
 **Paypal:** https://www.paypal.me/FalconGate
 
