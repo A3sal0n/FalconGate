@@ -1,0 +1,11 @@
+setuptools
+Flask
+netaddr
+netifaces
+python-libnmap
+requests
+sh
+ua-parser
+user-agents
+pygtail
+GeoIP

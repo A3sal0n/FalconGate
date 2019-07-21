@@ -40,7 +40,7 @@ slaac private
 # server, but it should not be run by default.
 nohook lookup-hostname
 
-interface $IFACE0$
-static ip_address=$STATIP$/24
-static routers=$GATEWAY$
+interface IFACE0
+static ip_address=IP0/32
+static routers=GATEWAY
 static domain_name_servers=8.8.8.8 8.8.4.4

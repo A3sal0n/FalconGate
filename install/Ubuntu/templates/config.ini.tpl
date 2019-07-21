@@ -1,5 +1,5 @@
 [main]
-iface = $IFACE0$
+iface = IFACE0
 
 [api_urls]
 fg_api_intel_url = https://intel.falcongate.cz/

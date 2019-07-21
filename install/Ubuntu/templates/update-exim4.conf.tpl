@@ -17,7 +17,7 @@
 # This is a Debian specific file
 
 dc_eximconfig_configtype='internet'
-dc_other_hostnames='raspberrypi'
+dc_other_hostnames='falcongate'
 dc_local_interfaces='127.0.0.1 ; ::1'
 dc_readhost=''
 dc_relay_domains=''

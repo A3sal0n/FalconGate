@@ -68,26 +68,26 @@ def main():
                 "g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev git python-pip dnscrypt-proxy nmap hydra "
                 "libgeoip-dev")
 
-    # Installing Bro
-    print "Installing Bro..."
+    # Installing Zeek
+    print "Installing Zeek..."
     os.chdir("../../tmp")
-    print "Cloning Bro repo..."
-    run_command("git clone --recursive git://git.bro.org/bro")
-    os.chdir("bro")
-    print "Configuring Bro..."
+    print "Cloning Zeek repo..."
+    run_command("git clone --recursive https://github.com/zeek/zeek")
+    os.chdir("zeek")
+    print "Configuring Zeek..."
     run_command("./configure")
-    print "Building Bro..."
+    print "Building Zeek..."
     print "Sit back and relax because this can take quite some time :)"
     run_command("make -j2")
-    print "Installing Bro..."
+    print "Installing Zeek..."
     run_command("make install")
     os.chdir(install_dir)
-    run_command("rm -rf ../../tmp/bro*")
+    run_command("rm -rf ../../tmp/zeek*")
     print "Configuring broctl service..."
     shutil.copy("templates/broctl.tpl", "/etc/init.d/broctl")
     run_command("chmod +x /etc/init.d/broctl")
     run_command("update-rc.d broctl defaults")
-    print "Copying and installing default Bro policies..."
+    print "Copying and installing default Zeek policies..."
     shutil.copy("templates/local.bro.tpl", "/usr/local/bro/share/bro/site/local.bro")
     shutil.copy("templates/node.cfg.tpl", "/usr/local/bro/etc/node.cfg")
     run_command("mkdir /usr/local/bro/share/bro/policy/FalconGate")

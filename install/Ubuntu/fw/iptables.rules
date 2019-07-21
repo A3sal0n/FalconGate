@@ -3,25 +3,19 @@
 :INPUT ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
--A POSTROUTING -o $IFACE0$ -j MASQUERADE
+-A POSTROUTING -o IFACE1 -j MASQUERADE
 COMMIT
 *filter
 :INPUT ACCEPT [0:0]
 :FORWARD ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -i IFACE0 -j ACCEPT
 -A INPUT -m set --match-set blacklist src,dst -j DROP
 -A INPUT -m set --match-set blacklist-user src,dst -j DROP
 -A FORWARD -m set --match-set blacklist src,dst -j DROP
 -A FORWARD -m set --match-set blacklist-user src,dst -j DROP
+-A FORWARD -i IFACE0 -o IFACE1 -j ACCEPT
+-A FORWARD -i IFACE1 -o IFACE0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 COMMIT
-*mangle
-:PREROUTING ACCEPT [0:0]
-:INPUT ACCEPT [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-:POSTROUTING ACCEPT [0:0]
-COMMIT
-*raw
-:PREROUTING ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-COMMIT
+
