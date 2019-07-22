@@ -2,20 +2,20 @@
 
 # Edit the variables below to reflect your own configuration
 # Inbound interface
-IFACE0 = ""
-IP0 = ""
+IFACE0="enp0s3"
+IP0="192.168.0.2"
 # Outbound interface
-IFACE1 = ""
-IP1 = ""
-GATEWAY = ""
-NETMASK = ""
+IFACE1="enp0s8"
+IP1="192.168.0.3"
+GATEWAY="192.168.0.1"
+NETMASK="255.255.255.0"
 # DHCP range
-DHCPSTART = ""
-DHCPEND = ""
+DHCPSTART="192.168.0.100"
+DHCPEND="192.168.0.200"
 
-if (whoami != root)
-    then echo "Please run as root"
-    exit
+if [ "$(whoami)" != "root" ]; then
+	echo "Sorry, you are not root."
+	exit 1
 fi
 
 echo "Updating system software..."
