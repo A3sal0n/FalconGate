@@ -9,15 +9,15 @@ touch /var/lock/broctl
 case "$1" in
   start)
     echo "Starting Bro service "
-    nohup /opt/bro/bin/broctl start > /dev/null
+    nohup /opt/zeek/bin/zeekctl start > /dev/null
     ;;
   stop)
     echo "Stopping Bro service"
-    nohup /opt/bro/bin/broctl stop > /dev/null
+    nohup /opt/zeek/bin/zeekctl stop > /dev/null
     ;;
    restart)
     echo "Restarting Bro service"
-    nohup /opt/bro/bin/broctl restart > /dev/null
+    nohup /opt/zeek/bin/zeekctl restart > /dev/null
     ;;
   *)
     echo "Usage: /etc/init.d/broctl {start|stop|restart}"

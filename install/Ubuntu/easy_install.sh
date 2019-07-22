@@ -35,6 +35,10 @@ sleep 3
 
 git clone https://github.com/A3sal0n/FalconGate.git
 
+cd FalconGate/
+
+git pull --all && git checkout dev
+
 
 echo "Creating Python3 virtual environment and installing dependencies..."
 sleep 3
@@ -143,7 +147,7 @@ update-rc.d broctl defaults
 
 mkdir /opt/zeek/share/zeek/policy/FalconGate
 cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
-/opt/zeek/bin/broctl install
+/opt/zeek/bin/zeekctl install
 
 # Apply network configuration
 netplan apply
