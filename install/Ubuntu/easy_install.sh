@@ -43,6 +43,7 @@ cd FalconGate/
 
 git pull --all && git checkout dev
 
+cd ../
 
 echo "Creating Python3 virtual environment and installing dependencies..."
 sleep 3
@@ -159,6 +160,7 @@ ipset create blacklist hash:ip maxelem 500000
 ipset create blacklist-user hash:ip
 cp FalconGate/install/Ubuntu/fw/firewall /etc/network/if-pre-up.d/firewall
 chmod +x /etc/network/if-pre-up.d/firewall
+mkdir /etc/network/if-down.d
 cp FalconGate/install/Ubuntu/fw/firewall-down /etc/network/if-down.d/firewall-down
 chmod +x /etc/network/if-down.d/firewall-down
 echo 1 > /proc/sys/net/ipv4/ip_forward
