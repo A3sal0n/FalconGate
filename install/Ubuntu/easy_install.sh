@@ -1,17 +1,21 @@
 #!/bin/bash
 
+# Find default gateway
+GATE=$(ip route | gawk 'match($0, /default\s+via\s+(.+)\s+dev\s+enp0s3/, a) {print a[1]}')
+BASE=$(echo $GATE | gawk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+/, a) {print a[1]}')
+
 # Edit the variables below to reflect your own configuration
 # Inbound interface
 IFACE0="enp0s3"
-IP0="192.168.0.2"
+IP0="$BASE.2"
 # Outbound interface
 IFACE1="enp0s8"
-IP1="192.168.0.3"
-GATEWAY="192.168.0.1"
+IP1="$BASE.3"
+GATEWAY=$GATE
 NETMASK="255.255.255.0"
 # DHCP range
-DHCPSTART="192.168.0.100"
-DHCPEND="192.168.0.200"
+DHCPSTART="$BASE.100"
+DHCPEND="$BASE.200"
 
 if [ "$(whoami)" != "root" ]; then
 	echo "Sorry, you are not root."
