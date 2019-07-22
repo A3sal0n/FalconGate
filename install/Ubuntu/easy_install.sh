@@ -157,7 +157,9 @@ cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
 # Additional firewall configuration
 ipset create blacklist hash:ip maxelem 500000
 ipset create blacklist-user hash:ip
+cp FalconGate/install/Ubuntu/fw/firewall /etc/network/if-pre-up.d/firewall
 chmod +x /etc/network/if-pre-up.d/firewall
+cp FalconGate/install/Ubuntu/fw/firewall-down /etc/network/if-down.d/firewall-down
 chmod +x /etc/network/if-down.d/firewall-down
 echo 1 > /proc/sys/net/ipv4/ip_forward
 iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
