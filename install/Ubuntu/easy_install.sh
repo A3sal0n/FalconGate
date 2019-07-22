@@ -153,8 +153,6 @@ mkdir /opt/zeek/share/zeek/policy/FalconGate
 cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
 /opt/zeek/bin/zeekctl install
 
-# Apply network configuration
-netplan apply
 
 # Additional firewall configuration
 ipset create blacklist hash:ip maxelem 500000
@@ -170,3 +168,7 @@ chown www-data:www-data FalconGate/html/user_config.ini
 chown www-data:www-data FalconGate/html/pwd.db
 systemctl enable falcongate.service
 
+echo "All tasks finished!"
+echo "Restart your system to enable the changes"
+echo "After restart you can connect to your Falcongate system using the command below:"
+echo "ssh ubuntu@$BASE.02"

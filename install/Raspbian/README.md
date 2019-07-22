@@ -1,1 +1,0 @@
-This installer was tested on Raspian Stretch Lite and Raspberry Pi 2/3 (http://downloads.raspberrypi.org/raspbian/images/raspbian-2017-09-08/2017-09-07-raspbian-stretch.zip). Not backwards compatible with older versions of Raspbian.
