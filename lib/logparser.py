@@ -354,7 +354,7 @@ class ReadBroNotice(threading.Thread):
                         self.recorded.append(uid)
 
             except Exception as e:
-                log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
