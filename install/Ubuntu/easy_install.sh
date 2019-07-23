@@ -166,6 +166,11 @@ chmod +x /etc/network/if-down.d/firewall-down
 echo 1 > /proc/sys/net/ipv4/ip_forward
 iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
 
+# Disable systemd-resolve
+systemctl disable systemd-resolved.service
+systemctl stop systemd-resolved
+ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
 # Other
 touch /etc/dnsmasq.block
 chown www-data:www-data FalconGate/html/user_config.ini
