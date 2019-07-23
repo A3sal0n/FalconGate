@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/fg/bin/python3
 
 import os
 import socket
