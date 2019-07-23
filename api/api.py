@@ -85,7 +85,7 @@ class FlaskAPI(threading.Thread):
             else:
                 abort(400)
         except Exception as e:
-            log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
             resp = Response()
             resp.status_code = 500
             return resp

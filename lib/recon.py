@@ -38,7 +38,7 @@ class PortScanner(threading.Thread):
                                     if serv.port not in homenet.hosts[host.address].udp_ports:
                                         homenet.hosts[host.address].udp_ports.append(serv.port)
             except Exception as e:
-                log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
 
             log.debug('FG-INFO: Port scan finished')
 

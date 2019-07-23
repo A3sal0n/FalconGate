@@ -78,7 +78,7 @@ class AlertReporter(threading.Thread):
             server.quit()
             return True
         except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
             return False
 
     def sendmail_gmail(self, report, fromaddr, passwd):
@@ -98,7 +98,7 @@ class AlertReporter(threading.Thread):
             server.quit()
             return True
         except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
             return False
 
     def send_alert_cloud(self, alert):
@@ -131,5 +131,5 @@ class AlertReporter(threading.Thread):
             else:
                 return False
         except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
             return False

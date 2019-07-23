@@ -66,7 +66,7 @@ class ReadBroConn(threading.Thread):
                                             homenet.hosts[cip].conns[cid].server_packets += int(fields["resp_pkts"])
                                             homenet.hosts[cip].conns[cid].counter += 1
                     except Exception as e:
-                        log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
+                        log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -87,7 +87,7 @@ class ReadBroConn(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e))
             return False
 
     def map_conn_fields(self, fields):
@@ -203,7 +203,7 @@ class ReadBroDNS(threading.Thread):
                                             if query not in homenet.hosts[cip].spammed_domains:
                                                 homenet.hosts[cip].spammed_domains.append(query)
                     except Exception as e:
-                        log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
+                        log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -224,7 +224,7 @@ class ReadBroDNS(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e))
             return False
 
 
@@ -424,9 +424,9 @@ class ReadBroFiles(threading.Thread):
                                         homenet.hosts[rx_hosts].files[sha1].lseen = ts
                             self.recorded.append(fuid)
                     except Exception as e:
-                        log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
+                        log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e) + " - " + str(sys.exc_info()[2].tb_lineno))
             except (IOError, OSError) as e:
-                log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e.message) + " - " + str(sys.exc_info()[2].tb_lineno))
+                log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e) + " - " + str(sys.exc_info()[2].tb_lineno))
 
             if len(self.recorded) > 100000:
                 del self.recorded[:]
@@ -538,7 +538,7 @@ class ReadBroHTTP(threading.Thread):
                                                 del homenet.hosts[sip].interesting_urls[0:50]
                                                 homenet.hosts[sip].interesting_urls.append(url)
                     except Exception as e:
-                        log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
+                        log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e))
             time.sleep(5)
 
     def get_new_lines(self):
@@ -559,5 +559,5 @@ class ReadBroHTTP(threading.Thread):
                 f.close()
                 return False
         except Exception as e:
-            log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e))
             return False

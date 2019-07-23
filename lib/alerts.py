@@ -31,7 +31,7 @@ class DailyAlerts(threading.Thread):
                         if len(r_json) >= 1:
                             pwnings[a] = r_json
                 except Exception as e:
-                    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+                    log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
                 time.sleep(1)
 
         if len(pwnings) > 0:
@@ -70,7 +70,7 @@ class HourlyAlerts(threading.Thread):
                                 self.create_spamming_alert(k)
                                 del homenet.hosts[k].spammed_domains[:]
             except Exception as e:
-                log.debug('FG-ERROR:' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-ERROR:' + str(e.__doc__) + " - " + str(e))
             time.sleep(3600)
 
     def create_dga_alert(self, src):
@@ -125,7 +125,7 @@ class MinuteAlerts(threading.Thread):
                                         self.create_bad_ip_alert(threat, k, k1)
                                         del homenet.hosts[k].conns[k1]
             except Exception as e:
-                log.debug('FG-ERROR:' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-ERROR:' + str(e.__doc__) + " - " + str(e))
             time.sleep(60)
 
     def create_bad_domain_alert(self, src, dst):

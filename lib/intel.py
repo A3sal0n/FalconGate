@@ -296,7 +296,7 @@ class CheckVirusTotalIntel(threading.Thread):
                             count += 1
                     domain.detected_urls = count
                 except Exception as e:
-                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e.message))
+                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
 
                 try:
                     samples = response_json['detected_communicating_samples']
@@ -309,7 +309,7 @@ class CheckVirusTotalIntel(threading.Thread):
                             count += 1
                         domain.detected_comm_payloads = count
                 except Exception as e:
-                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e.message))
+                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
 
                 try:
                     samples = response_json['detected_downloaded_samples']
@@ -322,10 +322,10 @@ class CheckVirusTotalIntel(threading.Thread):
                             count += 1
                         domain.detected_down_payloads = count
                 except Exception as e:
-                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e.message))
+                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
 
         except Exception as e:
-            log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
 
         if (domain.detected_urls > 1) or (domain.detected_comm_payloads > 1) or (domain.detected_down_payloads > 1):
             return True

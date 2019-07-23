@@ -100,7 +100,7 @@ class CheckNetworkModifications(threading.Thread):
                         with lock:
                             utils.save_pkl_object(homenet, "homenet.pkl")
                     except Exception as e:
-                        log.debug('FG-ERROR ' + str(e.__doc__) + " - " + str(e.message))
+                        log.debug('FG-ERROR ' + str(e.__doc__) + " - " + str(e))
                     utils.reboot_appliance()
                 else:
                     pass

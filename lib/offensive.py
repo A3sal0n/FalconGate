@@ -50,7 +50,7 @@ class ScheduledScans(threading.Thread):
                                 vnc_targets.append(ip)
 
             except Exception as e:
-                log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+                log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
 
             for ip in ssh_targets:
                 self.brute_force_service(ip, 'ssh')
@@ -94,7 +94,7 @@ class ScheduledScans(threading.Thread):
                             homenet.hosts[tip].vuln_accounts.append(new_issue)
                         self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], groups[0][4])
                     except Exception as e:
-                        log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+                        log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
             else:
                 break
 

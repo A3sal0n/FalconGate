@@ -48,4 +48,4 @@ class HourlyStats(threading.Thread):
                             else:
                                 pass
                         except Exception as e:
-                            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+                            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))

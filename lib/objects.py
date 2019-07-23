@@ -281,7 +281,7 @@ class Country:
                     sout["pqt_received"] += self.hourly_stats[k].pqt_received
                     sout["nconn"] += self.hourly_stats[k].nconn
         except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e.message))
+            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
 
         return sout
 
