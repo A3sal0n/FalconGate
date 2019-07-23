@@ -7,7 +7,7 @@ import time
 import re
 from struct import unpack
 from socket import AF_INET, inet_pton
-import cPickle as pickle
+import pickle
 from lib.logger import *
 import os
 import sys
@@ -22,7 +22,7 @@ class CleanOldHomenetObjects(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.ctime = int(time.time())
-        self.bro_file_path = '/usr/local/bro/logs/current/extract_files/'
+        self.bro_file_path = '/opt/zeek/logs/current/extract_files/'
 
     def run(self):
 

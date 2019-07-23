@@ -117,7 +117,7 @@ def main():
             time.sleep(60)
         except KeyboardInterrupt:
             log.debug('FG-INFO: Process terminated by keyboard interrupt')
-            print 'Have a nice day!'
+            print('Have a nice day!')
             sys.exit(0)
 
 

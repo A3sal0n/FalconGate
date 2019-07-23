@@ -3,8 +3,8 @@ from lib.logger import *
 from lib.config import *
 import smtplib
 import time
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from lib.objects import AccountBreachAlertTemplate, HostAlertTemplate, DefaultCredsAlertTemplate
 import requests
 import json

@@ -9,3 +9,4 @@ ua-parser
 user-agents
 pygtail
 GeoIP
+ConfigParser

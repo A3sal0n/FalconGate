@@ -19,7 +19,7 @@ class ReadBroConn(threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.bro_conn_log_path = '/usr/local/bro/logs/current/conn.log'
+        self.bro_conn_log_path = '/opt/zeek/logs/current/conn.log'
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -143,7 +143,7 @@ class ReadBroDNS(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.tld_whitelist = ['local', 'test', 'localhost', 'example', 'invalid', 'arpa']
-        self.bro_dns_log_path = '/usr/local/bro/logs/current/dns.log'
+        self.bro_dns_log_path = '/opt/zeek/logs/current/dns.log'
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -312,7 +312,7 @@ class ReadBroNotice(threading.Thread):
 
         while 1:
             try:
-                f = open('/usr/local/bro/logs/current/notice.log', 'r')
+                f = open('/opt/zeek/logs/current/notice.log', 'r')
                 lines = f.readlines()
                 for line in lines:
                     line = line.strip()
@@ -369,13 +369,13 @@ class ReadBroFiles(threading.Thread):
         self._cached_stamp = 0
         self.target_mime_types = homenet.target_mime_types
         self.recorded = []
-        self.bro_file_path = '/usr/local/bro/logs/current/extract_files/'
+        self.bro_file_path = '/opt/zeek/logs/current/extract_files/'
 
     def run(self):
 
         while 1:
             try:
-                f = open('/usr/local/bro/logs/current/files.log', 'r')
+                f = open('/opt/zeek/logs/current/files.log', 'r')
                 lines = f.readlines()
                 for line in lines:
                     line = line.strip()
@@ -446,7 +446,7 @@ class ReadBroFiles(threading.Thread):
     @staticmethod
     def is_top_domain(ip):
 
-        f = open('/usr/local/bro/logs/current/dns.log', 'r')
+        f = open('/opt/zeek/logs/current/dns.log', 'r')
         lines = f.readlines()
         f.close()
 
@@ -495,7 +495,7 @@ class ReadBroHTTP(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.target_mime_types = homenet.target_mime_types
-        self.bro_http_log_path = '/usr/local/bro/logs/current/http.log'
+        self.bro_http_log_path = '/opt/zeek/logs/current/http.log'
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
