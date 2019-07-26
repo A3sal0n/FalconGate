@@ -25,6 +25,8 @@ fi
 echo "Updating system software..."
 sleep 3
 
+add-apt-repository ppa:shevchuk/dnscrypt-proxy
+
 apt-get update && apt-get upgrade -y
 
 echo "Installing software dependencies..."
