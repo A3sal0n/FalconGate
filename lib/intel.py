@@ -138,7 +138,6 @@ class DownloadIntel(threading.Thread):
         response = requests.get(homenet.fg_intel_ip, headers=headers)
         rjson = response.json()
         for threat in rjson.keys():
-            threat = threat.encode('ascii', 'ignore')
             if threat == 'Tor' and homenet.allow_tor == 'true':
                 pass
             else:
