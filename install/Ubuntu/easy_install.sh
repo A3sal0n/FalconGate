@@ -135,7 +135,7 @@ sleep 2
 
 cd /opt
 
-cp FalconGate/install/Ubuntu/templates/broctl.tpl /etc/init.d/broctl
+cp FalconGate/install/Ubuntu/templates/zeek.service.tpl /etc/systemd/system/zeek.service
 cp FalconGate/install/Ubuntu/templates/local.bro.tpl /opt/zeek/share/zeek/site/local.zeek
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/config.ini.tpl > FalconGate/config.ini
@@ -153,15 +153,11 @@ cp FalconGate/install/Ubuntu/fw/firewall-down /etc/network/if-down.d/firewall-do
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 
 # Additional Zeek configuration
-chmod +x /etc/init.d/broctl
-update-
-
-rc.d broctl defaults
-
 mkdir /opt/zeek/share/zeek/policy/FalconGate
 cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
 /opt/zeek/bin/zeekctl install
-
+systemctl daemon-reload
+systemctl enable zeek.service
 
 # Additional firewall and ipset configuration
 echo 1 > /proc/sys/net/ipv4/ip_forward
