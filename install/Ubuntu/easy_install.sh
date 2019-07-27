@@ -45,6 +45,10 @@ cd FalconGate/
 
 git pull --all && git checkout dev
 
+chmod +x falcongate.py
+
+ln -s /opt/FalconGate/falcongate.py /sbin/falcongate
+
 cd ../
 
 echo "Creating Python3 virtual environment and installing dependencies..."

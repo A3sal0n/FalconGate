@@ -1,5 +1,5 @@
 [Unit]
-Description=FalconGate Server
+Description=Falcongate
 After=dnsmasq.service
 After=nginx.service
 
