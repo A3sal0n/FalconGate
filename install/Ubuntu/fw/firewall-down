@@ -1,7 +1,0 @@
-#!/bin/sh
-
-#This script must be copied to /etc/network/if-down.d folder and make executable
-
-/sbin/ipset save > /etc/ipset.rules
-
-/sbin/iptables-save > /etc/iptables.rules

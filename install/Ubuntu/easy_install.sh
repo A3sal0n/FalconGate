@@ -150,23 +150,25 @@ sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/GATEWAY/$GATEWAY/g" FalconGa
 
 # Additional Zeek configuration
 chmod +x /etc/init.d/broctl
-update-rc.d broctl defaults
+update-
+
+rc.d broctl defaults
 
 mkdir /opt/zeek/share/zeek/policy/FalconGate
 cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
 /opt/zeek/bin/zeekctl install
 
 
-# Additional firewall configuration
+# Additional firewall and ipset configuration
+echo 1 > /proc/sys/net/ipv4/ip_forward
 ipset create blacklist hash:ip maxelem 500000
 ipset create blacklist-user hash:ip
-cp FalconGate/install/Ubuntu/fw/firewall /etc/network/if-pre-up.d/firewall
-chmod +x /etc/network/if-pre-up.d/firewall
-mkdir /etc/network/if-down.d
-cp FalconGate/install/Ubuntu/fw/firewall-down /etc/network/if-down.d/firewall-down
-chmod +x /etc/network/if-down.d/firewall-down
-echo 1 > /proc/sys/net/ipv4/ip_forward
+/sbin/ipset save > /etc/ipset.rules
+echo "# Falcongate Cron jobs" >> /etc/crontab
+echo "@reboot root /sbin/ipset restore -! < /etc/ipset.rules" >> /etc/crontab
+echo "*/5 * * * * root /sbin/ipset save > /etc/ipset.rules" >> /etc/crontab
 iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
+apt-get install iptables-persistent
 
 # Disable systemd-resolve
 systemctl disable systemd-resolved.service
@@ -184,4 +186,4 @@ systemctl enable falcongate.service
 echo "All tasks finished!"
 echo "Restart your system to enable the changes"
 echo "After restart you can connect to your Falcongate system using the command below:"
-echo "ssh ubuntu@$BASE.02"
+echo "ssh ubuntu@$BASE.2"
