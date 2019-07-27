@@ -2,7 +2,9 @@
 iface = IFACE0
 
 [api_urls]
-fg_api_intel_url = https://intel.falcongate.cz/
+fg_intel_creds = https://falcongate-blacklists.s3.eu-central-1.amazonaws.com/default_credentials
+fg_intel_domains = https://falcongate-blacklists.s3.eu-central-1.amazonaws.com/domain_blacklist
+fg_intel_ip = https://falcongate-blacklists.s3.eu-central-1.amazonaws.com/ip_blacklist
 fg_api_alert_url = https://comms.falcongate.cz/new-alert
 fg_api_malware_url = https://malware.falcongate.cz/
 vt_api_domain_url = https://www.virustotal.com/vtapi/v2/domain/report

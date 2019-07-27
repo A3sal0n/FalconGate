@@ -33,7 +33,9 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 with lock:
                     homenet.interface = core_config.get('main', 'iface')
-                    homenet.fg_api_intel_url = core_config.get('api_urls', 'fg_api_intel_url').strip('"')
+                    homenet.fg_intel_creds = core_config.get('api_urls', 'fg_intel_creds').strip('"')
+                    homenet.fg_intel_domains = core_config.get('api_urls', 'fg_intel_domains').strip('"')
+                    homenet.fg_intel_ip = core_config.get('api_urls', 'fg_intel_ip').strip('"')
                     homenet.fg_api_alert_url = core_config.get('api_urls', 'fg_api_alert_url').strip('"')
                     homenet.fg_api_malware_url = core_config.get('api_urls', 'fg_api_malware_url').strip('"')
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')

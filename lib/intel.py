@@ -133,21 +133,11 @@ class DownloadIntel(threading.Thread):
 
     def retrieve_fg_intel(self):
         headers = {"Accept-Encoding": "gzip, deflate",
-                   "User-Agent": "Mozilla/5.0",
-                   "x-api-key": homenet.fg_intel_key}
+                   "User-Agent": "Mozilla/5.0"}
 
-        ready = False
+        # Downloading the list of malicious IP addresses
         try:
-            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/intel_test', headers=headers)
-            rjson = response.json()
-            if rjson['message'] == 'Ready':
-                ready = True
-        except Exception as e:
-            log.debug('FG-ERROR: FalconGate public API is not available or API key is missing')
-
-        if ready:
-            # Downloading the list of malicious IP addresses
-            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/ip_blacklist', headers=headers)
+            response = requests.get(homenet.fg_intel_ip, headers=headers)
             rjson = response.json()
             for threat in rjson.keys():
                 threat = threat.encode('ascii', 'ignore')
@@ -157,20 +147,28 @@ class DownloadIntel(threading.Thread):
                     set1 = set(homenet.bad_ips[threat])
                     set2 = set(rjson[threat])
                     homenet.bad_ips[threat] = list(set1 | set2)
+        except Exception as e:
+            log.debug('FG-ERROR: There was an error while downloading the IP blacklist - ' + str(e))
 
-            # Downloading the list of malicious domains
-            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/domain_blacklist', headers=headers)
+        # Downloading the list of malicious domains
+        try:
+            response = requests.get(homenet.fg_intel_domains, headers=headers)
             rjson = response.json()
             for threat in rjson.keys():
                 set1 = set(homenet.bad_domains[threat])
                 set2 = set(rjson[threat])
                 homenet.bad_domains[threat] = list(set1 | set2)
+        except Exception as e:
+            log.debug('FG-ERROR: There was an error while downloading the domain blacklist - ' + str(e))
 
-            # Downloading the list of default user names and passwords
-            response = requests.get(homenet.fg_api_intel_url + 'falcongate-blacklists/default_credentials', headers=headers)
+        # Downloading the list of default user names and passwords
+        try:
+            response = requests.get(homenet.fg_intel_creds, headers=headers)
             fout = open('/tmp/default_creds.csv', 'w')
             fout.write(response.text)
             fout.close()
+        except Exception as e:
+            log.debug('FG-ERROR: There was an error while downloading the list of default credentials - ' + str(e))
 
 
 class CheckVirusTotalIntel(threading.Thread):

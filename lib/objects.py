@@ -193,7 +193,9 @@ class Network:
         self.fg_intel_key = None
         self.dst_emails = None
         self.email_watchlist = []
-        self.fg_api_intel_url = None
+        self.fg_intel_creds = None
+        self.fg_intel_ip = None
+        self.fg_intel_domains = None
         self.fg_api_alert_url = None
         self.fg_api_malware_url = None
         self.vt_api_domain_url = None
