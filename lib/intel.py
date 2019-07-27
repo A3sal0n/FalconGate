@@ -131,8 +131,7 @@ class DownloadIntel(threading.Thread):
                         log.debug('FG-ERROR: Error while retrieving the bad domains from: ' + url)
 
     def retrieve_fg_intel(self):
-        headers = {"Accept-Encoding": "gzip, deflate",
-                   "User-Agent": "Mozilla/5.0"}
+        headers = {"User-Agent": "Mozilla/5.0"}
 
         # Downloading the list of malicious IP addresses
         try:
