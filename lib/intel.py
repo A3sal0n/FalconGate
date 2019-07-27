@@ -134,19 +134,19 @@ class DownloadIntel(threading.Thread):
         headers = {"User-Agent": "Mozilla/5.0"}
 
         # Downloading the list of malicious IP addresses
-        try:
-            response = requests.get(homenet.fg_intel_ip, headers=headers)
-            rjson = response.json()
-            for threat in rjson.keys():
-                threat = threat.encode('ascii', 'ignore')
-                if threat == 'Tor' and homenet.allow_tor == 'true':
-                    pass
-                else:
-                    set1 = set(homenet.bad_ips[threat])
-                    set2 = set(rjson[threat])
-                    homenet.bad_ips[threat] = list(set1 | set2)
-        except Exception as e:
-            log.debug('FG-ERROR: There was an error while downloading the IP blacklist - ' + str(e))
+        #try:
+        response = requests.get(homenet.fg_intel_ip, headers=headers)
+        rjson = response.json()
+        for threat in rjson.keys():
+            threat = threat.encode('ascii', 'ignore')
+            if threat == 'Tor' and homenet.allow_tor == 'true':
+                pass
+            else:
+                set1 = set(homenet.bad_ips[threat])
+                set2 = set(rjson[threat])
+                homenet.bad_ips[threat] = list(set1 | set2)
+        #except Exception as e:
+        #    log.debug('FG-ERROR: There was an error while downloading the IP blacklist - ' + str(e))
 
         # Downloading the list of malicious domains
         try:
