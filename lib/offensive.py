@@ -79,12 +79,12 @@ class ScheduledScans(threading.Thread):
         proc = subprocess.Popen(['/usr/bin/hydra', '-C', '/tmp/default_creds.csv', tip, service], stdout=subprocess.PIPE)
 
         while True:
-            line = proc.stdout.readline()
-            if line != '':
-                line = line.strip()
-                groups = re.findall(self.hydra_regex, line.strip())
-                if groups:
-                    try:
+            try:
+                line = proc.stdout.readline()
+                if line != '':
+                    line = line.strip()
+                    groups = re.findall(self.hydra_regex, line.strip())
+                    if groups:
                         with lock:
                             new_issue = DefaultCredentials()
                             new_issue.service = groups[0][1]
@@ -93,8 +93,8 @@ class ScheduledScans(threading.Thread):
                             new_issue.password = groups[0][4]
                             homenet.hosts[tip].vuln_accounts.append(new_issue)
                         self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], groups[0][4])
-                    except Exception as e:
-                        log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
+            except Exception as e:
+                log.debug('FG-ERROR: Something went wrong with hydra assessment for host ' + tip + ' and service ' + service +  ' - ' + str(e))
             else:
                 break
 
