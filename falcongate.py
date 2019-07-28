@@ -40,7 +40,7 @@ sett.threads["alerts_hourly"] = alerts.HourlyAlerts("alerts_hourly")
 sett.threads["alerts_minute"] = alerts.MinuteAlerts("alerts_minute")
 sett.threads["alert_reporter"] = reporter.AlertReporter("alert_reporter")
 sett.threads["port_scanner"] = recon.PortScanner("port_scanner")
-#sett.threads["vuln_scanner"] = offensive.ScheduledScans("vuln_scanner")
+sett.threads["vuln_scanner"] = offensive.ScheduledScans("vuln_scanner")
 sett.threads["net_stats"] = stats.HourlyStats("net_stats")
 sett.threads["api"] = api.FlaskAPI("api")
 

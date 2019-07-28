@@ -13,7 +13,8 @@ class ScheduledScans(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.target_ports = [21, 22, 23, 445, 3306, 3389, 5900, 5432]
-        self.hydra_regex = re.compile(r"^\[(\d+)\]\[(\w+)\]\shost\:\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+login\:\s(\b.+\b)\s+password\:\s\b(.+)\b$")
+        self.hydra_regex1 = re.compile(r"^\[(\d+)\]\[(\w+)\]\shost\:\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+login\:\s(\b.+\b)\s+password\:\s\b(.+)\b$")
+        self.hydra_regex2 = re.compile(r"^\[(\d+)\]\[(\w+)\]\shost\:\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+login\:\s(\b.+\b)$")
 
     def run(self):
 
@@ -76,14 +77,25 @@ class ScheduledScans(threading.Thread):
 
     def brute_force_service(self, tip, service):
 
-        proc = subprocess.Popen(['/usr/bin/hydra', '-C', '/tmp/default_creds.csv', tip, service], stdout=subprocess.PIPE)
-
-        while True:
-            try:
-                line = proc.stdout.readline()
-                if line != '':
-                    line = line.strip()
-                    groups = re.findall(self.hydra_regex, line.strip())
+        proc = subprocess.Popen(['/usr/bin/hydra', '-t', '4', '-C', '/tmp/default_creds.csv', '-o', '/tmp/hydra_report', tip, service])
+        proc.communicate()
+        try:
+            f = open('/tmp/hydra_report')
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip()
+                groups = re.findall(self.hydra_regex1, line.strip())
+                if groups:
+                    with lock:
+                        new_issue = DefaultCredentials()
+                        new_issue.service = groups[0][1]
+                        new_issue.port = groups[0][0]
+                        new_issue.user = groups[0][3]
+                        new_issue.password = groups[0][4]
+                        homenet.hosts[tip].vuln_accounts.append(new_issue)
+                    self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], groups[0][4])
+                else:
+                    groups = re.findall(self.hydra_regex1, line.strip())
                     if groups:
                         with lock:
                             new_issue = DefaultCredentials()
@@ -92,11 +104,10 @@ class ScheduledScans(threading.Thread):
                             new_issue.user = groups[0][3]
                             new_issue.password = groups[0][4]
                             homenet.hosts[tip].vuln_accounts.append(new_issue)
-                        self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], groups[0][4])
-            except Exception as e:
-                log.debug('FG-ERROR: Something went wrong with hydra assessment for host ' + tip + ' and service ' + service +  ' - ' + str(e))
-            else:
-                break
+                        self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], '<EMPTY>')
+        except Exception as e:
+            log.debug('FG-ERROR: Something went wrong with hydra assessment for host ' + tip + ' and service ' + service +  ' - ' + str(e))
+
 
     def create_default_creds_alert(self, threat, src, service, uname, passwd):
         ctime = int(time.time())
