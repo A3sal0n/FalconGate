@@ -1,17 +1,24 @@
 #!/bin/bash
 
-# Find default gateway
-GATE=$(ip route | gawk 'match($0, /default\s+via\s+(.+)\s+dev\s+enp0s3/, a) {print a[1]}')
-BASE=$(echo $GATE | gawk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+/, a) {print a[1]}')
-
-# Edit the variables below to reflect your own configuration
+# Network interfaces for Falcongate
+# Edit these values if your interfaces are named differently
 # Inbound interface
 IFACE0="enp0s3"
-IP0="$BASE.2"
 # Outbound interface
 IFACE1="enp0s8"
+
+# Find default gateway
+GATE=$(ip route | awk 'match($0, /default\s+via\s+(.+)\s+dev\s+'"$IFACE0"'/, a) {print a[1]}')
+BASE=$(echo $GATE | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+/, a) {print a[1]}')
+
+# Edit the variables below if needed to reflect your own network configuration
+# IP address for IFACE0
+IP0="$BASE.2"
+# IP address for IFACE1
 IP1="$BASE.3"
+# Gateway
 GATEWAY=$GATE
+# Network mask
 NETMASK="255.255.255.0"
 # DHCP range
 DHCPSTART="$BASE.100"
