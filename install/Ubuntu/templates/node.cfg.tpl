@@ -19,4 +19,4 @@ type=worker
 host=localhost
 interface=IFACE0
 lb_method=pf_ring
-lb_procs=5
+lb_procs=2
