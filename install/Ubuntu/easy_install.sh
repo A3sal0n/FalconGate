@@ -175,7 +175,7 @@ echo "# Falcongate Cron jobs" >> /etc/crontab
 echo "@reboot root /sbin/ipset restore -! < /etc/ipset.rules" >> /etc/crontab
 echo "*/5 * * * * root /sbin/ipset save > /etc/ipset.rules" >> /etc/crontab
 iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
-apt-get install iptables-persistent
+apt-get install iptables-persistent -y
 
 # Disable systemd-resolve
 systemctl disable systemd-resolved.service
