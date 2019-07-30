@@ -7,19 +7,9 @@ IFACE0="enp0s3"
 # Outbound interface
 IFACE1="enp0s8"
 
-# Find default gateway
-GATE=$(ip route | awk 'match($0, /default\s+via\s+(.+)\s+dev\s+'"$IFACE0"'/, a) {print a[1]}')
-BASE=$(echo $GATE | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+/, a) {print a[1]}')
-
 # Edit the variables below if needed to reflect your own network configuration
 # IP address for IFACE0
-IP0="$BASE.2"
-# IP address for IFACE1
-IP1="$BASE.3"
-# Gateway
-GATEWAY=$GATE
-# Network mask
-NETMASK="255.255.255.0"
+IP0="192.168.0.1"
 # DHCP range
 DHCPSTART="$BASE.100"
 DHCPEND="$BASE.200"
@@ -148,16 +138,13 @@ sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/node.cfg.tpl > /
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/config.ini.tpl > FalconGate/config.ini
 cp FalconGate/install/Ubuntu/templates/user_config.ini.tpl FalconGate/html/user_config.ini
 cp FalconGate/install/Ubuntu/templates/pwd.db.tpl FalconGate/html/pwd.db
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g"  -e "s/IP1/$IP1/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Ubuntu/templates/50-cloud-init.yaml.tpl > /etc/netplan/50-cloud-init.yaml
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Ubuntu/templates/50-cloud-init.yaml.router.tpl > /etc/netplan/50-cloud-init.yaml
 cp FalconGate/install/Ubuntu/templates/update-exim4.conf.tpl /etc/exim4/update-exim4.conf
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" FalconGate/install/Ubuntu/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
 cp FalconGate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/falcongate.conf
 cp FalconGate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 cp FalconGate/install/Ubuntu/templates/sysctl.conf.tpl /etc/sysctl.conf
-cp FalconGate/install/Ubuntu/fw/firewall /etc/network/if-pre-up.d/firewall
-cp FalconGate/install/Ubuntu/fw/firewall-down /etc/network/if-down.d/firewall-down
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 
 # Additional Zeek configuration
 mkdir /opt/zeek/share/zeek/policy/FalconGate
