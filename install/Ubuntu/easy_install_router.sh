@@ -180,4 +180,4 @@ systemctl enable falcongate.service
 echo "All tasks finished!"
 echo "Restart your system to enable the changes"
 echo "After restart you can connect to your Falcongate system using the command below:"
-echo "ssh ubuntu@$BASE.2"
+echo "ssh ubuntu@192.168.0.1"
