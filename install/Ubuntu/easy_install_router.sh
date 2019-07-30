@@ -11,8 +11,8 @@ IFACE1="enp0s8"
 # IP address for IFACE0
 IP0="192.168.0.1"
 # DHCP range
-DHCPSTART="$BASE.100"
-DHCPEND="$BASE.200"
+DHCPSTART="192.168.0.100"
+DHCPEND="192.168.0.200"
 
 if [ "$(whoami)" != "root" ]; then
 	echo "Sorry, you are not root."
@@ -162,7 +162,7 @@ echo "# Falcongate Cron jobs" >> /etc/crontab
 echo "@reboot root /sbin/ipset restore -! < /etc/ipset.rules" >> /etc/crontab
 echo "*/5 * * * * root /sbin/ipset save > /etc/ipset.rules" >> /etc/crontab
 iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
-apt-get install iptables-persistent -y
+apt-get install iptables-persistent netfilter-persistent -y
 
 # Disable systemd-resolve
 systemctl disable systemd-resolved.service
