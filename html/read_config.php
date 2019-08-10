@@ -41,11 +41,6 @@ $config = new Config_Lite('user_config.ini');
 ?>
 
 <?php
-    if ($config['main']['cloud_malware_sandbox'] == 'true'){
-        $cloud_scan_value = "value=1 checked=checked";
-    }else{
-        $cloud_scan_value = "value=0";
-    }
     if ($config['main']['allow_tor'] == 'true'){
         $tor_value = "value=1 checked=checked";
     }else{

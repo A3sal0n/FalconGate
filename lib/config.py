@@ -36,8 +36,6 @@ class CheckConfigFileModification(threading.Thread):
                     homenet.fg_intel_creds = core_config.get('api_urls', 'fg_intel_creds').strip('"')
                     homenet.fg_intel_domains = core_config.get('api_urls', 'fg_intel_domains').strip('"')
                     homenet.fg_intel_ip = core_config.get('api_urls', 'fg_intel_ip').strip('"')
-                    homenet.fg_api_alert_url = core_config.get('api_urls', 'fg_api_alert_url').strip('"')
-                    homenet.fg_api_malware_url = core_config.get('api_urls', 'fg_api_malware_url').strip('"')
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')
@@ -60,7 +58,6 @@ class CheckConfigFileModification(threading.Thread):
                 # main section
                 homenet.dst_emails = (user_config.get('main', 'dst_emails')).strip('"').split(",")
                 homenet.email_watchlist = (user_config.get('main', 'email_watchlist')).strip('"').split(",")
-                homenet.fg_intel_key = user_config.get('main', 'fg_intel_key').strip('"')
                 homenet.vt_api_key = user_config.get('main', 'vt_api_key').strip('"')
                 homenet.user_blacklist = (user_config.get('main', 'blacklist')).strip('"').split(",")
                 homenet.user_whitelist = (user_config.get('main', 'whitelist')).strip('"').split(",")
@@ -69,9 +66,7 @@ class CheckConfigFileModification(threading.Thread):
                 homenet.mailer_mode = user_config.get('main', 'mailer_mode').strip('"')
                 homenet.mailer_address = user_config.get('main', 'mailer_address').strip('"')
                 homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').strip('"')
-                homenet.telegram_id = user_config.get('main', 'telegram_id').strip('"')
                 homenet.allow_tor = user_config.get('main', 'allow_tor').strip('"')
-                homenet.cloud_malware_sandbox = user_config.get('main', 'cloud_malware_sandbox').strip('"')
 
             if flag:
                 counter += 1

@@ -410,16 +410,6 @@ class ReadBroFiles(threading.Thread):
                                         file_obj.sha1 = sha1
                                         homenet.hosts[rx_hosts].files[sha1] = file_obj
                                         fpath = self.find_file(fuid)
-                                        if fpath:
-                                            if rx_hosts != homenet.ip:
-                                                if (homenet.cloud_malware_sandbox == 'true') and (utils.is_file_executable(fpath) is True):
-                                                    if not self.is_top_domain(tx_hosts):
-                                                        res = self.cloud_submit_file(fpath, sha1, rx_hosts, tx_hosts)
-                                                        if res is False:
-                                                            log.debug('FG-ERROR: File submission for ' + sha1 + 'was not successful')
-                                                os.remove(fpath)
-                                            else:
-                                                os.remove(fpath)
                                     else:
                                         homenet.hosts[rx_hosts].files[sha1].lseen = ts
                             self.recorded.append(fuid)
@@ -462,32 +452,6 @@ class ReadBroFiles(threading.Thread):
                     pass
 
         return False
-
-    @staticmethod
-    def cloud_submit_file(f, sha1, lhost, rhost):
-        try:
-            with open(f, "rb") as target_file:
-                encoded_file = base64.b64encode(target_file.read())
-        except IOError:
-            return False
-
-        ip_hash = hashlib.sha1(rhost.encode("UTF-8")).hexdigest()
-
-        data = {'userID': homenet.fg_intel_key, 'telegram': str(homenet.telegram_id), 'sha1': sha1, 'local_host': lhost, 'remote_host': rhost, 'file': encoded_file}
-
-        json_data = json.dumps(data)
-
-        headers = {"User-Agent": "Mozilla/5.0",
-                   "X-Api-Key": homenet.fg_intel_key}
-
-        try:
-            response = requests.put(homenet.fg_api_malware_url + 'falcongate-samples/' + sha1 + '-' + ip_hash[:10] + '.json', headers=headers, data=json_data)
-            if response.status_code == 200:
-                return True
-            else:
-                return False
-        except Exception as e:
-            log.debug('FG-ERROR: FalconGate public API is not available or API key is missing')
 
 
 class ReadBroHTTP(threading.Thread):

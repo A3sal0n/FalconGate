@@ -190,14 +190,11 @@ class Network:
         self.tld_blacklist = ['zip', 'review', 'country', 'kim', 'cricket', 'science', 'work', 'party', 'gq', 'link',
                               'gdn', 'stream', 'download', 'top', 'us', 'study', 'click', 'biz']
         self.vt_api_key = None
-        self.fg_intel_key = None
         self.dst_emails = None
         self.email_watchlist = []
         self.fg_intel_creds = None
         self.fg_intel_ip = None
         self.fg_intel_domains = None
-        self.fg_api_alert_url = None
-        self.fg_api_malware_url = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None
@@ -205,9 +202,7 @@ class Network:
         self.mailer_mode = None
         self.mailer_address = None
         self.mailer_pwd = None
-        self.telegram_id = None
         self.allow_tor = None
-        self.cloud_malware_sandbox = None
         self.last_alert_id = 0
         self.blacklist_sources_ip = {}
         self.blacklist_sources_domain = {}

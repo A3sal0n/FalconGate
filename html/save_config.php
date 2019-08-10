@@ -72,7 +72,6 @@ if (isset($_POST['mailer_address'])){
             //$new_pwd = password_hash($_POST['mailer_pwd'], PASSWORD_DEFAULT);
             $config->set('main', 'mailer_pwd', $_POST['mailer_pwd']);
         }
-		$config->set('main', 'telegram_id', '');
     }
 }
 $config->save();
