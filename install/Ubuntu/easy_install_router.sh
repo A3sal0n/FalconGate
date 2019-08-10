@@ -159,6 +159,7 @@ ipset create blacklist hash:ip maxelem 500000
 ipset create blacklist-user hash:ip
 /sbin/ipset save > /etc/ipset.rules
 echo "# Falcongate Cron jobs" >> /etc/crontab
+echo "@reboot root sleep 30 && systemctl restart netfilter-persistent.service" >> /etc/crontab
 echo "@reboot root /sbin/ipset restore -! < /etc/ipset.rules" >> /etc/crontab
 echo "*/5 * * * * root /sbin/ipset save > /etc/ipset.rules" >> /etc/crontab
 iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
