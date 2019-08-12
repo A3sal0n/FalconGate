@@ -3,16 +3,16 @@
 # Network interfaces for Falcongate
 # Edit these values if your interfaces are named differently
 # Inbound interface
-IFACE0="enp0s3"
+IFACE0=$1
 # Outbound interface
-IFACE1="enp0s8"
+IFACE1=$2
 
 # Edit the variables below if needed to reflect your own network configuration
 # IP address for IFACE0
-IP0="192.168.0.1"
+IP0="192.168.100.1"
 # DHCP range
-DHCPSTART="192.168.0.100"
-DHCPEND="192.168.0.200"
+DHCPSTART="192.168.100.100"
+DHCPEND="192.168.100.200"
 
 if [ "$(whoami)" != "root" ]; then
 	echo "Sorry, you are not root."
@@ -145,6 +145,7 @@ cp FalconGate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/
 cp FalconGate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 cp FalconGate/install/Ubuntu/templates/sysctl.conf.tpl /etc/sysctl.conf
+cp FalconGate/install/Ubuntu/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 
 # Additional Zeek configuration
 mkdir /opt/zeek/share/zeek/policy/FalconGate
@@ -181,4 +182,4 @@ systemctl enable falcongate.service
 echo "All tasks finished!"
 echo "Restart your system to enable the changes"
 echo "After restart you can connect to your Falcongate system using the command below:"
-echo "ssh ubuntu@192.168.0.1"
+echo "ssh ubuntu@192.168.100.1"

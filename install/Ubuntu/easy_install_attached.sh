@@ -3,9 +3,9 @@
 # Network interfaces for Falcongate
 # Edit these values if your interfaces are named differently
 # Inbound interface
-IFACE0="enp0s3"
+IFACE0=$1
 # Outbound interface
-IFACE1="enp0s8"
+IFACE1=$2
 
 # Find default gateway
 GATE=$(ip route | awk 'match($0, /default\s+via\s+(.+)\s+dev\s+'"$IFACE0"'/, a) {print a[1]}')
@@ -155,6 +155,7 @@ cp FalconGate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/
 cp FalconGate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 cp FalconGate/install/Ubuntu/templates/sysctl.conf.tpl /etc/sysctl.conf
+cp FalconGate/install/Ubuntu/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 
 # Additional Zeek configuration
 mkdir /opt/zeek/share/zeek/policy/FalconGate

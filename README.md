@@ -1,6 +1,6 @@
-# FalconGate
+# Falcongate
 
-A smart gateway to stop Malware, cyber criminals, and more...
+An advanced cybersecurity platform to stop Malware, Ransomware, detect cyber attacks and more...
 
 ## Motivation
 
@@ -8,11 +8,11 @@ Cyber attacks are on the raise and the cyber criminals are continuously improvin
 
 ## Features
 
-Falcongate is an open source smart gateway which can protect your home devices against hackers, Malware like Ransomeware and other threats. It detects and alerts on hacker intrusions on your home network as well as other devices misbehaving and attacking targets within your network or in the Internet.
+Falcongate is an open source platform which can protect your home devices against hackers, Malware like Ransomeware and other threats. It detects and alerts on hacker intrusions on your home network as well as other devices misbehaving and attacking targets within your network or in the Internet.
 
 Currently Falcongate is able to:
 
-- Block several types of Malware based on our free API Threat Intelligence feed and custom open source blacklists
+- Block several types of Malware based on our free Threat Intelligence feeds
 - Block Malware using the Tor network
 - Detect and report potential Malware DNS requests based on VirusTotal reports
 - Detect and report the presence of Malware executables and other components based on VirusTotal reports
@@ -38,7 +38,7 @@ Currently Falcongate is able to:
 
 ## Getting Started
 
-Falcongate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work. The fastest way to get Falcongate up and running is to get a supported OVA system image from our [downloads page](https://github.com/A3sal0n/FalconGate/wiki/Downloads).
+Falcongate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work.
 
 ### Supported Operating Systems
 
@@ -55,7 +55,7 @@ Falcongate has a number of software dependencies:
 - Dnsmasq
 - Exim
 - PHP
-- DNSCrypt
+- dnscrypt-proxy
 - NMAP
 
 ### Other dependencies
@@ -64,11 +64,9 @@ The devices's malware detection can be enhanced with the utilization of [VirusTo
 
 Currently Falcongate uses [have i been pwned](https://haveibeenpwned.com/API/v2) public API to detect whether credentials and/or other data from personal accounts have been stolen by hackers from third party sites.
 
-### Deploying FalconGate
+### Installing Falcongate
 
-- [From a supported virtual appliance image](https://github.com/A3sal0n/FalconGate/wiki/Deploy-from-image#deploying-falcongate-from-a-supported-ubuntu-virtual-appliance)
-
-- [Install from source on Ubuntu 18.04](https://github.com/A3sal0n/FalconGate/wiki/Install-from-source#installing-falcongate-from-source-on-ubuntu-1604)
+- [Install from source on Ubuntu 18.04](https://github.com/A3sal0n/FalconGate/wiki/Install-from-source)
 
 
 ### Collaborators
