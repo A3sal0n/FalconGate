@@ -33,9 +33,6 @@ Currently Falcongate is able to:
     - SMB
     - VNC
 
-## The platform
-![alt tag](https://github.com/A3sal0n/FalconGate/blob/master/html/images/FalconGate_Network.png)
-
 ## Getting Started
 
 Falcongate was built on top of other open source software so it has multiple dependencies which must be configured correctly for it to work.
