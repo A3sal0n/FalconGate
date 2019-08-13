@@ -1,1 +1,0 @@
-### Installers for different platforms

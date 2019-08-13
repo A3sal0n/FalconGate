@@ -1,1 +1,1 @@
-Tested on ARMBIAN's Ubuntu Xenial for Banana Pi M2+ (https://dl.armbian.com/bananapim2plus/Ubuntu_xenial_default.7z)
+Tested on Ubuntu Server 18.04 on top of VirtualBox, VMWare and HP ProBook 430 G1 as a hardware appliance.

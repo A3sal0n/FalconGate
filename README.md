@@ -32,6 +32,7 @@ Currently Falcongate is able to:
     - RDP
     - SMB
     - VNC
+    
 
 ## Getting Started
 
@@ -53,7 +54,7 @@ Falcongate has a number of software dependencies:
 - Exim
 - PHP
 - dnscrypt-proxy
-- NMAP
+- Nmap
 
 ### Other dependencies
 

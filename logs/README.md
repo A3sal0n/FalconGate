@@ -1,1 +1,1 @@
-#### This folder contains logs and other artifacts needed by Falcongate
+This folder will store logs and other artifacts needed by Falcongate
