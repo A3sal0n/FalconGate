@@ -25,7 +25,7 @@ function show_hide_row(row)
 $data = array("target" => "network");
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
 if (!$result){
-    echo ("<h3><span class=error_message>FalconGate API process seems to be down!</span></h3>");
+    echo ("<h3><span class=error_message>Falcongate API process seems to be down!</span></h3>");
     echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
 }else{
     $obj = json_decode($result, true);
@@ -34,7 +34,7 @@ if (!$result){
     $gw = $obj['gateway'];
     $netmask = $obj['netmask'];
     $mac = strtoupper($obj['mac']);
-    echo ("<h2>FalconGate network configuration</h2>");
+    echo ("<h2>Falcongate network configuration</h2>");
     echo ('<table class=TFtable width=98% halign=left>');
     echo ("<tr><td><b>Interface:</b></td><td>".$iface."</td></tr>");
     echo ("<tr><td><b>MAC:</b></td><td>".$mac."</td></tr>");
@@ -52,7 +52,7 @@ if (!$result){
 	foreach ($obj as $device){
 		$i++;
         if ($device['ip'] == $ip){
-            echo ('<tr><td>'.$mac.'</td>'.'<td>'.$device['ip'].'</td>'.'<td>FalconGate</td></tr>');
+            echo ('<tr><td>'.$mac.'</td>'.'<td>'.$device['ip'].'</td>'.'<td>Falcongate</td></tr>');
         }else{
             $open_ports = array();
             foreach ($device['tcp_ports'] as $port){

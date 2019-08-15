@@ -108,7 +108,7 @@ def main():
         sett.homenet.gateway = cgw
 
     except Exception as e:
-        log.debug('FG-ERROR: FalconGate had issues detecting your network configuration')
+        log.debug('FG-ERROR: Falcongate had issues detecting your network configuration')
 
     log.debug('FG-DEBUG: Starting main loop')
 

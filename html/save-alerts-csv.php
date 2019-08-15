@@ -5,7 +5,7 @@ $period = (!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
 $data = array("target" => "alerts", "timeframe" => $period);
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
 if (!$result){
-    echo ("<h3><span class=error_message>FalconGate API process seems to be down!<span></h3>");
+    echo ("<h3><span class=error_message>Falcongate API process seems to be down!<span></h3>");
     echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
 }else{
     // Based on code from Stephen Morley

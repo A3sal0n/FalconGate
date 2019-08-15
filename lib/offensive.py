@@ -111,7 +111,7 @@ class ScheduledScans(threading.Thread):
 
     def create_default_creds_alert(self, threat, src, service, uname, passwd):
         ctime = int(time.time())
-        description = 'FalconGate has detected an account with default vendor credentials on this host. ' \
+        description = 'Falcongate has detected an account with default vendor credentials on this host. ' \
                       'This is a serious issue which could allow and attacker to remotely access and take control of ' \
                       'this device.'
         indicators = 'Service: ' + service + '|' + 'Username: ' + uname + '|' + 'Password: ' + passwd

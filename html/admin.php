@@ -55,7 +55,7 @@ echo ('<script type="text/javascript">
     <br>
     <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return confirmFormSubmission();">
            <table width=35% halign=left>
-           <tr align=left><td>Reset FalconGate:</td><td><input class="config_button" type="submit" value="Reset" name="reset"></form></td></tr>
+           <tr align=left><td>Reset Falcongate:</td><td><input class="config_button" type="submit" value="Reset" name="reset"></form></td></tr>
            </table><br>');
 if (isset($_GET['updated'])){
     if ($_GET['updated'] == 'True'){

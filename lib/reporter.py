@@ -53,13 +53,13 @@ class AlertReporter(threading.Thread):
                     if res:
                         utils.update_alert_nrep(alert[0], alert[5] + 1)
                     else:
-                        log.debug('FG-ERROR: FalconGate was not able to send a standalone alert')
+                        log.debug('FG-ERROR: Falcongate was not able to send a standalone alert')
                 elif homenet.mailer_mode == 'gmail':
                     res = self.sendmail_gmail(email, homenet.mailer_address, homenet.mailer_pwd)
                     if res:
                         utils.update_alert_nrep(alert[0], alert[5] + 1)
                     else:
-                        log.debug('FG-ERROR: FalconGate was not able to send a Gmail alert')
+                        log.debug('FG-ERROR: Falcongate was not able to send a Gmail alert')
 
     def sendmail_stand(self, report):
         fromaddr = "no-reply@falcongate.local"

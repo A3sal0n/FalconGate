@@ -12,7 +12,7 @@ class HostAlertTemplate:
         self.body = ''
 
     def create_body(self):
-        self.body = "FalconGate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
+        self.body = "Falcongate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
                     "IP address: " + self.alert[7] + "\r\n" \
                     "Hostname: " + str(self.homenet.hosts[self.alert[7]].hostname) + "\r\n" \
                     "MAC address: " + str(self.homenet.hosts[self.alert[7]].mac) + "\r\n" \
@@ -35,7 +35,7 @@ class AccountBreachAlertTemplate:
         self.body = ''
 
     def create_body(self):
-        self.body = "FalconGate has reported a " + self.alert[6] + " alert:\r\n\r\n" \
+        self.body = "Falcongate has reported a " + self.alert[6] + " alert:\r\n\r\n" \
                     "Account at risk: " + self.alert[7] + "\r\n\r\n" \
                     "Description: " + self.alert[10] + "\r\n\r\n" \
                     "The following indicators were detected:\r\n" + str("\r\n".join(self.indicators)) + "\r\n\r\n" \
@@ -55,7 +55,7 @@ class DefaultCredsAlertTemplate:
         self.body = ''
 
     def create_body(self):
-        self.body = "FalconGate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
+        self.body = "Falcongate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
                     "IP address: " + self.alert[7] + "\r\n" \
                     "Hostname: " + str(self.homenet.hosts[self.alert[7]].hostname) + "\r\n" \
                     "MAC address: " + str(self.homenet.hosts[self.alert[7]].mac) + "\r\n" \

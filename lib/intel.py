@@ -48,7 +48,7 @@ class DownloadIntel(threading.Thread):
                 self.retrieve_bad_ips()
                 self.retrieve_bad_domains()
 
-                # Retrieving intel from FalconGate public API
+                # Retrieving intel from Falcongate public API
                 self.retrieve_fg_intel()
 
                 for threat in homenet.bad_ips.keys():

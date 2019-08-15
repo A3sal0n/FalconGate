@@ -1,4 +1,4 @@
-## How to contribute to FalconGate
+## How to contribute to Falcongate
 
 #### **Did you find a bug?**
 
@@ -16,11 +16,11 @@
 
 #### **Did you fix whitespace, format code, or make a purely cosmetic patch?**
 
-Changes that are cosmetic in nature and do not add anything substantial to the stability, functionality, or testability of FalconGate will generally not be accepted.
+Changes that are cosmetic in nature and do not add anything substantial to the stability, functionality, or testability of Falcongate will generally not be accepted.
 
 </br>
-FalconGate is a volunteer effort. We encourage you to pitch in and join the team!
+Falcongate is a volunteer effort. We encourage you to pitch in and join the team!
 
 Thanks!
 
-FalconGate team
+Falcongate team
