@@ -48,32 +48,15 @@ class AlertReporter(threading.Thread):
                 email['subject'] = t.subject
                 email['body'] = t.body
 
-                if (not homenet.mailer_mode) or (homenet.mailer_mode == 'standalone'):
-                    res = self.sendmail_stand(email)
-                    if res:
-                        utils.update_alert_nrep(alert[0], alert[5] + 1)
-                    else:
-                        log.debug('FG-ERROR: Falcongate was not able to send a standalone alert')
-                elif homenet.mailer_mode == 'gmail':
-                    res = self.sendmail_gmail(email, homenet.mailer_address, homenet.mailer_pwd)
-                    if res:
-                        utils.update_alert_nrep(alert[0], alert[5] + 1)
-                    else:
-                        log.debug('FG-ERROR: Falcongate was not able to send a Gmail alert')
-
-    def sendmail_stand(self, report):
-        fromaddr = "no-reply@falcongate.local"
-        try:
-            server = smtplib.SMTP('localhost')
-            msg = ("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (fromaddr, ", ".join(homenet.dst_emails), report['subject']))
-            msg += report['body']
-            for address in homenet.dst_emails:
-                server.sendmail(fromaddr, address, msg)
-            server.quit()
-            return True
-        except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
-            return False
+                if homenet.mailer_mode == 'gmail':
+                    if homenet.mailer_address and homenet.mailer_pwd:
+                        res = self.sendmail_gmail(email, homenet.mailer_address, homenet.mailer_pwd)
+                        if res:
+                            utils.update_alert_nrep(alert[0], alert[5] + 1)
+                        else:
+                            log.debug('FG-ERROR: Falcongate was not able to send a Gmail alert')
+                else:
+                    pass
 
     def sendmail_gmail(self, report, fromaddr, passwd):
         try:

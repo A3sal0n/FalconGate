@@ -39,7 +39,7 @@ apt-get update && apt-get upgrade -y
 echo "Installing software dependencies..."
 sleep 3
 
-apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev python-dev swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl exim4-daemon-light mailutils ipset git python3-pip python3-venv dnscrypt-proxy nmap hydra -y
+apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev python-dev swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl mailutils ipset git python3-pip python3-venv dnscrypt-proxy nmap hydra -y
 
 cd /opt
 

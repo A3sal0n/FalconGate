@@ -62,17 +62,11 @@ if (isset($_POST['allow_tor'])){
     $config->set('main', 'allow_tor', 'false');
 }
 if (isset($_POST['mailer_address'])){
-    if($_POST['selector'] == 'mailer_address'){
-        $config->set('main', 'mailer_mode', 'gmail');
-        if (isset($_POST['mailer_address'])){
-            $config->set('main', 'mailer_address', $_POST['mailer_address']);
-        }
-        
-        if (isset($_POST['mailer_pwd']) and !empty($_POST['mailer_pwd'])){
-            //$new_pwd = password_hash($_POST['mailer_pwd'], PASSWORD_DEFAULT);
-            $config->set('main', 'mailer_pwd', $_POST['mailer_pwd']);
-        }
-    }
+    $config->set('main', 'mailer_address', $_POST['mailer_address']);
+}
+if (isset($_POST['mailer_pwd']) and !empty($_POST['mailer_pwd'])){
+    //$new_pwd = password_hash($_POST['mailer_pwd'], PASSWORD_DEFAULT);
+    $config->set('main', 'mailer_pwd', $_POST['mailer_pwd']);
 }
 $config->save();
 redirect('read_config.php?updated=True');
