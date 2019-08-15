@@ -40,7 +40,7 @@ git clone https://github.com/A3sal0n/FalconGate.git
 
 cd FalconGate/
 
-git pull --all && git checkout dev
+#git pull --all && git checkout dev
 
 chmod +x falcongate.py
 
