@@ -7,7 +7,7 @@ verifyFreeDiskSpace() {
     # 10GB is the minimum space needed to install and run Falcongate
     local str="Disk space check"
     # Required space in KB
-    local required_free_kilobytes=10485760
+    local required_free_kilobytes=5242880
     # Calculate existing free space on this machine
     local existing_free_kilobytes
     existing_free_kilobytes=$(df -Pk | grep -m1 '\/$' | awk '{print $4}')
@@ -39,7 +39,98 @@ verifyFreeDiskSpace() {
     fi
 }
 
+# Get available interfaces that are UP
+get_available_interfaces() {
+  # There may be more than one so it's all stored in a variable
+  availableInterfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
+}
 
+select_deployment_mode() {
+  MODE=""
+  HEIGHT=15
+  WIDTH=40
+  CHOICE_HEIGHT=4
+  BACKTITLE="Falcongate"
+  TITLE="Deployment mode"
+  MENU="Choose one of the following options:"
+
+  OPTIONS=(1 "Attached"
+           2 "Router")
+
+  CHOICE=$(dialog --clear \
+                  --backtitle "$BACKTITLE" \
+                  --title "$TITLE" \
+                  --menu "$MENU" \
+                  $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                  "${OPTIONS[@]}" \
+                  2>&1 >/dev/tty)
+
+  clear
+  case $CHOICE in
+            1)
+                MODE="attached"
+                ;;
+            2)
+                MODE="router"
+                ;;
+  esac
+}
+
+chooseInterface() {
+    # Turn the available interfaces into an array so it can be used with a whiptail dialog
+    local interfacesArray=()
+    # Number of available interfaces
+    local interfaceCount
+    # Whiptail variable storage
+    local chooseInterfaceCmd
+    # Temporary Whiptail options storage
+    local chooseInterfaceOptions
+    # Loop sentinel variable
+    local firstLoop=1
+
+    # Find out how many interfaces are available to choose from
+    interfaceCount=$(wc -l <<< "${availableInterfaces}")
+
+    # If there are less than 2 interfaces,
+    if [[ "${interfaceCount}" -lt 2 ]]; then
+        # Exit with error because there are no enough interfaces
+        printf "Your device has less than 2 interfaces\\n"
+        printf "Falcongate require at least 2 interfaces active in the system."
+        exit 1
+    # Otherwise,
+    else
+        # While reading through the available interfaces
+        while read -r line; do
+            # use a variable to set the option as OFF to begin with
+            mode="OFF"
+            # If it's the first loop,
+            if [[ "${firstLoop}" -eq 1 ]]; then
+                # set this as the interface to use (ON)
+                firstLoop=0
+                mode="ON"
+            fi
+            # Put all these interfaces into an array
+            interfacesArray+=("${line}" "available" "${mode}")
+        # Feed the available interfaces into this while loop
+        done <<< "${availableInterfaces}"
+        # The whiptail command that will be run, stored in a variable
+        chooseInterfaceCmd=(whiptail --separate-output --radiolist "Choose An Interface (press space to select)" ${r} ${c} ${interfaceCount})
+        # Now run the command using the interfaces saved into the array
+        chooseInterfaceOptions=$("${chooseInterfaceCmd[@]}" "${interfacesArray[@]}" 2>&1 >/dev/tty) || \
+        # If the user chooses Cancel, exit
+        { printf "  %bCancel was selected, exiting installer%b\\n" "${COL_LIGHT_RED}" "${COL_NC}"; exit 1; }
+        # For each interface
+        for desiredInterface in ${chooseInterfaceOptions}; do
+            # Set the one the user selected as the interface to use
+            PIHOLE_INTERFACE=${desiredInterface}
+            # and show this information to the user
+            printf "  %b Using interface: %s\\n" "${INFO}" "${PIHOLE_INTERFACE}"
+        done
+    fi
+}
+
+
+# MAIN
 # Exit if any error is detected
 set -e
 
@@ -49,7 +140,9 @@ if [ "$(whoami)" != "root" ]; then
 	exit 1
 fi
 
+# Check available disk space
 verifyFreeDiskSpace
+
 
 # Update system software and install required packages
 echo "Updating system software..."
@@ -65,40 +158,12 @@ sleep 3
 apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog python-dev swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git python3-pip python3-venv dnscrypt-proxy nmap hydra -y
 
 # Allow user to choose deployment mode
-MODE=""
-HEIGHT=15
-WIDTH=40
-CHOICE_HEIGHT=4
-BACKTITLE="Falcongate"
-TITLE="Deployment mode"
-MENU="Choose one of the following options:"
+select_deployment_mode
 
-OPTIONS=(1 "Attached"
-         2 "Router")
+# Get active network interfaces
+get_available_interfaces
 
-CHOICE=$(dialog --clear \
-                --backtitle "$BACKTITLE" \
-                --title "$TITLE" \
-                --menu "$MENU" \
-                $HEIGHT $WIDTH $CHOICE_HEIGHT \
-                "${OPTIONS[@]}" \
-                2>&1 >/dev/tty)
-
-clear
-case $CHOICE in
-        1)
-            MODE="attached"
-            ;;
-        2)
-            MODE="router"
-            ;;
-esac
-
-# Get available interfaces that are UP
-# There may be more than one so it's all stored in a variable
-availableInterfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
-
-
+echo "$availableInterfaces"
 
 #if [[ $MODE == 'attached' ]]; then
 
