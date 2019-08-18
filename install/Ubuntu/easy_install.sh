@@ -113,7 +113,7 @@ chooseInterface() {
     #              "${availableInterfaces[@]}" \
     #              2>&1 >/dev/tty)
     declare -a interfacesArray
-    count = 1
+    count=1
     while read -r line; do
             # use a variable to set the option as OFF to begin with
             mode="OFF"
