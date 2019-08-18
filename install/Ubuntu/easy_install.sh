@@ -112,7 +112,7 @@ chooseInterface() {
     #              $HEIGHT $WIDTH $CHOICE_HEIGHT \
     #              "${availableInterfaces[@]}" \
     #              2>&1 >/dev/tty)
-    option=$(dialog --checklist --output-fd 1 "Choose option:" 10 60 4 "${availableInterfaces[@]}")
+    option=$(dialog --checklist --output-fd 1 "Choose option:" 10 60 4 "${#availableInterfaces[@]}" "${availableInterfaces[@]}")
     echo "$CHOICE"
     #OPTION=$(dialog --checklist "Choose interfaces:" \
     #10 60 4 \
