@@ -144,7 +144,8 @@ select_deployment_mode
 # Get active network interfaces
 get_available_interfaces
 
-echo "$availableInterfaces"
+# Allow the user to choose the network interfaces for Falcongate
+chooseInterface
 
 #if [[ $MODE == 'attached' ]]; then
 
