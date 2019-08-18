@@ -44,11 +44,12 @@ get_available_interfaces() {
   # There may be more than one so it's all stored in a variable
   declare -a availableInterfaces
   interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
-    while read -r line; do
+  availableInterfaces=(${interfaces})
+    #while read -r line; do
             # Put all these interfaces into an array
-            availableInterfaces+=("${line}")
+    #        availableInterfaces+=("${line}")
         # Feed the available interfaces into this while loop
-        done <<< "${interfaces}"
+    #    done <<< "${interfaces}"
 }
 
 select_deployment_mode() {
@@ -100,7 +101,7 @@ chooseInterface() {
     if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
         # Exit with error because there are no enough interfaces
         printf "Your device has less than 2 interfaces\\n"
-        printf "Falcongate require at least 2 interfaces active in the system."
+        printf "Falcongate requires at least 2 interfaces active in the system.\\n"
         exit 1
     fi
 
