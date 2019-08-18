@@ -97,6 +97,19 @@ chooseInterface() {
         printf "Your device has less than 2 interfaces\\n"
         printf "Falcongate require at least 2 interfaces active in the system."
         exit 1
+    fi
+
+    OPTION=$(dialog --checklist "Choose interfaces:" \
+    10 60 4 \
+    ${availableInterfaces[*]})
+    exitstatus=$?
+    if [ $exitstatus = 0 ]; then
+        echo "$OPTION"
+    else
+        echo "Cancel"
+    fi
+    
+    BEGINCOMMENT
     # Otherwise,
     else
         # While reading through the available interfaces
@@ -127,6 +140,7 @@ chooseInterface() {
             printf "  %b Using interface: %s\\n" "${INFO}" "${PIHOLE_INTERFACE}"
         done
     fi
+    ENDCOMMENT
 }
 
 
