@@ -99,15 +99,21 @@ chooseInterface() {
         exit 1
     fi
 
-    OPTION=$(dialog --checklist "Choose interfaces:" \
-    10 60 4 \
-    ${availableInterfaces[*]})
-    exitstatus=$?
-    if [ $exitstatus = 0 ]; then
-        echo "$OPTION"
-    else
-        echo "Cancel"
-    fi
+    HEIGHT=15
+    WIDTH=40
+    CHOICE_HEIGHT=4
+    BACKTITLE="Falcongate"
+    TITLE="Select interfaces"
+    MENU="Choose two interfaces for the installation:"
+    CHOICE=$(dialog --checklist \
+                  --backtitle "$BACKTITLE" \
+                  --title "$TITLE" \
+                  --menu "$MENU" \
+                  $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                  "${availableInterfaces[@]}" \
+                  2>&1 >/dev/tty)
+
+    echo "$CHOICE"
 }
 
 
