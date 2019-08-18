@@ -108,39 +108,6 @@ chooseInterface() {
     else
         echo "Cancel"
     fi
-    
-    BEGINCOMMENT
-    # Otherwise,
-    else
-        # While reading through the available interfaces
-        while read -r line; do
-            # use a variable to set the option as OFF to begin with
-            mode="OFF"
-            # If it's the first loop,
-            if [[ "${firstLoop}" -eq 1 ]]; then
-                # set this as the interface to use (ON)
-                firstLoop=0
-                mode="ON"
-            fi
-            # Put all these interfaces into an array
-            interfacesArray+=("${line}" "available" "${mode}")
-        # Feed the available interfaces into this while loop
-        done <<< "${availableInterfaces}"
-        # The whiptail command that will be run, stored in a variable
-        chooseInterfaceCmd=(whiptail --separate-output --radiolist "Choose An Interface (press space to select)" ${r} ${c} ${interfaceCount})
-        # Now run the command using the interfaces saved into the array
-        chooseInterfaceOptions=$("${chooseInterfaceCmd[@]}" "${interfacesArray[@]}" 2>&1 >/dev/tty) || \
-        # If the user chooses Cancel, exit
-        { printf "  %bCancel was selected, exiting installer%b\\n" "${COL_LIGHT_RED}" "${COL_NC}"; exit 1; }
-        # For each interface
-        for desiredInterface in ${chooseInterfaceOptions}; do
-            # Set the one the user selected as the interface to use
-            PIHOLE_INTERFACE=${desiredInterface}
-            # and show this information to the user
-            printf "  %b Using interface: %s\\n" "${INFO}" "${PIHOLE_INTERFACE}"
-        done
-    fi
-    ENDCOMMENT
 }
 
 
