@@ -115,7 +115,7 @@ chooseInterface() {
         # Feed the available interfaces into this while loop
         done <<< "${availableInterfaces}"
 
-    options=$(dialog --checklist --backtitle "$BACKTITLE" --title "$TITLE" --output-fd 1 "Choose options:" 10 60 4 "${interfacesArray[@]}")
+    options=$(dialog --backtitle "$BACKTITLE" --title "$TITLE" --checklist --output-fd 1 "Choose options:" 10 60 4 "${interfacesArray[@]}")
 
     clear
     echo "${options[@]}"
