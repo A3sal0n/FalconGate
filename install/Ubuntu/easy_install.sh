@@ -42,7 +42,17 @@ verifyFreeDiskSpace() {
 # Get available interfaces that are UP
 get_available_interfaces() {
   # There may be more than one so it's all stored in a variable
-  availableInterfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
+  declare -a availableInterfaces
+  interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
+  count=1
+    while read -r line; do
+            # use a variable to set the option as OFF to begin with
+            mode="OFF"
+            # Put all these interfaces into an array
+            availableInterfaces+=("${line}" "${count}" "${mode}")
+            ((count+=1))
+        # Feed the available interfaces into this while loop
+        done <<< "${interfaces}"
 }
 
 select_deployment_mode() {
@@ -104,18 +114,8 @@ chooseInterface() {
     #CHOICE_HEIGHT=4
     BACKTITLE="Falcongate"
     TITLE="Select interfaces for deployment"
-    declare -a interfacesArray
-    count=1
-    while read -r line; do
-            # use a variable to set the option as OFF to begin with
-            mode="OFF"
-            # Put all these interfaces into an array
-            interfacesArray+=("${line}" "${count}" "${mode}")
-            ((count+=1))
-        # Feed the available interfaces into this while loop
-        done <<< "${availableInterfaces}"
 
-    options=$(dialog --backtitle "$BACKTITLE" --title "$TITLE" --checklist --output-fd 1 "Choose options:" 10 60 4 "${interfacesArray[@]}")
+    options=$(dialog --backtitle "$BACKTITLE" --title "$TITLE" --checklist --output-fd 1 "Choose options:" 10 60 4 "${availableInterfaces[@]}")
 
     clear
     echo "${options[@]}"
