@@ -42,7 +42,6 @@ verifyFreeDiskSpace() {
 # Get available interfaces that are UP
 get_available_interfaces() {
   # There may be more than one so it's all stored in a variable
-  declare -a availableInterfaces
   interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
   availableInterfaces=($interfaces)
   echo "${#availableInterfaces[@]}"
@@ -151,6 +150,8 @@ verifyFreeDiskSpace
 
 # Allow user to choose deployment mode
 select_deployment_mode
+
+declare -a availableInterfaces
 
 # Get active network interfaces
 get_available_interfaces
