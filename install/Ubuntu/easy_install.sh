@@ -99,21 +99,31 @@ chooseInterface() {
         exit 1
     fi
 
-    HEIGHT=15
-    WIDTH=40
-    CHOICE_HEIGHT=4
-    BACKTITLE="Falcongate"
-    TITLE="Select interfaces"
-    MENU="Choose two interfaces for the installation:"
-    CHOICE=$(dialog --checklist \
-                  --backtitle "$BACKTITLE" \
-                  --title "$TITLE" \
-                  --menu "$MENU" \
-                  $HEIGHT $WIDTH $CHOICE_HEIGHT \
-                  "${availableInterfaces[@]}" \
-                  2>&1 >/dev/tty)
-
+    #HEIGHT=15
+    #WIDTH=40
+    #CHOICE_HEIGHT=4
+    #BACKTITLE="Falcongate"
+    #TITLE="Select interfaces"
+    #MENU="Choose two interfaces for the installation:"
+    #CHOICE=$(dialog --checklist \
+    #              --backtitle "$BACKTITLE" \
+    #              --title "$TITLE" \
+    #              --menu "$MENU" \
+    #              $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    #              "${availableInterfaces[@]}" \
+    #              2>&1 >/dev/tty)
+    option=$(dialog --checklist --output-fd 1 "Choose option:" 10 60 4 "${availableInterfaces[@]}")
     echo "$CHOICE"
+    #OPTION=$(dialog --checklist "Choose interfaces:" \
+    #10 60 4 \
+    # shellcheck disable=SC2068
+    #${availableInterfaces[@]})
+    #exitstatus=$?
+    #if [ $exitstatus = 0 ]; then
+    #    echo "$OPTION"
+    #else
+    #    echo "Cancel"
+    #fi
 }
 
 
