@@ -99,10 +99,9 @@ chooseInterface() {
     local firstLoop=1
 
     # Find out how many interfaces are available to choose from
-    interfaceCount=$(wc -l <<< "${availableInterfaces}")
 
-    # If there are less than 2 interfaces,
-    if [[ "${interfaceCount}" -lt 2 ]]; then
+    # Exit if there are less than 2 interfaces
+    if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
         # Exit with error because there are no enough interfaces
         printf "Your device has less than 2 interfaces\\n"
         printf "Falcongate require at least 2 interfaces active in the system."
