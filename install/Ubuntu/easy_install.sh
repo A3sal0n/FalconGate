@@ -44,13 +44,9 @@ get_available_interfaces() {
   # There may be more than one so it's all stored in a variable
   declare -a availableInterfaces
   interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
-  count=1
     while read -r line; do
-            # use a variable to set the option as OFF to begin with
-            mode="OFF"
             # Put all these interfaces into an array
-            availableInterfaces+=("${line}" "${count}" "${mode}")
-            ((count+=1))
+            availableInterfaces+=("${line}")
         # Feed the available interfaces into this while loop
         done <<< "${interfaces}"
 }
@@ -113,8 +109,11 @@ chooseInterface() {
     #CHOICE_HEIGHT=4
     BACKTITLE="Falcongate"
     TITLE="Select interfaces for deployment"
-
-    options=$(dialog --backtitle "$BACKTITLE" --title "$TITLE" --checklist --output-fd 1 "Choose options:" 10 60 4 "${availableInterfaces[@]}")
+    declare -a interfaceOptions
+    for ((i = 0 ; i < ${#availableInterfaces[@]} ; i++)); do
+      interfaceOptions+="${availableInterfaces[$i]} $i OFF";
+      done
+    options=$(dialog --backtitle "$BACKTITLE" --title "$TITLE" --checklist --output-fd 1 "Choose options:" 10 60 4 "${interfaceOptions[@]}")
 
     clear
     echo "${options[@]}"
