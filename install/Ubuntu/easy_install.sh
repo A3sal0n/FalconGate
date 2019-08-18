@@ -102,16 +102,8 @@ chooseInterface() {
     #HEIGHT=15
     #WIDTH=40
     #CHOICE_HEIGHT=4
-    #BACKTITLE="Falcongate"
-    #TITLE="Select interfaces"
-    #MENU="Choose two interfaces for the installation:"
-    #CHOICE=$(dialog --checklist \
-    #              --backtitle "$BACKTITLE" \
-    #              --title "$TITLE" \
-    #              --menu "$MENU" \
-    #              $HEIGHT $WIDTH $CHOICE_HEIGHT \
-    #              "${availableInterfaces[@]}" \
-    #              2>&1 >/dev/tty)
+    BACKTITLE="Falcongate"
+    TITLE="Select interfaces for deployment"
     declare -a interfacesArray
     count=1
     while read -r line; do
@@ -123,19 +115,10 @@ chooseInterface() {
         # Feed the available interfaces into this while loop
         done <<< "${availableInterfaces}"
 
-    option=$(dialog --checklist --output-fd 1 "Choose option:" 10 60 4 "${interfacesArray[@]}")
+    options=$(dialog --checklist --backtitle "$BACKTITLE" --title "$TITLE" --output-fd 1 "Choose options:" 10 60 4 "${interfacesArray[@]}")
 
-    echo "$option"
-    #OPTION=$(dialog --checklist "Choose interfaces:" \
-    #10 60 4 \
-    # shellcheck disable=SC2068
-    #${availableInterfaces[@]})
-    #exitstatus=$?
-    #if [ $exitstatus = 0 ]; then
-    #    echo "$OPTION"
-    #else
-    #    echo "Cancel"
-    #fi
+    clear
+    echo "${options[@]}"
 }
 
 
