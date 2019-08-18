@@ -44,7 +44,7 @@ get_available_interfaces() {
   # There may be more than one so it's all stored in a variable
   declare -a availableInterfaces
   interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
-  availableInterfaces=(${interfaces})
+  availableInterfaces=($interfaces)
     #while read -r line; do
             # Put all these interfaces into an array
     #        availableInterfaces+=("${line}")
