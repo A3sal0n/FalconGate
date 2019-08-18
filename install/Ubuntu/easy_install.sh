@@ -45,11 +45,7 @@ get_available_interfaces() {
   declare -a availableInterfaces
   interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
   availableInterfaces=($interfaces)
-    #while read -r line; do
-            # Put all these interfaces into an array
-    #        availableInterfaces+=("${line}")
-        # Feed the available interfaces into this while loop
-    #    done <<< "${interfaces}"
+  echo "${#availableInterfaces[@]}"
 }
 
 select_deployment_mode() {
@@ -98,6 +94,7 @@ chooseInterface() {
     # Find out how many interfaces are available to choose from
 
     # Exit if there are less than 2 interfaces
+    echo "${#availableInterfaces[@]}"
     if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
         # Exit with error because there are no enough interfaces
         printf "Your device has less than 2 interfaces\\n"
@@ -120,6 +117,20 @@ chooseInterface() {
     echo "${options[@]}"
 }
 
+installRequirements() {
+  echo "Updating system software..."
+  sleep 3
+
+  add-apt-repository ppa:shevchuk/dnscrypt-proxy
+
+  apt-get update && apt-get upgrade -y
+
+  echo "Installing software dependencies..."
+  sleep 3
+
+  apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog python-dev swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git python3-pip python3-venv dnscrypt-proxy nmap hydra -y
+}
+
 
 # MAIN
 # Exit if any error is detected
@@ -136,17 +147,7 @@ verifyFreeDiskSpace
 
 
 # Update system software and install required packages
-echo "Updating system software..."
-sleep 3
-
-add-apt-repository ppa:shevchuk/dnscrypt-proxy
-
-apt-get update && apt-get upgrade -y
-
-echo "Installing software dependencies..."
-sleep 3
-
-apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog python-dev swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git python3-pip python3-venv dnscrypt-proxy nmap hydra -y
+#installRequirements
 
 # Allow user to choose deployment mode
 select_deployment_mode
