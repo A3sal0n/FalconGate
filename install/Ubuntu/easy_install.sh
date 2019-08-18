@@ -39,14 +39,6 @@ verifyFreeDiskSpace() {
     fi
 }
 
-# Get available interfaces that are UP
-get_available_interfaces() {
-  # There may be more than one so it's all stored in a variable
-  interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
-  availableInterfaces=($interfaces)
-  echo "${#availableInterfaces[@]}"
-}
-
 select_deployment_mode() {
   MODE=""
   HEIGHT=15
@@ -78,20 +70,17 @@ select_deployment_mode() {
   esac
 }
 
+
+get_available_interfaces() {
+  # There may be more than one so it's all stored in a variable
+  declare -a availableInterfaces
+  interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
+  availableInterfaces=($interfaces)
+  echo "${#availableInterfaces[@]}"
+}
+
+
 chooseInterface() {
-    # Turn the available interfaces into an array so it can be used with a whiptail dialog
-    local interfacesArray=()
-    # Number of available interfaces
-    local interfaceCount
-    # Whiptail variable storage
-    local chooseInterfaceCmd
-    # Temporary Whiptail options storage
-    local chooseInterfaceOptions
-    # Loop sentinel variable
-    local firstLoop=1
-
-    # Find out how many interfaces are available to choose from
-
     # Exit if there are less than 2 interfaces
     echo "${#availableInterfaces[@]}"
     if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
@@ -101,9 +90,6 @@ chooseInterface() {
         exit 1
     fi
 
-    #HEIGHT=15
-    #WIDTH=40
-    #CHOICE_HEIGHT=4
     BACKTITLE="Falcongate"
     TITLE="Select interfaces for deployment"
     declare -a interfaceOptions
@@ -150,8 +136,6 @@ verifyFreeDiskSpace
 
 # Allow user to choose deployment mode
 select_deployment_mode
-
-declare -a availableInterfaces
 
 # Get active network interfaces
 get_available_interfaces
