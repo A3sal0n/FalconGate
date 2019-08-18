@@ -112,8 +112,20 @@ chooseInterface() {
     #              $HEIGHT $WIDTH $CHOICE_HEIGHT \
     #              "${availableInterfaces[@]}" \
     #              2>&1 >/dev/tty)
-    option=$(dialog --checklist --output-fd 1 "Choose option:" 10 60 4 "${#availableInterfaces[@]}" "${availableInterfaces[@]}")
-    echo "$CHOICE"
+    declare -a interfacesArray
+    count = 1
+    while read -r line; do
+            # use a variable to set the option as OFF to begin with
+            mode="OFF"
+            # Put all these interfaces into an array
+            interfacesArray+=("${line}" "${count}" "${mode}")
+            ((count+=1))
+        # Feed the available interfaces into this while loop
+        done <<< "${availableInterfaces}"
+
+    option=$(dialog --checklist --output-fd 1 "Choose option:" 10 60 4 "${interfacesArray[@]}")
+
+    echo "$option"
     #OPTION=$(dialog --checklist "Choose interfaces:" \
     #10 60 4 \
     # shellcheck disable=SC2068
