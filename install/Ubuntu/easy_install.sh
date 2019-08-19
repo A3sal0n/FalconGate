@@ -286,7 +286,7 @@ if [ "$deploymentMode" == "attached" ]; then
 else
   sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Ubuntu/templates/50-cloud-init.yaml.router.tpl > /etc/netplan/50-cloud-init.yaml
 fi
-cp FalconGate/install/Ubuntu/templates/update-exim4.conf.tpl /etc/exim4/update-exim4.conf
+
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" FalconGate/install/Ubuntu/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
 cp FalconGate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/falcongate.conf
 cp FalconGate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
