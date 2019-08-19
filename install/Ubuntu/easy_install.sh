@@ -74,16 +74,17 @@ select_deployment_mode() {
 get_available_interfaces() {
   # There may be more than one so it's all stored in a variable
   declare -a availableInterfaces
-  global availableInterfaces
   interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
   availableInterfaces=($interfaces)
-  echo "${#availableInterfaces[@]}"
 }
 
 
 chooseInterface() {
+    declare -a availableInterfaces
+    interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
+    availableInterfaces=($interfaces)
     # Exit if there are less than 2 interfaces
-    echo "${#availableInterfaces[@]}"
+    #echo "${#availableInterfaces[@]}"
     if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
         # Exit with error because there are no enough interfaces
         printf "Your device has less than 2 interfaces\\n"
@@ -139,7 +140,7 @@ verifyFreeDiskSpace
 select_deployment_mode
 
 # Get active network interfaces
-get_available_interfaces
+#get_available_interfaces
 
 # Allow the user to choose the network interfaces for Falcongate
 chooseInterface
