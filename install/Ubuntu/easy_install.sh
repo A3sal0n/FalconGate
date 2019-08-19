@@ -81,6 +81,7 @@ get_available_interfaces() {
 
 
 chooseInterface() {
+    get_available_interfaces
     # Exit if there are less than 2 interfaces
     echo "${#availableInterfaces[@]}"
     if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
@@ -138,7 +139,7 @@ verifyFreeDiskSpace
 select_deployment_mode
 
 # Get active network interfaces
-get_available_interfaces
+#get_available_interfaces
 
 # Allow the user to choose the network interfaces for Falcongate
 chooseInterface
