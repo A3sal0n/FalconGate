@@ -173,9 +173,8 @@ else
   DHCPEND="192.168.100.200"
 fi
 
-echo "$deploymentMode"
-echo $IP0 $IP1 $GATEWAY $NETMASK $DHCPSTART $DHCPEND
-
+echo "Installing Falcongate in $deploymentMode configuration"
+sleep 3
 
 cd /opt
 
