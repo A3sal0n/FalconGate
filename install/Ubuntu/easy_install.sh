@@ -138,7 +138,7 @@ DHCPSTART=""
 DHCPEND=""
 
 # Update system software and install required packages
-#installRequirements
+installRequirements
 
 # Allow user to choose deployment mode
 select_deployment_mode
