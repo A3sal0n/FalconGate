@@ -279,6 +279,7 @@ cp FalconGate/install/Ubuntu/templates/zeek.service.tpl /etc/systemd/system/zeek
 cp FalconGate/install/Ubuntu/templates/local.bro.tpl /opt/zeek/share/zeek/site/local.zeek
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/config.ini.tpl > FalconGate/config.ini
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Ubuntu/fw/iptables.rules > /etc/iptables.rules
 cp FalconGate/install/Ubuntu/templates/user_config.ini.tpl FalconGate/html/user_config.ini
 cp FalconGate/install/Ubuntu/templates/pwd.db.tpl FalconGate/html/pwd.db
 if [ "$deploymentMode" == "attached" ]; then
@@ -310,7 +311,7 @@ echo "# Falcongate Cron jobs" >> /etc/crontab
 echo "@reboot root sleep 30 && systemctl restart netfilter-persistent.service" >> /etc/crontab
 echo "@reboot root /sbin/ipset restore -! < /etc/ipset.rules" >> /etc/crontab
 echo "*/5 * * * * root /sbin/ipset save > /etc/ipset.rules" >> /etc/crontab
-iptables-restore < FalconGate/install/Ubuntu/fw/iptables.rules
+iptables-restore < /etc/iptables.rules
 apt-get install iptables-persistent netfilter-persistent -y
 
 # Disable systemd-resolve
