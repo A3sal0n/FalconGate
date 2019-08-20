@@ -13,6 +13,7 @@ COMMIT
 -A INPUT -i IFACE0 -j ACCEPT
 -A INPUT -m set --match-set blacklist src,dst -j DROP
 -A INPUT -m set --match-set blacklist-user src,dst -j DROP
+-A INPUT -i IFACE1 -j DROP
 -A FORWARD -m set --match-set blacklist src,dst -j DROP
 -A FORWARD -m set --match-set blacklist-user src,dst -j DROP
 -A FORWARD -i IFACE0 -o IFACE1 -j ACCEPT
