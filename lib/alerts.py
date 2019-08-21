@@ -25,7 +25,7 @@ class DailyAlerts(threading.Thread):
         if len(homenet.email_watchlist) > 0:
             for a in homenet.email_watchlist:
                 try:
-                    r = requests.get(homenet.hibp_api_url + a, headers=self.headers)
+                    r = requests.get(homenet.hibp_api_url + a, headers=self.headers, verify=False)
                     if r.status_code == 200:
                         r_json = r.json()
                         if len(r_json) >= 1:

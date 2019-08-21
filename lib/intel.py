@@ -105,7 +105,7 @@ class DownloadIntel(threading.Thread):
             for url in homenet.blacklist_sources_ip[threat]:
                 if len(url) > 0:
                     try:
-                        response = requests.get(url, headers=self.headers)
+                        response = requests.get(url, headers=self.headers, verify=False)
                         entries = re.findall(self.ip_regex, response.content)
                         for ip in entries:
                             if ip not in homenet.user_whitelist:
@@ -119,7 +119,7 @@ class DownloadIntel(threading.Thread):
             for url in homenet.blacklist_sources_domain[threat]:
                 if len(url) > 0:
                     try:
-                        response = requests.get(url, headers=self.headers)
+                        response = requests.get(url, headers=self.headers, verify=False)
                         txt = response.text
                         lines = txt.split('\n')
                         for line in lines:
@@ -135,7 +135,7 @@ class DownloadIntel(threading.Thread):
 
         # Downloading the list of malicious IP addresses
         try:
-            response = requests.get(homenet.fg_intel_ip, headers=headers)
+            response = requests.get(homenet.fg_intel_ip, headers=headers, verify=False)
             rjson = response.json()
             for threat in rjson.keys():
                 if threat == 'Tor' and homenet.allow_tor == 'true':
@@ -149,7 +149,7 @@ class DownloadIntel(threading.Thread):
 
         # Downloading the list of malicious domains
         try:
-            response = requests.get(homenet.fg_intel_domains, headers=headers)
+            response = requests.get(homenet.fg_intel_domains, headers=headers, verify=False)
             rjson = response.json()
             for threat in rjson.keys():
                 set1 = set(homenet.bad_domains[threat])
@@ -160,7 +160,7 @@ class DownloadIntel(threading.Thread):
 
         # Downloading the list of default user names and passwords
         try:
-            response = requests.get(homenet.fg_intel_creds, headers=headers)
+            response = requests.get(homenet.fg_intel_creds, headers=headers, verify=False)
             fout = open('/tmp/default_creds.csv', 'w')
             fout.write(response.text)
             fout.close()
@@ -252,10 +252,10 @@ class CheckVirusTotalIntel(threading.Thread):
                    "User-Agent": "Mozilla/5.0"}
 
         try:
-            response = requests.get(homenet.vt_api_file_url, params=params, headers=headers)
+            response = requests.get(homenet.vt_api_file_url, params=params, headers=headers, verify=False)
             response_json = response.json()
         except Exception as e:
-            log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API')
+            log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API - ' + str(e.__doc__) + " - " + str(e))
             return None
 
         if response_json["response_code"] == 1:
@@ -271,10 +271,10 @@ class CheckVirusTotalIntel(threading.Thread):
         headers = {"Accept-Encoding": "gzip, deflate",
                    "User-Agent": "Mozilla/5.0"}
         try:
-            response = requests.get(homenet.vt_api_domain_url, params=params, headers=headers)
+            response = requests.get(homenet.vt_api_domain_url, params=params, headers=headers, verify=False)
             response_json = response.json()
         except Exception as e:
-            log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API')
+            log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API - ' + str(e.__doc__) + " - " + str(e))
             return None
         domain = Domain()
         domain.name = domain
