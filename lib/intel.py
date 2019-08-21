@@ -180,9 +180,9 @@ class CheckVirusTotalIntel(threading.Thread):
             file_lookup_list = {}
             if homenet.vt_api_key:
                 with lock:
-                    for k, host in homenet.hosts.iteritems():
+                    for k, host in homenet.hosts.items():
                         # Get all DNS entries which need VT lookup
-                        for k1, dns in host.dns.iteritems():
+                        for k1, dns in host.dns.items():
                             if not dns.bad:
                                 if dns.sld not in top_domains:
                                     if dns.sld not in dns_lookup_list:
@@ -191,7 +191,7 @@ class CheckVirusTotalIntel(threading.Thread):
                                         dns_lookup_list[dns.sld].append(k)
 
                         # Get all files which need VT lookup
-                        for k1, f in host.files.iteritems():
+                        for k1, f in host.files.items():
                             if not f.vt_flag:
                                 if f.sha1 not in file_lookup_list:
                                     file_lookup_list[f.sha1] = [k]
@@ -199,7 +199,7 @@ class CheckVirusTotalIntel(threading.Thread):
                                     file_lookup_list[f.sha1].append(k)
 
                 # Processing files first and updating homenet for obvious reasons
-                files = file_lookup_list.keys()
+                files = list(file_lookup_list.keys())
                 if len(files) > 0:
                     while len(files) > 0:
                         process = files[:4]
@@ -221,7 +221,8 @@ class CheckVirusTotalIntel(threading.Thread):
                         del files[:4]
                         time.sleep(62)
 
-                domains = dns_lookup_list.keys()
+                domains = list(dns_lookup_list.keys())
+                time.sleep(10)
                 if len(domains) > 0:
                     while len(domains) > 0:
                         process = domains[:4]
