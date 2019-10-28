@@ -318,8 +318,8 @@ apt-get install iptables-persistent netfilter-persistent -y
 systemctl disable systemd-resolved.service
 systemctl stop systemd-resolved
 ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-echo "127.0.0.1	falcongate" >> /etc/hosts
-echo "127.0.1.1	falcongate" >> /etc/hosts
+echo "127.0.0.1 falcongate" >> /etc/hosts
+echo "127.0.1.1 falcongate" >> /etc/hosts
 
 # Other
 touch /etc/dnsmasq.block
