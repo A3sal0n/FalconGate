@@ -70,20 +70,6 @@ Currently Falcongate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 ### Collaborators
 [easy4MEr](https://github.com/easy4MEr)
 
-### Follow us
-
-You can subscribe to our [newsletter](http://eepurl.com/cvwEYj) to receive news on major developments, new features released, etc.
-
-### Donate
-
-If you like our project or you have found it useful please consider donating some money to support us.
-
-**Paypal:** https://www.paypal.me/FalconGate
-
-**Bitcoin wallet:** 14TdcLb2DYHZmcwqCUWP64v4g1UaTs8yK8
-
-![alt tag](https://github.com/A3sal0n/FalconGate/blob/master/html/images/bitcoin_wallet.png)
-
 ## License
 
 This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
