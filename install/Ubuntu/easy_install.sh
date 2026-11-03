@@ -71,13 +71,15 @@ select_deployment_mode() {
 
 chooseInterface() {
     declare -a availableInterfaces
-    interfaces=$(ip --oneline link show up | grep -v "lo" | awk '{print $2}' | cut -d':' -f1 | cut -d'@' -f1)
+    # List all non-loopback interfaces, including those administratively DOWN
+    # (e.g. a second NIC with no config yet); netplan brings them up later.
+    interfaces=$(ip --oneline link show | grep -v "link/loopback" | awk -F': ' '{print $2}' | cut -d'@' -f1)
     availableInterfaces=($interfaces)
     # Exit if there are less than 2 interfaces
     if [[ "${#availableInterfaces[@]}" -lt 2 ]]; then
         # Exit with error because there are no enough interfaces
         printf "Your device has less than 2 interfaces\\n"
-        printf "Falcongate requires at least 2 interfaces active in the system.\\n"
+        printf "Falcongate requires at least 2 network interfaces in the system.\\n"
         exit 1
     fi
 
@@ -220,10 +222,25 @@ sleep 3
 
 cd /opt
 
-echo "Cloning Falcongate repository..."
-sleep 3
+# Source of the Falcongate code. Override for development:
+#   FG_SOURCE_DIR=/path/to/local/FalconGate  copy a local working tree (incl. uncommitted changes)
+#   FG_REPO_URL=<url or path> FG_BRANCH=<branch>  clone a different repo and/or branch
+FG_REPO_URL="${FG_REPO_URL:-https://github.com/A3sal0n/FalconGate.git}"
+FG_BRANCH="${FG_BRANCH:-}"
 
-git clone https://github.com/A3sal0n/FalconGate.git
+if [[ -n "${FG_SOURCE_DIR:-}" ]]; then
+  if [[ ! -f "${FG_SOURCE_DIR}/falcongate.py" ]]; then
+    printf "FG_SOURCE_DIR (%s) does not look like a Falcongate checkout\\n" "${FG_SOURCE_DIR}"
+    exit 1
+  fi
+  echo "Copying Falcongate from local source ${FG_SOURCE_DIR}..."
+  mkdir -p /opt/FalconGate
+  cp -a "${FG_SOURCE_DIR}/." /opt/FalconGate/
+else
+  echo "Cloning Falcongate repository ${FG_REPO_URL} ${FG_BRANCH:+(branch ${FG_BRANCH})}..."
+  sleep 3
+  git clone ${FG_BRANCH:+--branch "${FG_BRANCH}"} "${FG_REPO_URL}" FalconGate
+fi
 
 cd FalconGate/
 
