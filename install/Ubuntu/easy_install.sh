@@ -419,7 +419,7 @@ sleep 2
 cd /opt
 
 cp FalconGate/install/Ubuntu/templates/zeek.service.tpl /etc/systemd/system/zeek.service
-cp FalconGate/install/Ubuntu/templates/local.bro.tpl /opt/zeek/share/zeek/site/local.zeek
+cp FalconGate/install/Ubuntu/templates/local.zeek.tpl /opt/zeek/share/zeek/site/local.zeek
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
 sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/config.ini.tpl > FalconGate/config.ini
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Ubuntu/fw/iptables.rules > /etc/iptables.rules

@@ -439,7 +439,16 @@ network**, not on the appliance:
 |---|---|---|
 | `tests/dga.py` | Domain Generation Algorithm lookups | **Malware / DGA** alert (after ≥20 random-domain lookups, raised hourly) |
 | `tests/malware_domains.py` | DNS lookups of known-bad domains | **Malware** (bad domain) alert |
-| `tests/port_scanner.py` | An outbound port scan | **Port scan** notice from Zeek |
+| `tests/port_scanner.py` | An outbound port scan | See the note below — no alert on a stock Zeek 8 install |
+
+> **Port scanning note:** Zeek 8 no longer ships the built-in scan detector
+> (`misc/scan` was removed upstream), so the bundled `local.zeek` does not emit a
+> `Scan::*` notice and `tests/port_scanner.py` will not raise a FalconGate alert
+> on a stock install. FalconGate's own port-scan feature works the other way
+> around: the `PortScanner` thread (`lib/recon.py`) uses Nmap to scan your LAN
+> devices and records their open ports (verified in section 8), rather than
+> detecting scans originating from clients. To get Zeek-side scan detection back,
+> install a scan-detection Zeek package and `@load` it from `local.zeek`.
 
 The application-level unit tests run on the appliance:
 
