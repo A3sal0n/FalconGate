@@ -105,14 +105,44 @@ installRequirements() {
   echo "Updating system software..."
   sleep 3
 
-  add-apt-repository ppa:shevchuk/dnscrypt-proxy
+  apt-get update
+  apt-get install -y software-properties-common
+  add-apt-repository -y ppa:shevchuk/dnscrypt-proxy
 
   apt-get update && apt-get upgrade -y
 
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog python-dev swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git python3-pip python3-venv dnscrypt-proxy nmap hydra -y
+  apt-get install -y cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev
+}
+
+installPython() {
+  local python_version="3.15.0"
+  local python_prefix="/opt/python/${python_version}"
+  local archive="/tmp/Python-${python_version}.tar.xz"
+  local source_dir="/tmp/Python-${python_version}"
+  local expected_sha256="ba4bed1ba346b916890b76d9e320451420aa69f6408997d33c66482eeae3d575"
+
+  if [ ! -x "${python_prefix}/bin/python3.15" ]; then
+    echo "Downloading CPython ${python_version} source..."
+    curl -fsSL "https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tar.xz" -o "${archive}"
+    if ! printf '%s  %s\n' "${expected_sha256}" "${archive}" | sha256sum --check --status; then
+      echo "CPython source archive checksum verification failed." >&2
+      exit 1
+    fi
+
+    tar -xJf "${archive}" -C /tmp
+    cd "${source_dir}"
+    ./configure --prefix="${python_prefix}" --with-ensurepip=install
+    make -j2
+    make altinstall
+    cd /opt
+    rm -f "${archive}"
+  fi
+
+  PYTHON_BIN="${python_prefix}/bin/python3.15"
+  "${PYTHON_BIN}" --version
 }
 
 
@@ -124,6 +154,17 @@ set -e
 if [ "$(whoami)" != "root" ]; then
 	echo "Sorry, you are not root."
 	exit 1
+fi
+
+if [ ! -r /etc/os-release ]; then
+  echo "Cannot determine the operating system version." >&2
+  exit 1
+fi
+
+. /etc/os-release
+if [ "${ID:-}" != "ubuntu" ] || [ "${VERSION_ID:-}" != "24.04" ]; then
+  echo "This installer targets Ubuntu Server 24.04 LTS only." >&2
+  exit 1
 fi
 
 # Check available disk space
@@ -139,6 +180,7 @@ DHCPEND=""
 
 # Update system software and install required packages
 installRequirements
+installPython
 
 # Allow user to choose deployment mode
 select_deployment_mode
@@ -194,17 +236,11 @@ cd ../
 echo "Creating Python3 virtual environment and installing dependencies..."
 sleep 3
 
-python3 -m venv fg
-
-source fg/bin/activate
-
-pip3 install -r FalconGate/install/Ubuntu/Python/requirements.txt
-
-pip3 install -U tzupdate
-
-tzupdate
-
-deactivate
+"${PYTHON_BIN}" -m venv --upgrade /opt/fg
+/opt/fg/bin/python -m pip install --upgrade pip setuptools
+/opt/fg/bin/python -m pip install -r FalconGate/install/Ubuntu/Python/requirements.txt
+/opt/fg/bin/python -m pip install --upgrade tzupdate
+/opt/fg/bin/tzupdate
 
 echo "Installing PF_RING from source..."
 sleep 3

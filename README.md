@@ -40,7 +40,9 @@ Falcongate was built on top of other open source software so it has multiple dep
 
 ### Supported Operating Systems
 
-Currently Falcongate fully supports only Ubuntu 18.04
+The current deployment target is Ubuntu Server 24.04 LTS with CPython 3.15.0.
+The installer builds CPython in `/opt/python/3.15.0` and uses it only for FalconGate;
+it does not replace Ubuntu's system Python.
 
 
 ### Prerequisites
@@ -48,7 +50,7 @@ Currently Falcongate fully supports only Ubuntu 18.04
 Falcongate has a number of software dependencies:
 
 - Zeek
-- Python 3.6.8
+- CPython 3.15.0
 - Nginx
 - Dnsmasq
 - Exim
@@ -64,7 +66,7 @@ Currently Falcongate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 
 ### Installing Falcongate
 
-- [Install from source on Ubuntu 18.04](https://github.com/A3sal0n/FalconGate/wiki/Install-from-source)
+- [Ubuntu 24.04 installation notes](install/Ubuntu/README.md)
 
 
 ### Collaborators
@@ -73,4 +75,3 @@ Currently Falcongate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 ## License
 
 This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
-

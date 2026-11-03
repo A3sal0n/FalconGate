@@ -1,9 +1,9 @@
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import threading
 import os
 import time
 import lib.utils as utils
-import netifaces
+import lib.network as network
 from lib.logger import *
 from lib.settings import homenet, lock
 
@@ -27,7 +27,7 @@ class CheckConfigFileModification(threading.Thread):
                 flag = True
                 self._cached_stamp_core = stamp
                 # Reading core configuration file
-                core_config = SafeConfigParser()
+                core_config = ConfigParser()
                 core_config.read('config.ini')
 
                 # main section
@@ -52,7 +52,7 @@ class CheckConfigFileModification(threading.Thread):
                 flag = True
                 self._cached_stamp_user = stamp
                 # Reading user configuration file
-                user_config = SafeConfigParser()
+                user_config = ConfigParser()
                 user_config.read('html/user_config.ini')
 
                 # main section
@@ -85,8 +85,7 @@ class CheckNetworkModifications(threading.Thread):
     def run(self):
 
         while 1:
-            gws = netifaces.gateways()
-            cgw = gws['default'][netifaces.AF_INET][0]
+            cgw = network.get_default_gateway()
             if not homenet.gateway:
                 homenet.gateway = cgw
             else:

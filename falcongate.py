@@ -4,12 +4,11 @@ import os
 import socket
 import sys
 import time
-import netifaces
-import netaddr
 import lib.settings as sett
 import lib.logparser as logparser
 from lib.logger import *
 import lib.config as config
+import lib.network as network
 import lib.intel as intel
 import lib.alerts as alerts
 import lib.utils as utils
@@ -81,34 +80,15 @@ def main():
     try:
 
         # Retrieving network configuration from local eth0 interface and storing in global variables
-        addrs = netifaces.ifaddresses(sett.homenet.interface)
-
-        ipinfo = addrs[socket.AF_INET][0]
-
-
-        # Get MAC for eth0
-        sett.homenet.mac = addrs[netifaces.AF_LINK][0]['addr']
-
-        # IP address for eth0
-        sett.homenet.ip = ipinfo['addr']
-
-        # Netmask for eth0
-        sett.homenet.netmask = ipinfo['netmask']
-
-        cidr = netaddr.IPNetwork('%s/%s' % (sett.homenet.ip, sett.homenet.netmask))
-
-        # Network CIDR for eth0
-        network = cidr.network
-        sett.homenet.net_cidr = netaddr.IPNetwork('%s/%s' % (network, sett.homenet.netmask))
-
-        # Get default gateway for eth0
-        gws = netifaces.gateways()
-        cgw = gws['default'][netifaces.AF_INET][0]
-
-        sett.homenet.gateway = cgw
+        interface_config = network.get_interface_config(sett.homenet.interface)
+        sett.homenet.mac = interface_config["mac"]
+        sett.homenet.ip = interface_config["ip"]
+        sett.homenet.netmask = interface_config["netmask"]
+        sett.homenet.net_cidr = interface_config["network"]
+        sett.homenet.gateway = network.get_default_gateway()
 
     except Exception as e:
-        log.debug('FG-ERROR: Falcongate had issues detecting your network configuration')
+        log.debug('FG-ERROR: Falcongate had issues detecting your network configuration: ' + str(e))
 
     log.debug('FG-DEBUG: Starting main loop')
 
@@ -123,4 +103,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
