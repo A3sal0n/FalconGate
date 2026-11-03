@@ -1,7 +1,13 @@
 # FalconGate — Component Testing Guide
 
 This guide helps you verify that every component FalconGate depends on is
-installed and working after running `install/Ubuntu/easy_install.sh`.
+installed and working after running the installer
+(`install/Ubuntu/easy_install.sh` or `install/Debian/easy_install.sh`).
+
+It applies to **both the Ubuntu and Debian installs** — the components are the
+same; only a few distro-specific details differ (called out inline), chiefly the
+PHP-FPM service name and the networking backend (Ubuntu uses netplan, Debian uses
+ifupdown / `/etc/network/interfaces`).
 
 Work through the sections in order. The earlier components (PF_RING, Zeek,
 dnsmasq, dnscrypt-proxy) are the foundation the detection logic is built on, so
@@ -18,6 +24,17 @@ confirming them first makes later failures easier to diagnose.
   in router mode). Substitute your real address.
 - Most commands need root. Prefix with `sudo` or run from a root shell.
 - A ✅ line shows what a healthy result looks like.
+- **PHP-FPM service name** depends on the PHP version your distro ships
+  (Ubuntu 24.04: `php8.3-fpm`; Debian 12: `php8.2-fpm`; Debian 13: `php8.4-fpm`).
+  Set a shell variable once and reuse it in the commands below:
+
+  ```bash
+  PHP_FPM="php$(ls /etc/php | sort -V | tail -1)-fpm"
+  echo "$PHP_FPM"   # e.g. php8.3-fpm
+  ```
+- FalconGate logs through syslog and its logs API reads `/var/log/syslog`, so
+  **rsyslog must be installed** (the default on Ubuntu and on Debian 12/13). If
+  that file is absent, `journalctl | grep FG-` shows the same messages.
 
 ---
 
@@ -26,10 +43,10 @@ confirming them first makes later failures easier to diagnose.
 Run this first to see the state of every managed service at once:
 
 ```bash
-systemctl --no-pager status falcongate zeek dnsmasq dnscrypt-proxy nginx php8.3-fpm netfilter-persistent
+systemctl --no-pager status falcongate zeek dnsmasq dnscrypt-proxy nginx "$PHP_FPM" netfilter-persistent
 ```
 
-✅ `falcongate`, `dnsmasq`, `dnscrypt-proxy`, `nginx`, `php8.3-fpm` show
+✅ `falcongate`, `dnsmasq`, `dnscrypt-proxy`, `nginx`, and `$PHP_FPM` show
 `active (running)`; `zeek` shows `active (exited)` (it is a `oneshot` service
 that leaves the Zeek cluster running in the background).
 
@@ -64,8 +81,40 @@ grep pf_ring /etc/modules
 If the module is missing:
 
 ```bash
-sudo modprobe pf_ring   # or: sudo insmod /opt/PF_RING/kernel/pf_ring.ko
+sudo modprobe pf_ring
 ```
+
+### 1a. DKMS — the module survives kernel upgrades
+
+The installer builds PF_RING through **DKMS** so the module is rebuilt
+automatically whenever the kernel is updated. Verify it is registered and built
+for the kernel you are running:
+
+```bash
+dkms status pfring
+uname -r
+```
+
+✅ `dkms status` shows a line like
+`pfring/9.4.0, <kernel-version>, x86_64: installed`, and `<kernel-version>`
+matches the output of `uname -r`.
+
+This is the single most important check to repeat **after any kernel upgrade and
+reboot** — it is the failure mode that silently stops all detection. If after a
+reboot `lsmod | grep pf_ring` is empty, or `dkms status` lists the module only
+for an older kernel, the headers for the new kernel were missing when DKMS tried
+to rebuild it. Install them and rebuild:
+
+```bash
+sudo apt-get install -y "linux-headers-$(uname -r)"
+sudo dkms autoinstall
+sudo modprobe pf_ring
+```
+
+> Applies to both the Ubuntu and Debian installs (both use DKMS). It matters most
+> on Ubuntu, whose kernel is updated frequently; to reduce surprise reboots
+> breaking capture, you can hold the kernel (`sudo apt-mark hold "linux-image-*"`)
+> and apply kernel updates deliberately, re-running this check afterwards.
 
 ---
 
@@ -281,10 +330,12 @@ The dashboard is served over HTTPS and renders data from the API above.
 
 ```bash
 nginx -t
-systemctl status nginx php8.3-fpm
+systemctl status nginx "$PHP_FPM"
 ```
 
-✅ `nginx -t` reports the config is OK.
+✅ `nginx -t` reports the config is OK. On Debian the installer also removes the
+distro's default site (`/etc/nginx/sites-enabled/default`) so FalconGate answers
+on port 80.
 
 Test the HTTP→HTTPS redirect and that PHP executes:
 
@@ -301,11 +352,13 @@ From a browser on the internal network, open `https://IP0/`.
 with the admin account:
 
 - Default username: `admin`
-- The password hash lives in `html/pwd.db`. If you did not change it during
-  setup, change it now from the dashboard's admin page, or regenerate the hash:
+- The password hash lives in `html/pwd.db`. Change it from the dashboard's admin
+  page (which uses the running PHP-FPM), or regenerate the hash with the bundled
+  script if the PHP CLI (`php-cli`) is installed:
 
   ```bash
-  /opt/fg/bin/php -r 'echo password_hash($argv[1], PASSWORD_DEFAULT);' 'yourNewPassword'
+  cd /opt/FalconGate/html
+  php encrypt_passwd.php 'yourNewPassword'   # prints the bcrypt hash
   # then write "admin <hash>" into /opt/FalconGate/html/pwd.db
   ```
 
@@ -445,4 +498,5 @@ email is delivered.
 
 All FalconGate daemon activity is tagged `FG-` in `/var/log/syslog`, so
 `grep "FG-" /var/log/syslog` is the single most useful command when something
-behaves unexpectedly.
+behaves unexpectedly (use `journalctl | grep FG-` if your system has no
+`/var/log/syslog`).
