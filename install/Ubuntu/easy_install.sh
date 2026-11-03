@@ -116,7 +116,7 @@ installRequirements() {
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install -y cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev libnl-3-dev libnl-genl-3-dev
+  apt-get install -y cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev libnl-3-dev libnl-genl-3-dev python3 python3-dev python3-git python3-semantic-version cppzmq-dev libkrb5-dev libmaxminddb-dev
 }
 
 installPython() {
