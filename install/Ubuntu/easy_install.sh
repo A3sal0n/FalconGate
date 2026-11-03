@@ -103,6 +103,43 @@ chooseInterface() {
     fi
 }
 
+# Decide which of the selected interfaces is the Internet uplink (WAN).
+# The WAN interface is the one that currently has Internet access. The name of
+# that interface is printed on stdout; nothing is printed (and a non-zero status
+# is returned) when none of the candidates can reach the Internet.
+detectWanInterface() {
+    local iface
+    for iface in "$@"; do
+        # An interface without an IPv4 address cannot reach anything yet.
+        if ! ip -4 addr show dev "$iface" 2>/dev/null | grep -q 'inet '; then
+            continue
+        fi
+        # Treat the interface as WAN if it can reach a well-known public host
+        # through that specific interface.
+        if ping -I "$iface" -c 1 -W 2 1.1.1.1 >/dev/null 2>&1 \
+           || ping -I "$iface" -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
+            printf '%s' "$iface"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Fallback used only when auto-detection cannot tell which interface is the WAN.
+# Lets the user pick the Internet-facing interface from the two they selected.
+selectWanInterface() {
+    local a="$1" b="$2" choice
+    choice=$(dialog --clear --backtitle "Falcongate" \
+                    --title "Select the WAN (Internet) interface" \
+                    --menu "Auto-detection could not determine which interface has Internet access.\nChoose the interface connected to the Internet/uplink:" \
+                    15 60 2 \
+                    "$a" "Internet uplink" \
+                    "$b" "Internet uplink" \
+                    2>&1 >/dev/tty)
+    clear
+    printf '%s' "$choice"
+}
+
 installRequirements() {
   echo "Updating system software..."
   sleep 3
@@ -195,13 +232,41 @@ select_deployment_mode
 # Allow the user to choose the network interfaces for Falcongate
 chooseInterface
 
-IFACE0=${optionsArray[0]}
-IFACE1=${optionsArray[1]}
+# The user selected two interfaces. Automatically assign their roles: the
+# interface that currently has Internet access becomes the WAN (IFACE1, the
+# uplink that gets NAT/MASQUERADE) and the other one becomes the LAN (IFACE0,
+# which receives the static IP and runs the DHCP server for the clients).
+SELECTED0=${optionsArray[0]}
+SELECTED1=${optionsArray[1]}
+
+WAN_IFACE=$(detectWanInterface "$SELECTED0" "$SELECTED1") || WAN_IFACE=""
+
+if [ -z "$WAN_IFACE" ]; then
+  echo "Could not automatically detect which interface has Internet access."
+  WAN_IFACE=$(selectWanInterface "$SELECTED0" "$SELECTED1")
+fi
+
+if [ -z "$WAN_IFACE" ]; then
+  echo "No WAN interface selected; defaulting to $SELECTED1 as the WAN interface." >&2
+  WAN_IFACE="$SELECTED1"
+fi
+
+if [ "$WAN_IFACE" == "$SELECTED0" ]; then
+  IFACE1="$SELECTED0"   # WAN (Internet uplink)
+  IFACE0="$SELECTED1"   # LAN (static IP + DHCP server)
+else
+  IFACE1="$SELECTED1"   # WAN (Internet uplink)
+  IFACE0="$SELECTED0"   # LAN (static IP + DHCP server)
+fi
+
+echo "WAN (Internet) interface: $IFACE1"
+echo "LAN interface:            $IFACE0"
+sleep 2
 
 # shellcheck disable=SC2170
 if [ "$deploymentMode" == "attached" ]; then
-  # Find default gateway
-  GATE=$(ip route | awk 'match($0, /default\s+via\s+(.+)\s+dev\s+'"$IFACE0"'/, a) {print a[1]}')
+  # Find the default gateway reachable through the WAN interface
+  GATE=$(ip route | awk 'match($0, /default\s+via\s+(.+)\s+dev\s+'"$IFACE1"'/, a) {print a[1]}')
   BASE=$(echo $GATE | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+/, a) {print a[1]}')
   # IP address for IFACE0
   IP0="$BASE.2"
