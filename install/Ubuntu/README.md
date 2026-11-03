@@ -10,6 +10,14 @@ system packages, builds Python, Zeek, and PF_RING, configures networking, and
 reboots system services. Review the script and its network configuration before
 running it on a production host.
 
+The PF_RING kernel module is installed through **DKMS**, so it is rebuilt
+automatically on every kernel upgrade. This matters on Ubuntu because its kernel
+updates frequently; without DKMS a kernel bump would leave the previously
+compiled module unable to load and silently stop packet capture (and therefore
+all detection) after the next reboot. If you prefer a distribution with a more
+stable kernel, a Debian port of this installer is available under
+[`../Debian`](../Debian).
+
 After you select the two interfaces, the installer automatically detects which
 one has Internet access and uses it as the WAN (uplink, NAT'd). The other
 interface becomes the LAN: it receives the static IP (`192.168.100.1` in router

@@ -153,7 +153,7 @@ installRequirements() {
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install -y cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev libnl-3-dev libnl-genl-3-dev python3 python3-dev python3-git python3-semantic-version cppzmq-dev libkrb5-dev libmaxminddb-dev
+  apt-get install -y cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev libnl-3-dev libnl-genl-3-dev python3 python3-dev python3-git python3-semantic-version cppzmq-dev libkrb5-dev libmaxminddb-dev dkms "linux-headers-$(uname -r)" linux-headers-generic
 }
 
 installPython() {
@@ -334,13 +334,9 @@ sleep 3
 
 git clone --branch "${PF_RING_VERSION}" --depth 1 https://github.com/ntop/PF_RING.git
 
-cd PF_RING/kernel
-
-make
-
-insmod ./pf_ring.ko
-
-cd ../userland
+# Build and install the PF_RING userland library, libpcap and tcpdump under
+# /opt/PF_RING. These are independent of the kernel module.
+cd PF_RING/userland
 
 make
 
@@ -362,12 +358,35 @@ cd ../tcpdump
 
 make install
 
-cd ../../kernel
+cd /opt
 
-make
+# Install the PF_RING kernel module through DKMS so it is rebuilt automatically
+# on every kernel upgrade. Without DKMS, a kernel update leaves the previously
+# compiled module unable to load, which silently stops packet capture - and
+# therefore all detection - after the next reboot.
+PFRING_DKMS_SRC="/usr/src/pfring-${PF_RING_VERSION}"
+rm -rf "${PFRING_DKMS_SRC}"
+cp -a /opt/PF_RING/kernel "${PFRING_DKMS_SRC}"
 
-make install
+cat > "${PFRING_DKMS_SRC}/dkms.conf" <<DKMS
+PACKAGE_NAME="pfring"
+PACKAGE_VERSION="${PF_RING_VERSION}"
+BUILT_MODULE_NAME[0]="pf_ring"
+DEST_MODULE_LOCATION[0]="/updates"
+AUTOINSTALL="yes"
+MAKE[0]="make -C /lib/modules/\${kernelver}/build M=\${dkms_tree}/pfring/${PF_RING_VERSION}/build modules"
+CLEAN="make -C /lib/modules/\${kernelver}/build M=\${dkms_tree}/pfring/${PF_RING_VERSION}/build clean"
+DKMS
 
+# Register, build and install the module for the running kernel. Future kernels
+# are handled automatically by DKMS (AUTOINSTALL) as long as their headers are
+# present (installed via the linux-headers-generic meta package).
+dkms remove -m pfring -v "${PF_RING_VERSION}" --all 2>/dev/null || true
+dkms add -m pfring -v "${PF_RING_VERSION}"
+dkms build -m pfring -v "${PF_RING_VERSION}"
+dkms install -m pfring -v "${PF_RING_VERSION}"
+
+modprobe pf_ring
 echo "pf_ring" >> /etc/modules
 
 echo "Installing Zeek from source..."
