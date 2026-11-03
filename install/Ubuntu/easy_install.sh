@@ -152,6 +152,11 @@ installPython() {
 # Exit if any error is detected
 set -e
 
+# Pinned versions of third-party components built from source.
+# Bump deliberately after testing; upstream development branches break the build.
+PF_RING_VERSION="9.4.0"   # https://github.com/ntop/PF_RING/releases
+ZEEK_VERSION="v8.0.11"    # LTS series, https://github.com/zeek/zeek/releases
+
 # Check if script is running with root privs
 if [ "$(whoami)" != "root" ]; then
 	echo "Sorry, you are not root."
@@ -262,7 +267,7 @@ sleep 3
 echo "Installing PF_RING from source..."
 sleep 3
 
-git clone https://github.com/ntop/PF_RING.git
+git clone --branch "${PF_RING_VERSION}" --depth 1 https://github.com/ntop/PF_RING.git
 
 cd PF_RING/kernel
 
@@ -286,7 +291,7 @@ cd ../libpcap
 
 make install
 
-cd ../tcpdump-*
+cd ../tcpdump
 
 ./configure --prefix=/opt/PF_RING/
 
@@ -305,7 +310,8 @@ sleep 3
 
 cd /tmp
 
-git clone --recursive https://github.com/zeek/zeek
+rm -rf /tmp/zeek
+git clone --branch "${ZEEK_VERSION}" --depth 1 --recursive https://github.com/zeek/zeek
 
 cd zeek/
 
