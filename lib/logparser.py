@@ -384,9 +384,24 @@ class ReadBroFiles(threading.Thread):
                         fuid = fields["fuid"]
                         if fuid not in self.recorded:
                             ts = float(fields["ts"])
-                            tx_hosts = fields["tx_hosts"][0]
-                            rx_hosts = fields["rx_hosts"][0]
-                            conn_id = fields["conn_uids"][0]
+                            # Zeek 8 files.log records a single connection (uid +
+                            # flattened id.*) instead of the old tx_hosts/rx_hosts/
+                            # conn_uids sets. is_orig tells us which end sent the
+                            # file; the receiver is the other end.
+                            if "tx_hosts" in fields:
+                                tx_hosts = fields["tx_hosts"][0]
+                                rx_hosts = fields["rx_hosts"][0]
+                                conn_id = fields["conn_uids"][0]
+                            else:
+                                orig_h = fields["id.orig_h"]
+                                resp_h = fields["id.resp_h"]
+                                if fields.get("is_orig", False):
+                                    tx_hosts = orig_h
+                                    rx_hosts = resp_h
+                                else:
+                                    tx_hosts = resp_h
+                                    rx_hosts = orig_h
+                                conn_id = fields["uid"]
                             try:
                                 mime = fields["mime_type"]
                             except KeyError:
