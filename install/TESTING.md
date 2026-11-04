@@ -133,8 +133,8 @@ Confirm Zeek is actively producing logs (the FalconGate log parsers read these
 exact files):
 
 ```bash
-ls -l /opt/zeek/logs/current/
-tail -f /opt/zeek/logs/current/conn.log
+ls -l /opt/zeek/spool/manager/
+tail -f /opt/zeek/spool/manager/conn.log
 ```
 
 ✅ `conn.log`, `dns.log`, `http.log`, `files.log`, and `notice.log` exist, and
@@ -150,7 +150,7 @@ grep -r "FalconGate/extract-important-files" /opt/zeek/share/zeek/site/local.zee
 
 ✅ The policy directory contains `extract-important-files.zeek`, and `local.zeek`
 loads it. When suspicious files cross the wire they are carved into
-`/opt/zeek/logs/current/extract_files/`.
+`/opt/zeek/spool/manager/extract_files/`.
 
 If `zeekctl status` is unhappy, re-run the deploy:
 

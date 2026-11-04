@@ -22,7 +22,7 @@ class CleanOldHomenetObjects(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.ctime = int(time.time())
-        self.bro_file_path = '/opt/zeek/logs/current/extract_files/'
+        self.bro_file_path = '/opt/zeek/spool/manager/extract_files/'
 
     def run(self):
 
