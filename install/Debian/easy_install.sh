@@ -447,6 +447,7 @@ cp FalconGate/install/Debian/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-pro
 # Additional Zeek configuration
 mkdir /opt/zeek/share/zeek/policy/FalconGate
 cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
+cp FalconGate/install/Debian/templates/port-scan.zeek.tpl /opt/zeek/share/zeek/policy/FalconGate/port-scan.zeek
 /opt/zeek/bin/zeekctl install
 systemctl daemon-reload
 systemctl enable zeek.service

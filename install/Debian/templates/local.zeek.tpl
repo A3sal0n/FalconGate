@@ -64,6 +64,10 @@
 # Extract interesting files from traffic for inspection.
 @load FalconGate/extract-important-files
 
+# Detect port and address scans (replaces misc/scan, removed in Zeek 8).
+# Raises Scan::Port_Scan / Scan::Address_Scan notices read by lib/logparser.py.
+@load FalconGate/port-scan
+
 # Emit every log as JSON - the FalconGate log parsers (lib/logparser.py) read
 # the Zeek logs as JSON, so this is required, not optional.
 @load policy/tuning/json-logs
