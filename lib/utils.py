@@ -311,11 +311,14 @@ def reboot_appliance():
 
 
 def reset_appliance():
+    # The templates live under install/Ubuntu/templates (identical to the Debian
+    # copy); both install folders are present in the checkout regardless of which
+    # installer was used.
     os.system("rm -f logs/alerts.sqlite")
-    os.system("cp install/Raspbian/templates/user_config.ini.tpl html/user_config.ini")
-    os.system("cp install/Raspbian/templates/pwd.db.tpl html/pwd.db")
-    os.system("chmod www-data: html/user_config.ini")
-    os.system("chmod www-data: html/pwd.db")
+    os.system("cp install/Ubuntu/templates/user_config.ini.tpl html/user_config.ini")
+    os.system("cp install/Ubuntu/templates/pwd.db.tpl html/pwd.db")
+    os.system("chown www-data:www-data html/user_config.ini")
+    os.system("chown www-data:www-data html/pwd.db")
     restart_falcongate_service()
 
 
