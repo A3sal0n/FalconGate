@@ -106,24 +106,28 @@ class MinuteAlerts(threading.Thread):
             self.ctime = int(time.time())
             try:
                 with lock:
-                    for k in homenet.hosts.keys():
+                    # Iterate over snapshots (list(...)) because entries are
+                    # deleted inside the loop; iterating a live dict view raises
+                    # RuntimeError: "dictionary changed size during iteration".
+                    for k in list(homenet.hosts.keys()):
                         if homenet.hosts[k].mac != homenet.mac:
                             # Checking for new DNS requests to malicious domains
-                            for k1 in homenet.hosts[k].dns.keys():
+                            for k1 in list(homenet.hosts[k].dns.keys()):
                                 if homenet.hosts[k].dns[k1].bad:
                                     self.create_bad_domain_alert(k, k1)
                                     del homenet.hosts[k].dns[k1]
                             # Checking for new malicious file hashes
-                            for k1 in homenet.hosts[k].files.keys():
+                            for k1 in list(homenet.hosts[k].files.keys()):
                                 if homenet.hosts[k].files[k1].vt_positives > 2:
                                     self.create_bad_file_alert(k, k1)
                                     del homenet.hosts[k].files[k1]
                             # Checking for new connections to malicious IP addresses
-                            for k1 in homenet.hosts[k].conns.keys():
+                            for k1 in list(homenet.hosts[k].conns.keys()):
                                 for threat in homenet.bad_ips.keys():
                                     if homenet.hosts[k].conns[k1].dst_ip in homenet.bad_ips[threat]:
                                         self.create_bad_ip_alert(threat, k, k1)
                                         del homenet.hosts[k].conns[k1]
+                                        break
             except Exception as e:
                 log.debug('FG-ERROR:' + str(e.__doc__) + " - " + str(e))
             time.sleep(60)

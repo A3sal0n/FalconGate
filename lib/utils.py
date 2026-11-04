@@ -37,19 +37,22 @@ class CleanOldHomenetObjects(threading.Thread):
     def clean_old_host_objects(self):
 
         with lock:
-            for k in homenet.hosts.keys():
+            # Iterate over snapshots (list(...)) because entries are deleted
+            # inside the loop; iterating a live dict view raises RuntimeError:
+            # "dictionary changed size during iteration" on Python 3.
+            for k in list(homenet.hosts.keys()):
                 # Cleaning old DNS entries
-                for l in homenet.hosts[k].dns.keys():
+                for l in list(homenet.hosts[k].dns.keys()):
                     if (self.ctime - homenet.hosts[k].dns[l].ts) > 86400:
                         del homenet.hosts[k].dns[l]
 
                 # Cleaning old connections
-                for l in homenet.hosts[k].conns.keys():
+                for l in list(homenet.hosts[k].conns.keys()):
                     if (self.ctime - homenet.hosts[k].conns[l].lseen) > 3600:
                         del homenet.hosts[k].conns[l]
 
                 # Cleaning old files
-                for l in homenet.hosts[k].files.keys():
+                for l in list(homenet.hosts[k].files.keys()):
                     if (self.ctime - homenet.hosts[k].files[l].ts) > 604800:
                         del homenet.hosts[k].files[l]
 

@@ -28,24 +28,29 @@ class HourlyStats(threading.Thread):
                 time.sleep(1)
 
     def get_country_stats(self):
-        for k in country_stats.keys():
-            nstats = HourStats()
-            country_stats[k].hourly_stats[self.ctime] = nstats
+        # Hold the global lock while reading homenet: the Zeek log parsers mutate
+        # homenet.hosts/.conns concurrently, so an unsynchronized read here races
+        # and can raise "dictionary changed size during iteration". Snapshots
+        # (list(...)) guard against mutation within the iteration as well.
+        with lock:
+            for k in country_stats.keys():
+                nstats = HourStats()
+                country_stats[k].hourly_stats[self.ctime] = nstats
 
-        for k in homenet.hosts.keys():
-            if homenet.hosts[k].mac != homenet.mac:
-                for cid in homenet.hosts[k].conns.keys():
-                    if homenet.hosts[k].conns[cid].ts > (self.ctime - 3600) and homenet.hosts[k].conns[cid].direction == "outbound":
-                        ccode = homenet.hosts[k].conns[cid].dst_country_code
-                        cname = homenet.hosts[k].conns[cid].dst_country_name
-                        try:
-                            if ccode:
-                                country_stats[ccode].hourly_stats[self.ctime].data_sent += homenet.hosts[k].conns[cid].client_bytes
-                                country_stats[ccode].hourly_stats[self.ctime].data_received += homenet.hosts[k].conns[cid].server_bytes
-                                country_stats[ccode].hourly_stats[self.ctime].pqt_sent += homenet.hosts[k].conns[cid].client_packets
-                                country_stats[ccode].hourly_stats[self.ctime].pqt_received += homenet.hosts[k].conns[cid].server_packets
-                                country_stats[ccode].hourly_stats[self.ctime].nconn += homenet.hosts[k].conns[cid].counter
-                            else:
-                                pass
-                        except Exception as e:
-                            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
+            for k in list(homenet.hosts.keys()):
+                if homenet.hosts[k].mac != homenet.mac:
+                    for cid in list(homenet.hosts[k].conns.keys()):
+                        if homenet.hosts[k].conns[cid].ts > (self.ctime - 3600) and homenet.hosts[k].conns[cid].direction == "outbound":
+                            ccode = homenet.hosts[k].conns[cid].dst_country_code
+                            cname = homenet.hosts[k].conns[cid].dst_country_name
+                            try:
+                                if ccode:
+                                    country_stats[ccode].hourly_stats[self.ctime].data_sent += homenet.hosts[k].conns[cid].client_bytes
+                                    country_stats[ccode].hourly_stats[self.ctime].data_received += homenet.hosts[k].conns[cid].server_bytes
+                                    country_stats[ccode].hourly_stats[self.ctime].pqt_sent += homenet.hosts[k].conns[cid].client_packets
+                                    country_stats[ccode].hourly_stats[self.ctime].pqt_received += homenet.hosts[k].conns[cid].server_packets
+                                    country_stats[ccode].hourly_stats[self.ctime].nconn += homenet.hosts[k].conns[cid].counter
+                                else:
+                                    pass
+                            except Exception as e:
+                                log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))

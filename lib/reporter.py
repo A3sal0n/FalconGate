@@ -31,10 +31,20 @@ class AlertReporter(threading.Thread):
 
     def report_new_alerts(self):
         alerts = utils.get_not_reported_alerts()
-        with lock:
-            for alert in alerts:
-                email = {}
+        if not alerts:
+            return
 
+        # Build the email bodies (which read homenet) and snapshot the mailer
+        # settings under the lock, but release it before the SMTP send: network
+        # I/O must not be performed while holding the global lock, or every other
+        # thread stalls for the duration of each (possibly timing-out) send.
+        prepared = []
+        with lock:
+            mailer_mode = homenet.mailer_mode
+            mailer_address = homenet.mailer_address
+            mailer_pwd = homenet.mailer_pwd
+            recipients = list(homenet.dst_emails)
+            for alert in alerts:
                 if alert[1] == 'data_breach':
                     t = AccountBreachAlertTemplate(alert)
                     t.create_body()
@@ -45,25 +55,25 @@ class AlertReporter(threading.Thread):
                     t = HostAlertTemplate(homenet, alert)
                     t.create_body()
 
-                email['subject'] = t.subject
-                email['body'] = t.body
+                prepared.append((alert, {'subject': t.subject, 'body': t.body}))
 
-                if homenet.mailer_mode == 'gmail':
-                    if homenet.mailer_address and homenet.mailer_pwd:
-                        res = self.sendmail_gmail(email, homenet.mailer_address, homenet.mailer_pwd)
-                        if res:
-                            utils.update_alert_nrep(alert[0], alert[5] + 1)
-                        else:
-                            log.debug('FG-ERROR: Falcongate was not able to send a Gmail alert')
-                else:
-                    pass
+        if mailer_mode != 'gmail' or not (mailer_address and mailer_pwd) or not recipients:
+            return
 
-    def sendmail_gmail(self, report, fromaddr, passwd):
+        # Send outside the lock.
+        for alert, email in prepared:
+            res = self.sendmail_gmail(email, mailer_address, mailer_pwd, recipients)
+            if res:
+                utils.update_alert_nrep(alert[0], alert[5] + 1)
+            else:
+                log.debug('FG-ERROR: Falcongate was not able to send a Gmail alert')
+
+    def sendmail_gmail(self, report, fromaddr, passwd, recipients):
         try:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(fromaddr, passwd)
-            for address in homenet.dst_emails:
+            for address in recipients:
                 msg = MIMEMultipart()
                 msg['From'] = fromaddr
                 msg['To'] = address
