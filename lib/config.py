@@ -55,18 +55,20 @@ class CheckConfigFileModification(threading.Thread):
                 user_config = ConfigParser()
                 user_config.read('html/user_config.ini')
 
-                # main section
-                homenet.dst_emails = (user_config.get('main', 'dst_emails')).strip('"').split(",")
-                homenet.email_watchlist = (user_config.get('main', 'email_watchlist')).strip('"').split(",")
-                homenet.vt_api_key = user_config.get('main', 'vt_api_key').strip('"')
-                homenet.user_blacklist = (user_config.get('main', 'blacklist')).strip('"').split(",")
-                homenet.user_whitelist = (user_config.get('main', 'whitelist')).strip('"').split(",")
-                homenet.user_domain_blacklist = (user_config.get('main', 'domain_blacklist')).strip('"').split(",")
-                homenet.user_domain_whitelist = (user_config.get('main', 'domain_whitelist')).strip('"').split(",")
-                homenet.mailer_mode = user_config.get('main', 'mailer_mode').strip('"')
-                homenet.mailer_address = user_config.get('main', 'mailer_address').strip('"')
-                homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').strip('"')
-                homenet.allow_tor = user_config.get('main', 'allow_tor').strip('"')
+                # main section (write shared homenet fields under the lock, to
+                # match the core-config section and the rest of the codebase)
+                with lock:
+                    homenet.dst_emails = (user_config.get('main', 'dst_emails')).strip('"').split(",")
+                    homenet.email_watchlist = (user_config.get('main', 'email_watchlist')).strip('"').split(",")
+                    homenet.vt_api_key = user_config.get('main', 'vt_api_key').strip('"')
+                    homenet.user_blacklist = (user_config.get('main', 'blacklist')).strip('"').split(",")
+                    homenet.user_whitelist = (user_config.get('main', 'whitelist')).strip('"').split(",")
+                    homenet.user_domain_blacklist = (user_config.get('main', 'domain_blacklist')).strip('"').split(",")
+                    homenet.user_domain_whitelist = (user_config.get('main', 'domain_whitelist')).strip('"').split(",")
+                    homenet.mailer_mode = user_config.get('main', 'mailer_mode').strip('"')
+                    homenet.mailer_address = user_config.get('main', 'mailer_address').strip('"')
+                    homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').strip('"')
+                    homenet.allow_tor = user_config.get('main', 'allow_tor').strip('"')
 
             if flag:
                 counter += 1

@@ -34,9 +34,15 @@ class ScheduledScans(threading.Thread):
                 rlogin_targets = []
                 vnc_targets = []
 
-                for ip in homenet.hosts.keys():
+                # Snapshot hosts and their open TCP ports under the lock, then
+                # probe them outside it - ping_host() shells out and must not run
+                # while holding the global lock.
+                with lock:
+                    host_ports = {ip: list(homenet.hosts[ip].tcp_ports) for ip in homenet.hosts}
+
+                for ip, tcp_ports in host_ports.items():
                     if utils.ping_host(ip):
-                        for port in homenet.hosts[ip].tcp_ports:
+                        for port in tcp_ports:
                             if port == 22:
                                 ssh_targets.append(ip)
                             elif port == 21:

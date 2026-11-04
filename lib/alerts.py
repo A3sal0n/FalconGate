@@ -5,6 +5,10 @@ import time
 import requests
 from lib.settings import homenet, lock
 
+# Reused across requests so TCP/TLS connections are pooled instead of a new
+# handshake per call.
+session = requests.Session()
+
 
 class DailyAlerts(threading.Thread):
     def __init__(self, threadID):
@@ -25,7 +29,7 @@ class DailyAlerts(threading.Thread):
         if len(homenet.email_watchlist) > 0:
             for a in homenet.email_watchlist:
                 try:
-                    r = requests.get(homenet.hibp_api_url + a, headers=self.headers, verify=False)
+                    r = session.get(homenet.hibp_api_url + a, headers=self.headers, verify=False)
                     if r.status_code == 200:
                         r_json = r.json()
                         if len(r_json) >= 1:

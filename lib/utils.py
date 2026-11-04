@@ -98,23 +98,45 @@ def decode_base64(s):
     return base64.b64decode(s)
 
 
-def get_vendor(mac):
-        con = lite.connect('db/vendors.sqlite')
-        with con:
-            cur = con.cursor()
-            tmac = mac.replace(':', '').upper()
+# The MAC-prefix -> vendor table never changes at runtime, so cache lookups
+# (including negative hits) to avoid opening a SQLite connection every time.
+_vendor_cache = {}
 
-            cur.execute("SELECT vendor from vendors where mac_id=?", (tmac[0:6],))
-            row = cur.fetchone()
-            if row:
-                return row[0]
-            else:
-                pass
-        con.close()
+
+def connect_alert_db():
+    """Open the alert DB with a busy timeout so concurrent writer threads wait
+    for the SQLite write lock instead of raising "database is locked"."""
+    con = lite.connect('logs/alerts.sqlite')
+    con.execute('PRAGMA busy_timeout = 5000')
+    return con
+
+
+def get_vendor(mac):
+    tmac = mac.replace(':', '').upper()
+    prefix = tmac[0:6]
+    if prefix in _vendor_cache:
+        return _vendor_cache[prefix]
+    vendor = None
+    con = lite.connect('db/vendors.sqlite')
+    con.execute('PRAGMA busy_timeout = 5000')
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT vendor from vendors where mac_id=?", (prefix,))
+        row = cur.fetchone()
+        if row:
+            vendor = row[0]
+    con.close()
+    _vendor_cache[prefix] = vendor
+    return vendor
 
 
 def create_alert_db():
-    con = lite.connect('logs/alerts.sqlite')
+    con = connect_alert_db()
+    # Use WAL so readers (the API) don't block writers and vice versa.
+    try:
+        con.execute('PRAGMA journal_mode = WAL')
+    except lite.OperationalError:
+        pass
     with con:
         cur = con.cursor()
         try:
@@ -132,32 +154,30 @@ def create_alert_db():
 
 
 def add_alert_to_db(alert):
-    con = lite.connect('logs/alerts.sqlite')
-    with con:
-        cur = con.cursor()
-        cur.execute('select * from alerts')
-        res = cur.fetchone()
-        if not res:
-            alert[0] = 1
-            lid = 1
-        else:
-            cur.execute('select MAX(id) from alerts')
-            res = cur.fetchone()
-            lid = res[0] + 1
-            alert[0] = lid
-
+    con = connect_alert_db()
+    # BEGIN IMMEDIATE takes the write lock up front so the MAX(id)+1 read and the
+    # insert happen atomically; without it, two concurrent writers could compute
+    # the same id. isolation_level=None lets us drive transactions explicitly.
+    con.isolation_level = None
+    cur = con.cursor()
+    try:
+        cur.execute('BEGIN IMMEDIATE')
+        cur.execute('select COALESCE(MAX(id), 0) + 1 from alerts')
+        lid = cur.fetchone()[0]
+        alert[0] = lid
         try:
             cur.execute("insert into alerts values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", alert)
         except lite.IntegrityError:
             ctime = int(time.time())
             cur.execute("update alerts set lseen = ? where sip = ? and ind = ?", (ctime, alert[7], alert[8]))
-    con.commit()
-    con.close()
+        cur.execute('COMMIT')
+    finally:
+        con.close()
     return lid
 
 
 def get_not_reported_alerts():
-    con = lite.connect('logs/alerts.sqlite')
+    con = connect_alert_db()
     with con:
         cur = con.cursor()
         try:
@@ -170,7 +190,7 @@ def get_not_reported_alerts():
 
 
 def get_latest_alerts(nalerts):
-    con = lite.connect('logs/alerts.sqlite')
+    con = connect_alert_db()
     with con:
         cur = con.cursor()
         try:
@@ -183,7 +203,7 @@ def get_latest_alerts(nalerts):
 
 
 def get_alerts_within_time(tframe, handled):
-    con = lite.connect('logs/alerts.sqlite')
+    con = connect_alert_db()
     ctime = int(time.time())
     ttime = ctime - tframe
     with con:
@@ -201,7 +221,7 @@ def get_alerts_within_time(tframe, handled):
 
 
 def update_alert_nrep(alert_id, nrep):
-    con = lite.connect('logs/alerts.sqlite')
+    con = connect_alert_db()
     with con:
         cur = con.cursor()
         cur.execute("update alerts set nrep = ? where id = ?", (nrep, alert_id))
@@ -352,7 +372,7 @@ def reconfigure_network(old_gw, new_gw):
 
 
 def update_alert_handled(alert_id, handled):
-    con = lite.connect('logs/alerts.sqlite')
+    con = connect_alert_db()
     with con:
         cur = con.cursor()
         cur.execute("update alerts set handled = ? where id = ?", (handled, alert_id))
@@ -363,11 +383,14 @@ def update_alert_handled(alert_id, handled):
 def get_active_devices():
     devices = []
     try:
-        for k in homenet.hosts.keys():
-            device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor),
-                      'tcp_ports': homenet.hosts[k].tcp_ports, 'udp_ports': homenet.hosts[k].udp_ports,
-                      'hostname': str(homenet.hosts[k].hostname)}
-            devices.append(device)
+        # Called from the Flask API thread; hold the lock while reading homenet
+        # so it doesn't race the log parsers mutating homenet.hosts.
+        with lock:
+            for k in list(homenet.hosts.keys()):
+                device = {'mac': str(homenet.hosts[k].mac), 'ip': str(homenet.hosts[k].ip), 'vendor': str(homenet.hosts[k].vendor),
+                          'tcp_ports': homenet.hosts[k].tcp_ports, 'udp_ports': homenet.hosts[k].udp_ports,
+                          'hostname': str(homenet.hosts[k].hostname)}
+                devices.append(device)
     except Exception:
         pass
 

@@ -172,6 +172,11 @@ class ReadBroDNS(threading.Thread):
                                             rcode = fields["rcode_name"]
                                         except KeyError:
                                             rcode = None
+                                        # Derive qtype from the current record, not
+                                        # from a `request` object that only exists on
+                                        # the new-query branch (it would otherwise be
+                                        # stale from a previous line or unbound).
+                                        qtype = fields.get("qtype_name")
                                         if rcode is not None:
                                             if query not in homenet.hosts[cip].dns:
                                                 request = DNSRequest()
@@ -181,10 +186,7 @@ class ReadBroDNS(threading.Thread):
                                                 request.tld = utils.get_tld(query)
                                                 request.sld = sld
                                                 request.sip = fields["id.orig_h"]
-                                                try:
-                                                    request.qtype = fields["qtype_name"]
-                                                except KeyError:
-                                                    request.qtype = None
+                                                request.qtype = qtype
                                                 request.qresult = rcode
                                                 homenet.hosts[cip].dns[query] = request
                                             else:
@@ -199,7 +201,7 @@ class ReadBroDNS(threading.Thread):
                                             except KeyError:
                                                 pass
 
-                                        if (request.qtype == "MX") or query.startswith('mail.'):
+                                        if (qtype == "MX") or query.startswith('mail.'):
                                             if query not in homenet.hosts[cip].spammed_domains:
                                                 homenet.hosts[cip].spammed_domains.append(query)
                     except Exception as e:
@@ -306,60 +308,83 @@ class ReadBroNotice(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self._cached_stamp = 0
-        self.recorded = []
+        self.recorded = set()
+        self.bro_notice_log_path = '/opt/zeek/spool/manager/notice.log'
+        self.last_pos = 0
+        self.last_file_size = 0
+        self.new_lines = []
 
     def run(self):
 
         while 1:
-            try:
-                f = open('/opt/zeek/spool/manager/notice.log', 'r')
-                lines = f.readlines()
-                for line in lines:
+            if self.get_new_lines():
+                for line in self.new_lines:
                     line = line.strip()
-                    fields = json.loads(line)
-                    uid = fields["ts"]
-                    if uid not in self.recorded:
-                        if fields["note"] == "Scan::Port_Scan":
-                            ts = float(fields["ts"])
-                            src = fields["src"]
-                            dst = fields["dst"]
-                            with lock:
-                                if src in homenet.hosts:
-                                    ctime = int(time.time())
-                                    description = 'This host has been detected scanning one or multiple destination ' \
-                                                  'IP addresses for open ports. This could indicate that a hacker has ' \
-                                                  'compromised and taken control of this device and is now trying to locate ' \
-                                                  'and compromise other hosts in your network.'
-                                    reference = 'https://en.wikipedia.org/wiki/Port_scanner'
-                                    a = [0, 'port_scan', ts, ctime, 0, 0, 'Port Scan', src, dst, 0, description, reference]
-                                    alert_id = utils.add_alert_to_db(a)
-                                    homenet.hosts[src].alerts.append(alert_id)
-                        elif fields["note"] == "Traceroute::Detected":
-                            ts = float(fields["ts"])
-                            src = fields["src"]
-                            with lock:
-                                if src in homenet.hosts:
-                                    ctime = int(time.time())
-                                    indicator = '%s performed a traceroute' % src
-                                    description = 'This host has been detected performing traceroute on your network.' \
-                                                  'Traceroute is usually used by hackers during the initial stage ' \
-                                                  'of an attack on a new network (reconnaissance). With this the ' \
-                                                  'attacker gains visibility on how the traffic is travelling from ' \
-                                                  'your internal network to other internal networks or the ' \
-                                                  'Internet, which routers are on the way, etc.'
-                                    reference = 'https://en.wikipedia.org/wiki/Traceroute'
-                                    a = [0, 'traceroute', ts, ctime, 0, 0, 'Traceroute', src, indicator, 0, description, reference]
-                                    alert_id = utils.add_alert_to_db(a)
-                                    homenet.hosts[src].alerts.append(alert_id)
-                        self.recorded.append(uid)
-
-            except Exception as e:
-                log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
+                    try:
+                        fields = json.loads(line)
+                        uid = fields["ts"]
+                        if uid not in self.recorded:
+                            if fields["note"] == "Scan::Port_Scan":
+                                ts = float(fields["ts"])
+                                src = fields["src"]
+                                dst = fields["dst"]
+                                with lock:
+                                    if src in homenet.hosts:
+                                        ctime = int(time.time())
+                                        description = 'This host has been detected scanning one or multiple destination ' \
+                                                      'IP addresses for open ports. This could indicate that a hacker has ' \
+                                                      'compromised and taken control of this device and is now trying to locate ' \
+                                                      'and compromise other hosts in your network.'
+                                        reference = 'https://en.wikipedia.org/wiki/Port_scanner'
+                                        a = [0, 'port_scan', ts, ctime, 0, 0, 'Port Scan', src, dst, 0, description, reference]
+                                        alert_id = utils.add_alert_to_db(a)
+                                        homenet.hosts[src].alerts.append(alert_id)
+                            elif fields["note"] == "Traceroute::Detected":
+                                ts = float(fields["ts"])
+                                src = fields["src"]
+                                with lock:
+                                    if src in homenet.hosts:
+                                        ctime = int(time.time())
+                                        indicator = '%s performed a traceroute' % src
+                                        description = 'This host has been detected performing traceroute on your network.' \
+                                                      'Traceroute is usually used by hackers during the initial stage ' \
+                                                      'of an attack on a new network (reconnaissance). With this the ' \
+                                                      'attacker gains visibility on how the traffic is travelling from ' \
+                                                      'your internal network to other internal networks or the ' \
+                                                      'Internet, which routers are on the way, etc.'
+                                        reference = 'https://en.wikipedia.org/wiki/Traceroute'
+                                        a = [0, 'traceroute', ts, ctime, 0, 0, 'Traceroute', src, indicator, 0, description, reference]
+                                        alert_id = utils.add_alert_to_db(a)
+                                        homenet.hosts[src].alerts.append(alert_id)
+                            self.recorded.add(uid)
+                    except Exception as e:
+                        log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
 
             if len(self.recorded) > 100000:
-                del self.recorded[:]
+                self.recorded.clear()
 
             time.sleep(5)
+
+    def get_new_lines(self):
+        try:
+            f = open(self.bro_notice_log_path, 'r')
+            if os.path.getsize(self.bro_notice_log_path) < self.last_file_size:
+                f.seek(0)
+            else:
+                f.seek(self.last_pos)
+            lines = f.readlines()
+            if len(lines) > 0:
+                self.new_lines = lines
+                self.last_pos = f.tell()
+                self.last_file_size = os.path.getsize(self.bro_notice_log_path)
+                f.close()
+                return True
+            else:
+                f.close()
+                return False
+        except Exception as e:
+            log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
+            return False
 
 
 class ReadBroFiles(threading.Thread):
@@ -368,15 +393,18 @@ class ReadBroFiles(threading.Thread):
         self.threadID = threadID
         self._cached_stamp = 0
         self.target_mime_types = homenet.target_mime_types
-        self.recorded = []
+        self.recorded = set()
         self.bro_file_path = '/opt/zeek/spool/manager/extract_files/'
+        self.bro_files_log_path = '/opt/zeek/spool/manager/files.log'
+        self.last_pos = 0
+        self.last_file_size = 0
+        self.new_lines = []
 
     def run(self):
 
         while 1:
             try:
-                f = open('/opt/zeek/spool/manager/files.log', 'r')
-                lines = f.readlines()
+                lines = self.new_lines if self.get_new_lines() else []
                 for line in lines:
                     line = line.strip()
                     try:
@@ -427,16 +455,37 @@ class ReadBroFiles(threading.Thread):
                                         fpath = self.find_file(fuid)
                                     else:
                                         homenet.hosts[rx_hosts].files[sha1].lseen = ts
-                            self.recorded.append(fuid)
+                            self.recorded.add(fuid)
                     except Exception as e:
                         log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e) + " - " + str(sys.exc_info()[2].tb_lineno))
             except (IOError, OSError) as e:
                 log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e) + " - " + str(sys.exc_info()[2].tb_lineno))
 
             if len(self.recorded) > 100000:
-                del self.recorded[:]
+                self.recorded.clear()
 
             time.sleep(5)
+
+    def get_new_lines(self):
+        try:
+            f = open(self.bro_files_log_path, 'r')
+            if os.path.getsize(self.bro_files_log_path) < self.last_file_size:
+                f.seek(0)
+            else:
+                f.seek(self.last_pos)
+            lines = f.readlines()
+            if len(lines) > 0:
+                self.new_lines = lines
+                self.last_pos = f.tell()
+                self.last_file_size = os.path.getsize(self.bro_files_log_path)
+                f.close()
+                return True
+            else:
+                f.close()
+                return False
+        except Exception as e:
+            log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e))
+            return False
 
     def find_file(self, fuid):
         files = glob.glob(self.bro_file_path + "*")

@@ -17,7 +17,8 @@ class PortScanner(threading.Thread):
         time.sleep(30)
 
         while 1:
-            ip_list = ','.join(homenet.hosts.keys())
+            with lock:
+                ip_list = ','.join(list(homenet.hosts.keys()))
 
             log.debug('FG-INFO: Port scan started')
 
