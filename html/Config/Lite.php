@@ -38,7 +38,7 @@ require_once 'Config/Lite/Exception/UnexpectedValue.php';
  * @license   http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  * @link      https://github.com/pce/config_lite
  */
-class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializable
+class Config_Lite implements ArrayAccess, IteratorAggregate, Countable
 {
     /**
      * sections, holds the config sections
@@ -780,6 +780,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      *
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->sections[$offset] = $value;
@@ -792,6 +793,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      *
      * @return bool
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return isset($this->sections[$offset]);
@@ -804,6 +806,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      *
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->sections[$offset]);
@@ -816,6 +819,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (array_key_exists($offset, $this->sections)) {
@@ -829,6 +833,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      * @see http://www.php.net/~helly/php/ext/spl/interfaceIterator.html
      * @return Iterator
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new ArrayIterator($this->sections);
@@ -840,16 +845,38 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      * @see http://php.net.countable
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->sections);
     }
 
     /**
-     * implemented for interface Serializable
+     * modern serialization hook (replaces the deprecated Serializable interface)
      *
-     * @see http://php.net/manual/en/class.serializable.php
-     * @return int
+     * @return array
+     */
+    public function __serialize()
+    {
+        return $this->sections;
+    }
+
+    /**
+     * modern unserialization hook (replaces the deprecated Serializable interface)
+     *
+     * @param array $data restored state
+     *
+     * @return void
+     */
+    public function __unserialize($data)
+    {
+        $this->sections = $data;
+    }
+
+    /**
+     * backward-compatible string serialization
+     *
+     * @return string
      */
     public function serialize()
     {
@@ -857,7 +884,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
     }
 
     /**
-     * implemented for interface Serializable
+     * backward-compatible string unserialization
      *
      * @param string $serializedData for instance
      *
@@ -865,8 +892,7 @@ class Config_Lite implements ArrayAccess, IteratorAggregate, Countable, Serializ
      */
     public function unserialize($serializedData)
     {
-        $sections = unserialize($serializedData);
-        $this->sections = $sections;
+        $this->sections = unserialize($serializedData);
     }
 
     /**
