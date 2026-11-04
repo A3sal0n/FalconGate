@@ -29,6 +29,15 @@
 @load protocols/ssh/software
 @load protocols/http/software
 
+# Protocol analyzers
+@load base/protocols/ssl            # TLS/SSL certificate extraction
+@load base/protocols/http           # HTTP logs
+@load base/protocols/dns            # DNS query logs
+@load base/protocols/smb            # SMB session and file logs
+@load base/protocols/ssh            # SSH session logs
+@load base/protocols/ftp            # FTP logs
+@load base/protocols/smtp           # Email header logs
+
 # Detect DNS results pointing into your local address space that are hosted
 # externally (requires Site::local_zones to be defined).
 @load protocols/dns/detect-external-names
@@ -40,10 +49,15 @@
 @load protocols/conn/known-hosts
 @load protocols/conn/known-services
 @load protocols/ssl/known-certs
+@load policy/protocols/conn/mac-logging
 
 # SSL/TLS certificate validation and reduced certificate logging.
 @load protocols/ssl/validate-certs
 @load protocols/ssl/log-hostcerts-only
+@load policy/protocols/ssl/expiring-certs
+
+# Threat intelligence framework
+@load base/frameworks/intel/files
 
 # SSH geo-data, brute-force detection and interesting-hostname logins.
 @load protocols/ssh/geo-data
