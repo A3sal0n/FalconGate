@@ -507,8 +507,9 @@ class ReadBroHTTP(threading.Thread):
                                     if (device is not None) and (device not in homenet.hosts[sip].device_family) and (device != 'Other'):
                                         homenet.hosts[sip].device_family.append(device)
 
-                                if fields["resp_mime_types"][0] in self.target_mime_types:
-                                    if fields["id.resp_p"] == '80':
+                                resp_mimes = fields.get("resp_mime_types")
+                                if resp_mimes and resp_mimes[0] in self.target_mime_types:
+                                    if int(fields["id.resp_p"]) == 80:
                                         url = 'hxxp://' + fields["host"] + fields["uri"]
                                         if url not in homenet.hosts[sip].interesting_urls:
                                             if len(homenet.hosts[sip].interesting_urls) < 200:
