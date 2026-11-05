@@ -8,14 +8,15 @@
 	<meta name="description" content="" />
 	<link href="styles/style_my.css" rel="stylesheet">
 	<script type="text/javascript" src="scripts/form_validator.js"></script>
-	<script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
 	<script>
 		// Highlight the menu entry of the page being viewed.
-		$(function(){
+		document.addEventListener("DOMContentLoaded", function(){
 			var page = location.pathname.split("/").pop();
-			$("a.scroll").filter(function(){
-				return this.getAttribute("href") === page;
-			}).addClass("current");
+			document.querySelectorAll("a.scroll").forEach(function(link){
+				if (link.getAttribute("href") === page) {
+					link.classList.add("current");
+				}
+			});
 		});
 	</script>
 </head>

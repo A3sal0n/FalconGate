@@ -139,8 +139,8 @@ if ($result){
 			<h2>Data sent (MB)</h2>
 			<p class="config-hint">Top 10 destination countries, <?php echo $period_hint; ?></p>
 		</div>
-		<div class="chart-canvas">
-			<canvas id="countriesDataSent" width="400" height="400"></canvas>
+		<div class="chart-canvas chart-canvas-square">
+			<canvas id="countriesDataSent"></canvas>
 		</div>
 	</section>
 	<section class="config-card chart-card">
@@ -148,8 +148,8 @@ if ($result){
 			<h2>Data received (MB)</h2>
 			<p class="config-hint">Top 10 source countries, <?php echo $period_hint; ?></p>
 		</div>
-		<div class="chart-canvas">
-			<canvas id="countriesDataReceived" width="400" height="400"></canvas>
+		<div class="chart-canvas chart-canvas-square">
+			<canvas id="countriesDataReceived"></canvas>
 		</div>
 	</section>
 	<section class="config-card chart-card">
@@ -157,8 +157,8 @@ if ($result){
 			<h2>Connections</h2>
 			<p class="config-hint">Top 10 destination countries, <?php echo $period_hint; ?></p>
 		</div>
-		<div class="chart-canvas">
-			<canvas id="countriesNumConn" width="400" height="400"></canvas>
+		<div class="chart-canvas chart-canvas-square">
+			<canvas id="countriesNumConn"></canvas>
 		</div>
 	</section>
 </div>
@@ -181,44 +181,44 @@ colors = ["rgba(251,128,114,0.8)",
 
 var ctx_ds = document.getElementById('countriesDataSent').getContext('2d');
 var myChart = new Chart(ctx_ds, {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: <?php echo json_encode($datapoints_ds_labels); ?>,
     datasets: [{
-      label: 'countries',
+      label: 'MB sent',
       data: <?php echo json_encode($datapoints_ds_data); ?>,
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50, legend: {position: 'left'}}
+  options: {maintainAspectRatio: false, plugins: {legend: {position: 'left'}}}
 });
 
 var ctx_dr = document.getElementById('countriesDataReceived').getContext('2d');
 var myChart = new Chart(ctx_dr, {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: <?php echo json_encode($datapoints_dr_labels); ?>,
     datasets: [{
-      label: 'countries',
+      label: 'MB received',
       data: <?php echo json_encode($datapoints_dr_data); ?>,
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50, legend: {position: 'left'}}
+  options: {maintainAspectRatio: false, plugins: {legend: {position: 'left'}}}
 });
 
 var ctx_nc = document.getElementById('countriesNumConn').getContext('2d');
 var myChart = new Chart(ctx_nc, {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: <?php echo json_encode($datapoints_nc_labels); ?>,
     datasets: [{
-      label: 'countries',
+      label: 'Connections',
       data: <?php echo json_encode($datapoints_nc_data); ?>,
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50, legend: {position: 'left'}}
+  options: {maintainAspectRatio: false, plugins: {legend: {position: 'left'}}}
 });
 
 }
@@ -252,26 +252,29 @@ window.addEventListener("load", function(){
 	var charts = <?php echo json_encode($top_data, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
 	Object.keys(charts).forEach(function(id){
 		new Chart(document.getElementById(id).getContext("2d"), {
-			type: "horizontalBar",
+			type: "bar",
 			data: {
 				labels: charts[id].labels,
 				datasets: [{label: "MB sent", data: charts[id].values, backgroundColor: "#1dabb8"}]
 			},
 			options: {
-				legend: {display: false},
+				indexAxis: "y",
 				maintainAspectRatio: false,
+				plugins: {legend: {display: false}},
 				scales: {
-					xAxes: [{ticks: {beginAtZero: true}, gridLines: {color: "#e3e6e7"}}],
-					yAxes: [{
-						gridLines: {display: false},
+					x: {beginAtZero: true, grid: {color: "#e3e6e7"}},
+					y: {
+						grid: {display: false},
 						ticks: {
+							autoSkip: false,
 							// Shorten long axis labels, keeping the IP address. The tooltip shows them in full.
-							callback: function(label){
+							callback: function(value){
+								var label = this.getLabelForValue(value);
 								var limit = window.innerWidth <= 900 ? 24 : 40;
 								return label.length > limit ? "…" + label.slice(1 - limit) : label;
 							}
 						}
-					}]
+					}
 				}
 			}
 		});
@@ -282,7 +285,7 @@ window.addEventListener("load", function(){
 <?php } ?>
 
 <?php if ($has_data || $has_top_data){ ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<script src="scripts/chart-4.6.1.umd.min.js"></script>
 <?php } ?>
 
 <?php

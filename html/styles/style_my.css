@@ -218,6 +218,14 @@ a.header-brand:focus-visible {
 	position: relative;
 }
 
+/* Chart.js sizes a chart from its container, so the donuts need a shape of their own to grow into. */
+.chart-canvas-square {
+	aspect-ratio: 1;
+	box-sizing: border-box;
+	/* Otherwise the canvas holds the container at its largest height. */
+	overflow: hidden;
+}
+
 .stats-message {
 	margin-top: 16px;
 }
