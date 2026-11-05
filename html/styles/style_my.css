@@ -345,6 +345,52 @@ div.text-container {
 	padding: 8px 12px;
 }
 
+/* Content - Administration
+------------------*/
+.admin-action {
+	align-items: center;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+}
+
+.admin-action + .admin-action {
+	border-top: 1px solid #dcdfe0;
+	margin-top: 14px;
+	padding-top: 14px;
+}
+
+.admin-action h3 {
+	margin: 0;
+}
+
+.admin-action .config-hint {
+	margin: 2px 0 0;
+}
+
+.admin-action .config_button {
+	flex-shrink: 0;
+	font-size: 15px;
+	margin: 0;
+	min-width: 86px;
+	padding: 7px 14px;
+}
+
+.config_button_danger,
+.config_button_danger:hover {
+	background: #b30422;
+	border-color: #b30422;
+}
+
+.config_button_danger:hover {
+	background: #8f031b;
+	border-color: #8f031b;
+}
+
+.config-actions .config_button {
+	margin-top: 0;
+}
+
 /* Default password prompt
 -----------------------------------------------------------------------------*/
 .password-prompt {
