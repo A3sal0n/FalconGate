@@ -48,6 +48,58 @@ function login_check() {
 }
 
 
+// Returns the password hash from a "<user> <hash>" file, or null if unreadable.
+function read_password_hash($path) {
+    $contents = @file_get_contents($path);
+    if ($contents === false) {
+        return null;
+    }
+    $fields = preg_split('/\s+/', trim($contents));
+    return isset($fields[1]) ? $fields[1] : null;
+}
+
+// The hash every install ships with (the Ubuntu and Debian templates are identical).
+function default_password_hash() {
+    return read_password_hash(dirname(__DIR__, 2) . '/install/Ubuntu/templates/pwd.db.tpl');
+}
+
+function is_default_password() {
+    $default = default_password_hash();
+    $current = read_password_hash(dirname(__DIR__) . '/pwd.db');
+    return $default !== null && $current !== null && hash_equals($default, $current);
+}
+
+// Returns a message describing why a password is not acceptable, or null if it is.
+function password_problem($password) {
+    if (!is_string($password) || strpos($password, "\0") !== false) {
+        return 'The password contains invalid characters.';
+    }
+    if (strlen($password) < 8 || strlen($password) > 72) {
+        return 'The password must be between 8 and 72 characters long.';
+    }
+    if (!preg_match('/[a-z]/', $password) || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
+        return 'The password must contain lowercase letters, uppercase letters and digits.';
+    }
+    $default = default_password_hash();
+    if ($default !== null && password_verify($password, $default)) {
+        return 'The new password cannot be the default password.';
+    }
+    return null;
+}
+
+// Stores a new admin password. Returns an error message, or null on success.
+function set_admin_password($password) {
+    $problem = password_problem($password);
+    if ($problem !== null) {
+        return $problem;
+    }
+    $line = 'admin ' . password_hash($password, PASSWORD_DEFAULT);
+    if (file_put_contents(dirname(__DIR__) . '/pwd.db', $line, LOCK_EX) === false) {
+        return 'The new password could not be saved.';
+    }
+    return null;
+}
+
 function csrf_token() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

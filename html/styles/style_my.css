@@ -256,6 +256,47 @@ div.text-container {
 	text-align: right;
 }
 
+/* Default password prompt
+-----------------------------------------------------------------------------*/
+.password-prompt {
+	box-sizing: border-box;
+	width: min(420px, calc(100vw - 32px));
+	border: 1px solid #000000;
+	border-radius: 6px;
+	padding: 20px;
+}
+
+.password-prompt::backdrop {
+	background: rgba(40, 40, 48, 0.75);
+}
+
+.password-prompt h2 {
+	margin-top: 0;
+}
+
+.password-prompt label {
+	display: block;
+	font-weight: bold;
+	margin-top: 10px;
+}
+
+.password-prompt input[type="password"] {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 6px;
+}
+
+.password-prompt-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.password-prompt .config_button:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
 /* Phones and small tablets
 -----------------------------------------------------------------------------*/
 @media (max-width: 900px) {

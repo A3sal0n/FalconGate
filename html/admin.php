@@ -20,7 +20,7 @@ echo ('<script type="text/javascript">
 
   function checkPassword(str)
   {
-    var re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
+    var re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,72}$/;
     return re.test(str);
   }
 
@@ -28,7 +28,7 @@ echo ('<script type="text/javascript">
   {
   var pwd = document.forms["admin_actions"]["pwd"].value;
       if(!checkPassword(pwd)) {
-        alert("The password you have entered is not enough complex!\n\nThe password must contain lowercase, uppercase, digits and must be longer than 6 characters.");
+        alert("The password you have entered is not enough complex!\n\nThe password must contain lowercase, uppercase, digits and must be between 8 and 72 characters long.");
         return false;
       }
 
@@ -45,7 +45,7 @@ echo ('<script type="text/javascript">
     <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return checkForm();">
            '.csrf_field().'
            <table width=60% halign=left>
-           <tr align=left><td>Set new admin password:</td><td><input type="password" name="pwd" id="pwd" size="20" maxlength="20"></td><td><input class="config_button" type="submit" value="Update" name="update_pwd" id="update_pwd"></form></td></tr>
+           <tr align=left><td>Set new admin password:</td><td><input type="password" name="pwd" id="pwd" size="20" maxlength="72"></td><td><input class="config_button" type="submit" value="Update" name="update_pwd" id="update_pwd"></form></td></tr>
            </table>
 
     <br>

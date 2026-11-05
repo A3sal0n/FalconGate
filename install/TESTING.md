@@ -328,6 +328,8 @@ From a browser on the internal network, open `https://IP0/`.
 with the admin account:
 
 - Default username: `admin`
+- While the default password is in use, every dashboard page opens a window
+  asking for a new one. It appears again after a Falcongate reset.
 - The password hash lives in `html/pwd.db`. Change it from the dashboard's admin
   page (which uses the running PHP-FPM), or regenerate the hash with the bundled
   script if the PHP CLI (`php-cli`) is installed:
