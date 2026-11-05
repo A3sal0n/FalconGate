@@ -8,8 +8,9 @@ import threading
 import json
 import lib.utils as utils
 import lib.system_health as system_health
+import lib.stats as stats
 from lib.logger import *
-from lib.settings import homenet, lock, country_stats
+from lib.settings import homenet, lock
 
 global app
 
@@ -187,21 +188,14 @@ class FlaskAPI(threading.Thread):
         stime = int(request.json['start_time'])
         etime = int(request.json['end_time'])
         if stype == 'country':
-            data = get_country_stats(stime, etime)
-            data = json.dumps(data)
             resp = Response()
-            resp.data = data
-            resp.status_code = 200
-            resp.mimetype = "application/json"
+            try:
+                resp.data = json.dumps(stats.get_country_stats(stime, etime))
+                resp.status_code = 200
+                resp.mimetype = "application/json"
+            except Exception as e:
+                log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
+                resp.status_code = 500
             return resp
         else:
             abort(400)
-
-
-def get_country_stats(stime, etime):
-    countries = {}
-    for k in country_stats.keys():
-            stats = country_stats[k].get_stats(stime, etime)
-            if stats["nconn"] > 0:
-                countries[k] = stats
-    return countries

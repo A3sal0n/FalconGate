@@ -322,6 +322,7 @@ def reset_appliance():
     # copy); both install folders are present in the checkout regardless of which
     # installer was used.
     os.system("rm -f logs/alerts.sqlite")
+    os.system("rm -f logs/stats.sqlite")
     os.system("cp install/Ubuntu/templates/user_config.ini.tpl html/user_config.ini")
     os.system("cp install/Ubuntu/templates/pwd.db.tpl html/pwd.db")
     os.system("chown www-data:www-data html/user_config.ini")

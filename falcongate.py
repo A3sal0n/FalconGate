@@ -22,6 +22,9 @@ import lib.stats as stats
 # Create alert database if not there
 utils.create_alert_db()
 
+# Create network statistics database if not there
+stats.create_stats_db()
+
 # Populating master thread list
 sett.threads["config_reader"] = config.CheckConfigFileModification("config_reader")
 sett.threads["check_net_config"] = config.CheckNetworkModifications("check_net_config")

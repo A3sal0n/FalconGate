@@ -158,6 +158,10 @@ var myChart = new Chart(ctx_nc, {
 	</select>
 </form>
 				
+<?php if ($result && count($datapoints_nc_labels) == 0){ ?>
+<p class="notes">No statistics have been recorded for this period yet. They are saved every 5 minutes while traffic flows.</p>
+<?php } ?>
+
 <div class="chart-grid">
   <section class="chart-card">
     <h2>Data sent in the previous <?php echo $display; ?> (KB) - Top 10 destination countries</h2>

@@ -60,11 +60,11 @@ if (isset($_GET['updated']) && $_GET['updated'] == 'True'){
                 <input class="config_button" type="submit" value="Reboot" name="reboot">
             </form>
 
-            <form class="admin-action" name="admin_reset" action="admin_actions.php" method="post" onsubmit="return confirm('Reset Falcongate? This deletes all alerts and settings and restores the default admin password. This cannot be undone.');">
+            <form class="admin-action" name="admin_reset" action="admin_actions.php" method="post" onsubmit="return confirm('Reset Falcongate? This deletes all alerts, network statistics and settings, and restores the default admin password. This cannot be undone.');">
                 <?php echo csrf_field(); ?>
                 <div>
                     <h3>Reset Falcongate</h3>
-                    <p class="config-hint">Deletes all alerts and settings, and restores the default admin password. This cannot be undone.</p>
+                    <p class="config-hint">Deletes all alerts, network statistics and settings, and restores the default admin password. This cannot be undone.</p>
                 </div>
                 <input class="config_button config_button_danger" type="submit" value="Reset" name="reset">
             </form>

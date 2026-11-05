@@ -251,46 +251,6 @@ class DefaultCredentials:
         self.password = ''
 
 
-class Country:
-    def __init__(self, code, name):
-        self.code = code
-        self.name = name
-        self.is_risky = self.is_risky(code)
-        self.hourly_stats = {}
-
-    @staticmethod
-    def is_risky(ccode):
-        risk_countries = ["CN", "US", "TR", "BR", "RU", "VN", "JP", "IN", "TW", "RO", "HU"]
-        if ccode in risk_countries:
-            return True
-        else:
-            return False
-
-    def get_stats(self, stime, etime):
-        sout = {"bytes_sent": 0, "bytes_received": 0, "pqt_sent": 0, "pqt_received": 0, "nconn": 0}
-        skeys = sorted(self.hourly_stats)
-        try:
-            for k in skeys:
-                if stime <= k <= etime:
-                    sout["bytes_sent"] += self.hourly_stats[k].data_sent
-                    sout["bytes_received"] += self.hourly_stats[k].data_received
-                    sout["pqt_sent"] += self.hourly_stats[k].pqt_sent
-                    sout["pqt_received"] += self.hourly_stats[k].pqt_received
-                    sout["nconn"] += self.hourly_stats[k].nconn
-        except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
-
-        return sout
-
-
-class HourStats:
-    def __init__(self):
-        self.data_sent = 0
-        self.data_received = 0
-        self.pqt_sent = 0
-        self.pqt_received = 0
-        self.nconn = 0
-
 # Other useful stuff
 CC = {
     "AF": "AFGHANISTAN",
