@@ -12,21 +12,18 @@ if (login_check() != true){
 }
 require 'templates/header.html';
 ?>
+<h1>Network Statistics</h1>
+
 <?php
-$period = (!isset($_GET['period'])) ? 'stats_day': $_GET['period'];
-if($period == 'stats_day') {
-	$tframe = 86400;
-	$display = "24 hours";
-}elseif($period == 'stats_week') {
-	$tframe = 604800;
-	$display = "1 week";
-}elseif($period == 'stats_2week') {
-	$tframe = 1209600;
-	$display = "2 weeks";
-}elseif($period == 'stats_month') {
-	$tframe = 2592000;
-	$display = "1 month";
-}
+$periods = array(
+	'stats_day' => array('seconds' => 86400, 'label' => 'Previous 24 hours'),
+	'stats_week' => array('seconds' => 604800, 'label' => 'Previous week'),
+	'stats_2week' => array('seconds' => 1209600, 'label' => 'Previous 2 weeks'),
+	'stats_month' => array('seconds' => 2592000, 'label' => 'Previous month'),
+);
+$period = isset($_GET['period']) && is_string($_GET['period']) && isset($periods[$_GET['period']]) ? $_GET['period'] : 'stats_day';
+$tframe = $periods[$period]['seconds'];
+$period_hint = strtolower($periods[$period]['label']);
 $data = array("stats_type" => "country", "start_time" => strval(time()-$tframe), "end_time" => strval(time()));
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/stats', json_encode($data));
 $datapoints_ds_labels = array();
@@ -36,11 +33,11 @@ $datapoints_dr_data = array();
 $datapoints_nc_labels = array();
 $datapoints_nc_data = array();
 
-if (!$result){
-    echo ("<h3><span class=error_message>Falcongate API process seems to be down!</span></h3>");
-    echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
-}else{
+if ($result){
 	$obj = json_decode($result, true);
+	if (!is_array($obj)){
+		$obj = array();
+	}
 
 	// Collecting data sent data points
 	$tmp_list = array();
@@ -87,8 +84,55 @@ if (!$result){
 	    array_push($datapoints_nc_data, $nc);
 	}
 }
+$has_data = count($datapoints_nc_labels) > 0;
 ?>
-<h1>Network Statistics</h1>
+
+<div class="alerts-toolbar">
+	<form action="" method="get">
+		<label for="period">Period</label>
+		<select id="period" name="period" onchange="this.form.submit()">
+			<?php foreach ($periods as $value => $option){ ?>
+			<option value="<?php echo $value; ?>" <?php echo $period == $value ? 'selected' : ''; ?>><?php echo $option['label']; ?></option>
+			<?php } ?>
+		</select>
+	</form>
+</div>
+
+<?php if (!$result){ ?>
+<p class="error_message stats-message">The statistics could not be loaded. The Falcongate API process may be down. Check your device's configuration and reboot if necessary.</p>
+<?php }elseif (!$has_data){ ?>
+<p class="alerts-empty stats-message">No statistics have been recorded for this period yet. They are saved every 5 minutes while traffic flows.</p>
+<?php }else{ ?>
+<div class="chart-grid">
+	<section class="config-card chart-card">
+		<div>
+			<h2>Data sent (KB)</h2>
+			<p class="config-hint">Top 10 destination countries, <?php echo $period_hint; ?></p>
+		</div>
+		<div class="chart-canvas">
+			<canvas id="countriesDataSent" width="400" height="400"></canvas>
+		</div>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Data received (KB)</h2>
+			<p class="config-hint">Top 10 source countries, <?php echo $period_hint; ?></p>
+		</div>
+		<div class="chart-canvas">
+			<canvas id="countriesDataReceived" width="400" height="400"></canvas>
+		</div>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Connections</h2>
+			<p class="config-hint">Top 10 destination countries, <?php echo $period_hint; ?></p>
+		</div>
+		<div class="chart-canvas">
+			<canvas id="countriesNumConn" width="400" height="400"></canvas>
+		</div>
+	</section>
+</div>
+
 <script>
 window.onload = function() {
 colors = ["rgba(251,128,114,0.8)",
@@ -149,41 +193,9 @@ var myChart = new Chart(ctx_nc, {
 
 }
 </script>
-<form action="" method="get">
-	<select name="period" onchange="this.form.submit()">
-	<option value="stats_day" <?php echo ($period=='stats_day') ? 'selected':'' ?>>Previous 24 hours</option>
-	<option value="stats_week" <?php echo ($period=='stats_week') ? 'selected':'' ?>>Previous week</option>
-	<option value="stats_2week" <?php echo ($period=='stats_2week') ? 'selected':'' ?>>Previous 2 weeks</option>
-	<option value="stats_month" <?php echo ($period=='stats_month') ? 'selected':'' ?>>Previous month</option>
-	</select>
-</form>
-				
-<?php if ($result && count($datapoints_nc_labels) == 0){ ?>
-<p class="notes">No statistics have been recorded for this period yet. They are saved every 5 minutes while traffic flows.</p>
-<?php } ?>
-
-<div class="chart-grid">
-  <section class="chart-card">
-    <h2>Data sent in the previous <?php echo $display; ?> (KB) - Top 10 destination countries</h2>
-    <div class="chart-canvas">
-      <canvas id="countriesDataSent" width="400" height="400"></canvas>
-    </div>
-  </section>
-  <section class="chart-card">
-    <h2>Data received in the previous <?php echo $display; ?> (KB) - Top 10 source countries</h2>
-    <div class="chart-canvas">
-      <canvas id="countriesDataReceived" width="400" height="400"></canvas>
-    </div>
-  </section>
-  <section class="chart-card">
-    <h2>Total number of connections in the previous <?php echo $display; ?> - Top 10 destination countries</h2>
-    <div class="chart-canvas">
-      <canvas id="countriesNumConn" width="400" height="400"></canvas>
-    </div>
-  </section>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+<?php } ?>
 
 <?php
 require 'templates/footer.html';
