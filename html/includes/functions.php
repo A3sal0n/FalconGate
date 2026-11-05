@@ -48,6 +48,10 @@ function login_check() {
 }
 
 
+function esc_html($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
 // Returns the password hash from a "<user> <hash>" file, or null if unreadable.
 function read_password_hash($path) {
     $contents = @file_get_contents($path);

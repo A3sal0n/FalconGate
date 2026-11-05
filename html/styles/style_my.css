@@ -256,6 +256,106 @@ div.text-container {
 	text-align: right;
 }
 
+/* Content - Configuration
+------------------*/
+.config-page,
+.config-columns {
+	display: grid;
+	gap: 20px;
+}
+
+.config-columns {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.config-card {
+	background: #f7f8f8;
+	border: 1px solid #dcdfe0;
+	border-radius: 6px;
+	padding: 16px 20px 20px;
+}
+
+.config-card h2 {
+	border-bottom: 2px solid #1dabb8;
+	margin: 0 0 14px;
+	padding-bottom: 6px;
+	text-decoration: none;
+}
+
+.config-page label {
+	display: block;
+	font-weight: bold;
+	margin-bottom: 4px;
+}
+
+.config-page input[type="text"],
+.config-page input[type="password"],
+.config-page textarea {
+	background: #ffffff;
+	border: 1px solid #b8bdbf;
+	border-radius: 4px;
+	box-sizing: border-box;
+	font: inherit;
+	padding: 7px 9px;
+	width: 100%;
+}
+
+.config-page textarea {
+	font-family: Consolas, "Courier New", monospace;
+	resize: vertical;
+}
+
+.config-page input:focus,
+.config-page textarea:focus {
+	border-color: #1dabb8;
+	box-shadow: 0 0 0 2px rgba(29, 171, 184, 0.25);
+	outline: none;
+}
+
+.config-page .config-check {
+	align-items: center;
+	display: flex;
+	gap: 8px;
+	margin: 18px 0 4px;
+}
+
+.config-hint {
+	color: #5b6163;
+	font-size: 12px;
+	line-height: 1.4;
+	margin: 4px 0 14px;
+}
+
+.config-card > .config-hint:last-child,
+.config-columns .config-hint:last-child {
+	margin-bottom: 0;
+}
+
+.config-actions {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.config-actions .config-hint {
+	margin: 5px 0 0;
+}
+
+.config-actions .config_button {
+	font-size: 15px;
+	padding: 7px 18px;
+}
+
+.config-notice {
+	background: #e6f6ea;
+	border: 1px solid #1a7f37;
+	border-radius: 4px;
+	color: #14662c;
+	margin: 0 0 16px;
+	padding: 8px 12px;
+}
+
 /* Default password prompt
 -----------------------------------------------------------------------------*/
 .password-prompt {
@@ -335,21 +435,11 @@ div.text-container {
 		padding: 5px 10px 12px;
 	}
 
-	.config-form,
-	.config-form tbody,
-	.config-form tr,
-	.config-form td {
-		display: block;
-		width: 100%;
+	.config-columns {
+		grid-template-columns: minmax(0, 1fr);
 	}
 
-	.config-form td {
-		padding: 2px 0;
-	}
-
-	.config-form input[type="text"],
-	.config-form input[type="password"],
-	.config-form textarea {
-		width: 100%;
+	.config-card {
+		padding: 12px 14px 16px;
 	}
 }
