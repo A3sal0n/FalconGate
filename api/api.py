@@ -188,14 +188,18 @@ class FlaskAPI(threading.Thread):
         stime = int(request.json['start_time'])
         etime = int(request.json['end_time'])
         if stype == 'country':
-            resp = Response()
-            try:
-                resp.data = json.dumps(stats.get_country_stats(stime, etime))
-                resp.status_code = 200
-                resp.mimetype = "application/json"
-            except Exception as e:
-                log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
-                resp.status_code = 500
-            return resp
+            get_data = stats.get_country_stats
+        elif stype == 'connections':
+            get_data = stats.get_top_connections
         else:
             abort(400)
+
+        resp = Response()
+        try:
+            resp.data = json.dumps(get_data(stime, etime))
+            resp.status_code = 200
+            resp.mimetype = "application/json"
+        except Exception as e:
+            log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
+            resp.status_code = 500
+        return resp

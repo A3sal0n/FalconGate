@@ -22,6 +22,14 @@ def make_conn(ts, country='US', direction='outbound', sent=100, received=200):
     return conn
 
 
+def conn_fields(uid='C1', src='192.168.100.10', dst='8.8.8.8', proto='tcp', port=443, ts=HOUR + 10.0, **extra):
+    fields = {'uid': uid, 'id.orig_h': src, 'id.orig_p': 50000, 'id.resp_h': dst, 'id.resp_p': port, 'proto': proto,
+              'ts': ts, 'duration': 5.0, 'orig_ip_bytes': 100, 'resp_ip_bytes': 200,
+              'local_orig': True, 'local_resp': False}
+    fields.update(extra)
+    return fields
+
+
 class StatsTests(unittest.TestCase):
     def setUp(self):
         directory = tempfile.TemporaryDirectory()
@@ -30,6 +38,141 @@ class StatsTests(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         stats.create_stats_db()
+        del stats.pending_connections[:]
+        self.addCleanup(stats.pending_connections.clear)
+
+    def connections(self):
+        con = stats.connect_stats_db()
+        rows = con.execute("select src_ip, dst_ip, proto, dst_port, country, first_seen, last_seen, bytes_out, "
+                           "bytes_in from connections order by dst_ip, proto").fetchall()
+        con.close()
+        return rows
+
+    def test_only_outbound_internet_connections_qualify(self):
+        self.assertTrue(stats.is_outbound_internet(conn_fields()))
+        self.assertTrue(stats.is_outbound_internet(conn_fields(dst='2001:4860:4860::8888')))
+        for fields in (conn_fields(local_resp=True), conn_fields(local_orig=False),
+                       conn_fields(dst='10.0.0.1'), conn_fields(dst='192.168.1.1'), conn_fields(dst='172.16.0.1'),
+                       conn_fields(dst='100.64.0.1'), conn_fields(dst='169.254.0.1'), conn_fields(dst='224.0.0.251'),
+                       conn_fields(dst='ff02::fb'), conn_fields(dst='fe80::1'), conn_fields(dst='not-an-ip')):
+            self.assertFalse(stats.is_outbound_internet(fields), fields['id.resp_h'])
+        fields = conn_fields()
+        del fields['local_orig']
+        self.assertFalse(stats.is_outbound_internet(fields))
+
+    def test_connection_is_stored_with_its_fields(self):
+        stats.record_connection(conn_fields(), 'US')
+        stats.save_connections(HOUR + 100)
+
+        self.assertEqual(self.connections(), [('192.168.100.10', '8.8.8.8', 'tcp', 443, 'US', HOUR + 10.0, HOUR + 15.0, 100, 200)])
+
+    def test_unknown_country_is_stored_as_not_available(self):
+        for country in (None, ''):
+            del stats.pending_connections[:]
+            stats.record_connection(conn_fields(uid='U' + str(country)), country)
+            stats.save_connections(HOUR + 100)
+        self.assertEqual(self.connections()[0][4], 'N/A')
+
+    def test_missing_optional_fields_count_as_zero(self):
+        fields = conn_fields()
+        for name in ('duration', 'orig_ip_bytes', 'resp_ip_bytes'):
+            del fields[name]
+        stats.record_connection(fields, 'US')
+        stats.save_connections(HOUR + 100)
+
+        row = self.connections()[0]
+        self.assertEqual(row[5:], (HOUR + 10.0, HOUR + 10.0, 0, 0))
+
+    def test_same_destination_port_is_one_row_whatever_the_source_port(self):
+        stats.record_connection(conn_fields(uid='C1', ts=HOUR + 50.0), 'US')
+        stats.record_connection(conn_fields(uid='C2', ts=HOUR + 10.0, **{'id.orig_p': 60000}), 'US')
+        stats.save_connections(HOUR + 100)
+
+        rows = self.connections()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][5:], (HOUR + 10.0, HOUR + 55.0, 200, 400))
+
+    def test_protocols_and_ports_are_kept_apart(self):
+        stats.record_connection(conn_fields(uid='C1', proto='tcp'), 'US')
+        stats.record_connection(conn_fields(uid='C2', proto='udp'), 'US')
+        stats.record_connection(conn_fields(uid='C3', port=80), 'US')
+        stats.save_connections(HOUR + 100)
+
+        self.assertEqual(len(self.connections()), 3)
+
+    def test_rereading_the_log_does_not_count_twice(self):
+        stats.record_connection(conn_fields(), 'US')
+        stats.save_connections(HOUR + 100)
+
+        # A restart reads the same line again, and the same line can also repeat within one save.
+        stats.record_connection(conn_fields(), 'US')
+        stats.record_connection(conn_fields(), 'US')
+        stats.save_connections(HOUR + 400)
+
+        self.assertEqual(self.connections()[0][7:], (100, 200))
+
+    def test_failed_save_keeps_connections_and_counts_them_once(self):
+        stats.record_connection(conn_fields(), 'US')
+        with patch.object(stats, 'connect_stats_db', side_effect=stats.lite.OperationalError('database is locked')):
+            with self.assertRaises(stats.lite.OperationalError):
+                stats.save_connections(HOUR + 100)
+        self.assertEqual(len(stats.pending_connections), 1)
+
+        stats.save_connections(HOUR + 400)
+
+        self.assertEqual(stats.pending_connections, [])
+        self.assertEqual(self.connections()[0][7:], (100, 200))
+
+    def test_connections_older_than_seven_days_are_deleted(self):
+        now = HOUR + 8 * 86400
+        stats.record_connection(conn_fields(uid='OLD', dst='8.8.8.8', ts=now - 7 * 86400 - 60.0), 'US')
+        stats.record_connection(conn_fields(uid='NEW', dst='9.9.9.9', ts=now - 7 * 86400 + 60.0), 'US')
+        stats.save_connections(now)
+
+        stats.delete_old_connections(now)
+
+        self.assertEqual([row[1] for row in self.connections()], ['9.9.9.9'])
+
+    def test_uids_are_kept_only_long_enough_to_cover_a_reread(self):
+        stats.record_connection(conn_fields(), 'US')
+        stats.save_connections(HOUR)
+
+        stats.delete_old_connections(HOUR + stats.CONNECTION_UID_RETENTION_SECONDS + 1)
+
+        con = stats.connect_stats_db()
+        self.assertEqual(con.execute("select count(*) from connection_uids").fetchone()[0], 0)
+        con.close()
+
+    def test_top_connections(self):
+        network = Network()
+        host = Host()
+        host.hostname = 'laptop'
+        network.hosts = {'192.168.100.10': host}
+        rows = [conn_fields(uid='A', dst='8.8.8.8', orig_ip_bytes=500), conn_fields(uid='B', dst='8.8.8.8', port=80, orig_ip_bytes=100),
+                conn_fields(uid='C', dst='1.1.1.1', orig_ip_bytes=300), conn_fields(uid='D', src='192.168.100.20', dst='1.1.1.1', orig_ip_bytes=50)]
+        for row in rows:
+            stats.record_connection(row, 'US' if row['id.resp_h'] == '8.8.8.8' else None)
+        stats.save_connections(HOUR + 100)
+
+        with patch.object(stats, 'homenet', network):
+            top = stats.get_top_connections(HOUR, HOUR + 100)
+
+        self.assertEqual(top['senders'], [{'label': 'laptop (192.168.100.10)', 'bytes': 900}, {'label': '192.168.100.20', 'bytes': 50}])
+        self.assertEqual(top['destinations'], [{'label': '8.8.8.8 (US)', 'bytes': 600}, {'label': '1.1.1.1 (N/A)', 'bytes': 350}])
+        self.assertEqual(top['pairs'][0], {'label': '192.168.100.10 → 8.8.8.8', 'bytes': 600})
+        self.assertEqual(len(top['pairs']), 3)
+
+    def test_top_connections_only_includes_the_time_range_and_top_ten(self):
+        for i in range(12):
+            stats.record_connection(conn_fields(uid=str(i), dst='8.8.8.' + str(i + 1), orig_ip_bytes=i + 1), 'US')
+        stats.record_connection(conn_fields(uid='OLD', dst='9.9.9.9', ts=HOUR - 86400.0, orig_ip_bytes=9999), 'US')
+        stats.save_connections(HOUR + 100)
+
+        top = stats.get_top_connections(HOUR, HOUR + 100)
+
+        self.assertEqual(len(top['destinations']), 10)
+        self.assertEqual(top['destinations'][0]['label'], '8.8.8.12 (US)')
+        self.assertNotIn('9.9.9.9 (US)', [row['label'] for row in top['destinations']])
 
     def network(self, conns, mac='AA:AA:AA:AA:AA:AA'):
         network = Network()

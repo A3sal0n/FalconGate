@@ -5,6 +5,7 @@ from lib.logger import *
 from user_agents import parse
 import os
 import lib.utils as utils
+import lib.stats as stats
 import glob
 import requests
 import base64
@@ -38,6 +39,8 @@ class ReadBroConn(threading.Thread):
                         cid = fields["id.orig_h"] + "|" + fields["id.resp_h"] + "|" + str(fields["id.resp_p"])
                         with lock:
                             if cip in homenet.hosts:
+                                if homenet.hosts[cip].mac != homenet.mac and stats.is_outbound_internet(fields):
+                                    stats.record_connection(fields, self.gi.country_code_by_addr(fields["id.resp_h"]))
                                 if cid not in homenet.hosts[cip].conns:
                                     homenet.hosts[cip].conns[cid] = self.map_conn_fields(fields)
                                 else:

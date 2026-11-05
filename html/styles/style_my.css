@@ -222,6 +222,25 @@ a.header-brand:focus-visible {
 	margin-top: 16px;
 }
 
+.stats-section-title {
+	margin: 24px 0 4px;
+	text-decoration: none;
+}
+
+/* Bar labels need more room than the donut charts. */
+.chart-grid-wide {
+	grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr));
+}
+
+.chart-grid-wide .chart-card {
+	justify-content: flex-start;
+}
+
+/* The pairs chart has the longest labels, so it takes the full width. */
+.chart-grid-wide .chart-card:last-child {
+	grid-column: 1 / -1;
+}
+
 /* Content - Get Alerts (Show / Hide More)
 ------------------*/	
 div.text-container {
