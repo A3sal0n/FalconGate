@@ -13,155 +13,163 @@ if (login_check() != true){
 require 'templates/header.html';
 ?>
 
-
-<script type='text/javascript'>//<![CDATA[
-$(window).load(function(){
-$(".show-more a").each(function() {
-    var $link = $(this);
-    var $content = $link.parent().prev("div.text-content");
-
-    console.log($link);
-
-    var visibleHeight = $content[0].clientHeight;
-    var actualHide = $content[0].scrollHeight - 2;
-
-    console.log(actualHide);
-    console.log(visibleHeight);
-
-    if (actualHide > visibleHeight) {
-        $link.show();
-    } else {
-        $link.hide();
-    }
-});
-
-$(".show-more a").on("click", function() {
-    var $link = $(this);
-    var $content = $link.parent().prev("div.text-content");
-    var linkText = $link.text();
-
-    $content.toggleClass("short-text, full-text");
-
-    $link.text(getShowLinkText(linkText));
-
-    return false;
-});
-
-function getShowLinkText(currentText) {
-    var newText = '';
-
-    if (currentText.toUpperCase() === "SHOW MORE") {
-        newText = "Show less";
-    } else {
-        newText = "Show more";
-    }
-
-    return newText;
-}
-});//]]> 
-
-</script>
-<script type="text/javascript">
-var csrfToken = <?php echo json_encode(csrf_token()); ?>;
-
-function submitMe(dbid, handled)
-    {
-       jQuery.ajax({
-       type: "POST",
-       url: "alerts_review.php",
-       data: {id: dbid, handled: handled, csrf_token: csrfToken},
-       success: function(msg){
-		 if(handled == 1) {
-			alert( "Event ID " + dbid +" have been reviewed!");
-		 } else {
-			 alert( "Event ID " + dbid +" have been unreviewed!");
-		 }
-       },
-       error: function(){
-		 alert( "Event ID " + dbid +" could not be updated. Reload the page and try again.");
-       }
-     });
-    }
-
-</script>
-<script type="text/javascript">
-function show_hide_row(row)
-{
- $("#"+row).toggle();
-}
-</script>
-
-
 <h1>Recent Alerts</h1>
 
 <?php
-$period = (!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
-$filter = (!isset($_GET['filter'])) ? 'all': $_GET['filter'];
+$periods = array('alerts_week' => 'Last 7 days', 'alerts_month' => 'Last 30 days', 'alerts_all' => 'All time');
+$filters = array('all' => 'All', 'notreviewed' => 'Not reviewed', 'reviewed' => 'Reviewed');
+
+$period = isset($_GET['period']) && is_string($_GET['period']) && isset($periods[$_GET['period']]) ? $_GET['period'] : 'alerts_week';
+$filter = isset($_GET['filter']) && is_string($_GET['filter']) && isset($filters[$_GET['filter']]) ? $_GET['filter'] : 'all';
+
 $data = array("target" => "alerts", "timeframe" => $period, "filter" => $filter);
-$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));	
+$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
+
 if (!$result){
     echo ("<h3><span class=error_message>Falcongate API process seems to be down!</span></h3>");
     echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
 }else{
-    $obj = json_decode($result, true); 
-	if ($period == "alerts_week"){
-		$display = "last 7 days";
-	}elseif ($period == "alerts_month"){
-		$display = "last 30 days";
-	}else{
-		$display = "all time";
-	}
-?>
-	
-    <h3>Displaying <?php echo $filter; ?> alerts in <?php echo $display; ?></h3>
-    <p align="right"><a href="save-alerts-csv.php?period=<?php echo $period; ?>" target="_blank">download csv</a></p>
-	<table width="100%">
-	<tbody>
-		<tr>
-			<td>
-				For what period would you like to see alerts? 
-				<form action="" method="get">
-				<select name="period" onchange="this.form.submit()">
-					<option value="alerts_week" <?php echo ($period=='alerts_week') ? 'selected':'' ?>>Last 7 days</option>
-					<option value="alerts_month" <?php echo ($period=='alerts_month') ? 'selected':'' ?>>Last 30 days</option>
-					<option value="alerts_all" <?php echo ($period=='alerts_all') ? 'selected':'' ?>>All</option>
-				</select>
-				</form>
-			</td>
-			<td align="right">	
-				<a href="?period=<?php echo $period; ?>&filter=all">All</a> | <a href="?period=<?php echo $period; ?>&filter=reviewed">Reviewed </a>| <a href="?period=<?php echo $period; ?>&filter=notreviewed">Not Reviewed</a>
-			</td>
-		</tr>
-	</tbody>
-	</table>
-<?php
-	
-    echo ('<table class=TFtable width=100% halign=left id=table_detail>');
-        echo ('<tr>');
-			echo ('<td nowrap><b>First seen</b></td><td nowrap><b>Last seen</b></td><td nowrap><b>Host</b></td><td nowrap><b>Threat</b></td><td nowrap><b>Indicators</b></td><td nowrap><b>Is reviewed?</b></td>');
-		echo ('</tr>');
-		
-    if ($obj[0] != 'none'){
-		$i = 0;
-        foreach ($obj as $alert){
-				$i++;
-				if ($alert[9] == "0"){
-					$checkbox = "<input type=checkbox name=handled id=".$alert[0]." value=0 onclick='submitMe(".$alert[0].", 1);'>";
-					$rev = "No";
-				}else{
-					$checkbox = "<input type=checkbox name=handled id=".$alert[0]." value=1 onclick='submitMe(".$alert[0].", 0);' checked>";
-					$rev = "Yes";
-				}
-            echo ('<tr style="cursor: pointer;" onclick=show_hide_row("hidden_row'.$i.'"); title="Click for more details"><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td><div class="text-content short-text">'.str_replace('|','| ',$alert[8]).'</div><div class="show-more"><a href="#">Show more</a></div></td><td nowrap>'.$checkbox.'</td></tr>');
-			echo ('<tr id=hidden_row'.$i.' class=hidden_row><td colspan=6>');
-			echo ('<b>Alert ID: </b>'.$alert[0].'<br><b>Threat Category: </b>'.$alert[6].'<br><b>First Seen: </b>'.date('Y/m/d H:i:s', $alert[2]).'<br><b>Last Seen: </b>'.date('Y/m/d H:i:s', $alert[3]).'<br><b>Source IP: </b>'.$alert[7].'<br><b>Alert Indicators: </b>'.str_replace('|','| ',$alert[8]).'<br><b>Alert reviewed? : </b>'.$rev.'<br><b>Alert description :</b>'.$alert[10].'<br><b>Reference: </b><a target="_blank" href='.$alert[11].'>'.$alert[11].'</a>');
-			echo ('</td></tr>');
-        }
+    $alerts = json_decode($result, true);
+    if (!is_array($alerts) || (isset($alerts[0]) && $alerts[0] === 'none')){
+        $alerts = array();
     }
-    echo ('</table><br>');
-   
-}
+    $format_time = function ($timestamp) {
+        return date('Y/m/d H:i:s', (int) $timestamp);
+    };
+?>
 
+<div class="alerts-toolbar">
+    <form action="" method="get">
+        <label for="period">Period</label>
+        <select id="period" name="period" onchange="this.form.submit()">
+            <?php foreach ($periods as $value => $label){ ?>
+            <option value="<?php echo $value; ?>" <?php echo $period == $value ? 'selected' : ''; ?>><?php echo $label; ?></option>
+            <?php } ?>
+        </select>
+        <input type="hidden" name="filter" value="<?php echo $filter; ?>">
+    </form>
+
+    <nav class="alerts-filters" aria-label="Filter alerts by review status">
+        <?php foreach ($filters as $value => $label){ ?>
+        <a href="?period=<?php echo $period; ?>&amp;filter=<?php echo $value; ?>" <?php echo $filter == $value ? 'class="selected" aria-current="true"' : ''; ?>><?php echo $label; ?></a>
+        <?php } ?>
+    </nav>
+
+    <a class="alerts-download" href="save-alerts-csv.php?period=<?php echo $period; ?>&amp;filter=<?php echo $filter; ?>">Download CSV</a>
+</div>
+
+<p class="config-hint">Showing <?php echo count($alerts); ?> <?php echo count($alerts) == 1 ? 'alert' : 'alerts'; ?>. Select a row to see its details.</p>
+
+<?php if (count($alerts) == 0){ ?>
+<p class="alerts-empty">No alerts match this selection.</p>
+<?php }else{ ?>
+<table class="alerts-table" id="alerts_table">
+    <thead>
+        <tr>
+            <th>First seen</th>
+            <th>Last seen</th>
+            <th>Host</th>
+            <th>Threat</th>
+            <th>Indicators</th>
+            <th>Reviewed</th>
+            <th><span class="visually-hidden">Details</span></th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php
+    foreach ($alerts as $alert){
+        $id = (int) $alert[0];
+        $indicators = array_filter(array_map('trim', explode('|', (string) $alert[8])), 'strlen');
+        $reference = (string) $alert[11];
+        $reviewed = $alert[9] != 0;
+    ?>
+        <tr class="alert-row">
+            <td data-label="First seen" class="alert-time"><?php echo $format_time($alert[2]); ?></td>
+            <td data-label="Last seen" class="alert-time"><?php echo $format_time($alert[3]); ?></td>
+            <td data-label="Host" class="alert-host"><?php echo esc_html($alert[7]); ?></td>
+            <td data-label="Threat"><span class="alert-threat"><?php echo esc_html($alert[6]); ?></span></td>
+            <td data-label="Indicators"><div class="alert-indicators"><?php echo esc_html(implode(' | ', $indicators)); ?></div></td>
+            <td data-label="Reviewed"><input type="checkbox" class="alert-reviewed" data-alert-id="<?php echo $id; ?>" aria-label="Mark alert <?php echo $id; ?> as reviewed" <?php echo $reviewed ? 'checked' : ''; ?>></td>
+            <td class="alert-toggle"><button type="button" class="alert-details-button" aria-expanded="false" aria-controls="alert_details_<?php echo $id; ?>">Details</button></td>
+        </tr>
+        <tr class="alert-details" id="alert_details_<?php echo $id; ?>" hidden>
+            <td colspan="7">
+                <dl>
+                    <dt>Alert ID</dt><dd><?php echo $id; ?></dd>
+                    <dt>Threat category</dt><dd><?php echo esc_html($alert[6]); ?></dd>
+                    <dt>Source</dt><dd><?php echo esc_html($alert[7]); ?></dd>
+                    <dt>First seen</dt><dd><?php echo $format_time($alert[2]); ?></dd>
+                    <dt>Last seen</dt><dd><?php echo $format_time($alert[3]); ?></dd>
+                    <dt>Indicators</dt>
+                    <dd>
+                        <ul>
+                            <?php foreach ($indicators as $indicator){ ?>
+                            <li><?php echo esc_html($indicator); ?></li>
+                            <?php } ?>
+                        </ul>
+                    </dd>
+                    <dt>Description</dt><dd><?php echo esc_html(strip_tags((string) $alert[10])); ?></dd>
+                    <dt>Reference</dt>
+                    <dd>
+                        <?php if (preg_match('#^https?://#i', $reference)){ ?>
+                        <a href="<?php echo esc_html($reference); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($reference); ?></a>
+                        <?php }else{ echo esc_html($reference); } ?>
+                    </dd>
+                </dl>
+            </td>
+        </tr>
+    <?php } ?>
+    </tbody>
+</table>
+
+<script>
+(function(){
+    var table = document.getElementById("alerts_table");
+    var csrfToken = <?php echo json_encode(csrf_token()); ?>;
+
+    // Select a row, or its Details button, to show or hide the details below it.
+    table.addEventListener("click", function(event){
+        var row = event.target.closest(".alert-row");
+        if (!row || event.target.closest("input, a")) {
+            return;
+        }
+        var button = row.querySelector(".alert-details-button");
+        var details = document.getElementById(button.getAttribute("aria-controls"));
+        details.hidden = !details.hidden;
+        button.setAttribute("aria-expanded", String(!details.hidden));
+        button.textContent = details.hidden ? "Details" : "Hide";
+    });
+
+    table.addEventListener("change", function(event){
+        var checkbox = event.target;
+        if (!checkbox.classList.contains("alert-reviewed")) {
+            return;
+        }
+        var body = new URLSearchParams();
+        body.append("id", checkbox.getAttribute("data-alert-id"));
+        body.append("handled", checkbox.checked ? "1" : "0");
+        body.append("csrf_token", csrfToken);
+
+        checkbox.disabled = true;
+        fetch("alerts_review.php", {method: "POST", body: body, credentials: "same-origin"})
+            .then(function(response){
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+            })
+            .catch(function(){
+                checkbox.checked = !checkbox.checked;
+                alert("The alert could not be updated. Reload the page and try again.");
+            })
+            .then(function(){
+                checkbox.disabled = false;
+            });
+    });
+})();
+</script>
+<?php
+    }
+}
 ?>
 
 <?php

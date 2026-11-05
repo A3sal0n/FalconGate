@@ -391,6 +391,175 @@ div.text-container {
 	margin-top: 0;
 }
 
+/* Content - Recent Alerts
+------------------*/
+.alerts-toolbar {
+	align-items: center;
+	background: #f7f8f8;
+	border: 1px solid #dcdfe0;
+	border-radius: 6px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 24px;
+	padding: 12px 16px;
+}
+
+.alerts-toolbar label {
+	font-weight: bold;
+	margin-right: 8px;
+}
+
+.alerts-toolbar select {
+	background: #ffffff;
+	border: 1px solid #b8bdbf;
+	border-radius: 4px;
+	font: inherit;
+	padding: 5px 8px;
+}
+
+.alerts-filters {
+	border: 1px solid #1dabb8;
+	border-radius: 4px;
+	display: inline-flex;
+	overflow: hidden;
+}
+
+.alerts-filters a {
+	padding: 5px 12px;
+}
+
+.alerts-filters a + a {
+	border-left: 1px solid #1dabb8;
+}
+
+.alerts-filters a:hover {
+	background: #e8f6f7;
+	color: #000000;
+}
+
+.alerts-filters a.selected {
+	background: #1dabb8;
+	color: #ffffff;
+}
+
+.alerts-download {
+	margin-left: auto;
+}
+
+.alerts-empty {
+	background: #f7f8f8;
+	border: 1px solid #dcdfe0;
+	border-radius: 6px;
+	padding: 24px;
+	text-align: center;
+}
+
+.alerts-table {
+	width: 100%;
+}
+
+.alerts-table th {
+	border-bottom: 2px solid #1dabb8;
+	padding: 8px 10px;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.alerts-table td {
+	border-bottom: 1px solid #dcdfe0;
+	padding: 8px 10px;
+	vertical-align: middle;
+}
+
+.alert-row {
+	cursor: pointer;
+}
+
+.alert-row:hover {
+	background: #f2fafb;
+}
+
+.alert-time,
+.alert-host {
+	white-space: nowrap;
+}
+
+.alert-threat {
+	background: #fbe9ec;
+	border-radius: 10px;
+	color: #8f031b;
+	display: inline-block;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 1px 9px;
+	white-space: nowrap;
+}
+
+.alert-indicators {
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	display: -webkit-box;
+	line-height: 1.4;
+	overflow: hidden;
+	overflow-wrap: anywhere;
+}
+
+.alert-reviewed {
+	cursor: pointer;
+	height: 16px;
+	width: 16px;
+}
+
+.alert-details-button {
+	background: none;
+	border: 1px solid #1dabb8;
+	border-radius: 4px;
+	color: #14808a;
+	cursor: pointer;
+	font: inherit;
+	min-width: 62px;
+	padding: 2px 8px;
+}
+
+.alert-details-button:hover {
+	background: #e8f6f7;
+}
+
+.alerts-table .alert-details > td {
+	background: #f7f8f8;
+	padding: 12px 16px;
+}
+
+.alert-details dl {
+	display: grid;
+	gap: 6px 16px;
+	grid-template-columns: max-content minmax(0, 1fr);
+	margin: 0;
+}
+
+.alert-details dt {
+	font-weight: bold;
+}
+
+.alert-details dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.alert-details ul {
+	margin: 0;
+	padding-left: 18px;
+}
+
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
 /* Default password prompt
 -----------------------------------------------------------------------------*/
 .password-prompt {
@@ -475,5 +644,71 @@ div.text-container {
 
 	.config-card {
 		padding: 12px 14px 16px;
+	}
+
+	.alerts-download {
+		margin-left: 0;
+	}
+
+	/* Each alert becomes a small card with its field names beside the values. */
+	.alerts-table thead {
+		display: none;
+	}
+
+	.alerts-table,
+	.alerts-table tbody,
+	.alerts-table tr,
+	.alerts-table td {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.alerts-table tr.alert-details[hidden] {
+		display: none;
+	}
+
+	.alert-row {
+		border: 1px solid #dcdfe0;
+		border-radius: 6px 6px 0 0;
+		margin-top: 10px;
+		padding: 6px 0;
+	}
+
+	.alerts-table .alert-row td {
+		border-bottom: 0;
+		padding: 3px 12px;
+	}
+
+	.alerts-table .alert-row td[data-label] {
+		display: grid;
+		gap: 8px;
+		grid-template-columns: 86px minmax(0, 1fr);
+	}
+
+	.alerts-table .alert-row td[data-label]::before {
+		content: attr(data-label);
+		font-weight: bold;
+	}
+
+	.alert-time,
+	.alert-host {
+		white-space: normal;
+	}
+
+	.alert-threat {
+		justify-self: start;
+	}
+
+	.alert-toggle {
+		text-align: right;
+	}
+
+	.alert-details dl {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.alert-details dd {
+		margin-bottom: 6px;
 	}
 }

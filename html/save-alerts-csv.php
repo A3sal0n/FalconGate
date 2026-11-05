@@ -1,8 +1,16 @@
 <?php
 session_start();
 include_once 'includes/functions.php';
+
+if (login_check() != true){
+    http_response_code(403);
+    echo ("<p><span class=error_message>You are not authorized to access this page. Please </span><a href=index.php>login</a>.</p>");
+    exit(0);
+}
+
 $period = (!isset($_GET['period'])) ? 'alerts_week': $_GET['period'];
-$data = array("target" => "alerts", "timeframe" => $period);
+$filter = (!isset($_GET['filter'])) ? 'all': $_GET['filter'];
+$data = array("target" => "alerts", "timeframe" => $period, "filter" => $filter);
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
 if (!$result){
     echo ("<h3><span class=error_message>Falcongate API process seems to be down!<span></h3>");
@@ -24,8 +32,9 @@ if (!$result){
     if ($obj[0] != 'none'){
         foreach ($obj as $alert){
             $nextrow = array();
-            $nextrow[0] = date('Y/m/d H:i:s', $alert[2]);
-            $nextrow[1] = date('Y/m/d H:i:s', $alert[3]);
+            // Timestamps can be fractional, which date() no longer converts silently.
+            $nextrow[0] = date('Y/m/d H:i:s', (int) $alert[2]);
+            $nextrow[1] = date('Y/m/d H:i:s', (int) $alert[3]);
             $nextrow[2] = $alert[7];
             $nextrow[3] = $alert[6];
             $nextrow[4] = $alert[8];

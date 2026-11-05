@@ -4,6 +4,7 @@ session_start();
 include_once 'includes/functions.php';
 
 if (login_check() != true){
+    http_response_code(403);
     echo ("<p><span class=error_message>You are not authorized to access this page. Please </span><a href=index.php>login</a>.</p>");
     exit(0);
 }
