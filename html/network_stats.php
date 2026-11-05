@@ -190,7 +190,7 @@ var myChart = new Chart(ctx_ds, {
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50}
+  options: {cutoutPercentage: 50, legend: {position: 'left'}}
 });
 
 var ctx_dr = document.getElementById('countriesDataReceived').getContext('2d');
@@ -204,7 +204,7 @@ var myChart = new Chart(ctx_dr, {
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50}
+  options: {cutoutPercentage: 50, legend: {position: 'left'}}
 });
 
 var ctx_nc = document.getElementById('countriesNumConn').getContext('2d');
@@ -218,7 +218,7 @@ var myChart = new Chart(ctx_nc, {
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50}
+  options: {cutoutPercentage: 50, legend: {position: 'left'}}
 });
 
 }
@@ -282,7 +282,7 @@ window.addEventListener("load", function(){
 <?php } ?>
 
 <?php if ($has_data || $has_top_data){ ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 <?php } ?>
 
 <?php
