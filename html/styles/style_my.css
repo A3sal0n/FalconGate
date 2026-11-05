@@ -227,6 +227,13 @@ a.header-brand:focus-visible {
 	text-decoration: none;
 }
 
+.stats-refresh,
+.stats-refresh:hover {
+	font-size: 14px;
+	margin: 0 0 0 auto;
+	padding: 6px 16px;
+}
+
 /* Bar labels need more room than the donut charts. */
 .chart-grid-wide {
 	grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr));

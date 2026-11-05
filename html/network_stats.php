@@ -112,7 +112,7 @@ if ($result){
 ?>
 
 <div class="alerts-toolbar">
-	<form action="" method="get">
+	<form id="period_form" action="" method="get">
 		<label for="period">Period</label>
 		<select id="period" name="period" onchange="this.form.submit()">
 			<?php foreach ($periods as $value => $option){ ?>
@@ -120,7 +120,13 @@ if ($result){
 			<?php } ?>
 		</select>
 	</form>
+	<button class="config_button stats-refresh" type="submit" form="period_form">Refresh</button>
 </div>
+
+<?php if ($result){ ?>
+<h2 class="stats-section-title">Traffic by country</h2>
+<p class="config-hint">Outbound connections from your devices in the <?php echo $period_hint; ?>, grouped by the destination's country. Statistics are saved every 5 minutes.</p>
+<?php } ?>
 
 <?php if (!$result){ ?>
 <p class="error_message stats-message">The statistics could not be loaded. The Falcongate API process may be down. Check your device's configuration and reboot if necessary.</p>
