@@ -121,21 +121,52 @@ ul.vert-one li a.current:hover{
 /* Header
 -----------------------------------------------------------------------------*/
 .header {
+	align-items: center;
+	background: #282830;
+	border-bottom: 3px solid #1dabb8;
+	border-radius: 6px 6px 0 0;
+	display: flex;
+	gap: 16px;
 	grid-area: header;
+	justify-content: space-between;
+	margin-top: 12px;
+	padding: 12px 20px;
 }
 
-#logout {
-	text-align: right;
-	padding-right: 2px;
-	padding-top: 2px;
-	font: 400 13px sans-serif;
-}
-
-#header_text {
-	color: #585B50;
-	font-size: 50px;
+a.header-brand:link,
+a.header-brand:visited,
+a.header-brand:hover,
+a.header-brand:active {
+	color: #ffffff;
+	font-size: 26px;
+	font-weight: 600;
+	letter-spacing: 0.5px;
 	line-height: 1.2;
-	padding-bottom: 10px;
+}
+
+a.logout-button:link,
+a.logout-button:visited,
+a.logout-button:active {
+	border: 1px solid #1dabb8;
+	border-radius: 6px;
+	color: #ffffff;
+	flex-shrink: 0;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 1.2;
+	padding: 8px 18px;
+	transition: background-color 0.15s;
+}
+
+a.logout-button:hover {
+	background: #1dabb8;
+	color: #ffffff;
+}
+
+a.logout-button:focus-visible,
+a.header-brand:focus-visible {
+	outline: 2px solid #ffffff;
+	outline-offset: 2px;
 }
 
 /* Content
@@ -189,43 +220,6 @@ ul.vert-one li a.current:hover{
 
 .stats-message {
 	margin-top: 16px;
-}
-
-.TFtable{
-		border-collapse:collapse; 
-	}
-.TFtable td{ 
-		padding:7px; border:#e5e5e5 1px solid;
-	}
-	/* provide some minimal visual accomodation for IE8 and below */
-.TFtable tr{
-		background: #e5e5e5;
-	}
-	/*  Define the background color for all the ODD background rows  */
-.TFtable tr:nth-child(odd){ 
-		background: #e5e5e5;
-	}
-	/*  Define the background color for all the EVEN background rows  */
-.TFtable tr:nth-child(even){
-		background: #ffffff;
-	}
-	
-/* Content - Status (Show / Hide details)
-------------------*/	
-#table_detail
-{
- text-align:left;
- border-collapse: collapse;
- color:#2E2E2E;
- border:#A4A4A4;
-}
-#table_detail tr:hover
-{
- background-color:#F2F2F2;
-}
-#table_detail .hidden_row
-{
- display:none;
 }
 
 /* Content - Get Alerts (Show / Hide More)
@@ -739,6 +733,79 @@ div.text-container {
 	padding: 12px 14px;
 }
 
+/* Content - Status
+------------------*/
+.status-settings {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+}
+
+.status-setting {
+	background: #ffffff;
+	border: 1px solid #dcdfe0;
+	border-radius: 6px;
+	padding: 10px 12px;
+}
+
+.status-setting .config-hint {
+	display: block;
+	margin: 0 0 2px;
+}
+
+.status-setting strong {
+	overflow-wrap: anywhere;
+}
+
+.status-hostname {
+	font-weight: bold;
+	overflow-wrap: anywhere;
+}
+
+/* Content - Home
+------------------*/
+.config-card > p {
+	margin-top: 0;
+}
+
+.home-links {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+}
+
+.home-links a {
+	background: #ffffff;
+	border: 1px solid #dcdfe0;
+	border-radius: 6px;
+	color: #000000;
+	display: block;
+	padding: 12px 14px;
+}
+
+.home-links a:hover {
+	border-color: #1dabb8;
+	box-shadow: 0 0 0 1px #1dabb8;
+}
+
+.home-links strong {
+	color: #14808a;
+	display: block;
+}
+
+.home-links .config-hint {
+	margin: 2px 0 0;
+}
+
+.home-list {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.home-list li + li {
+	margin-top: 8px;
+}
+
 /* Default password prompt
 -----------------------------------------------------------------------------*/
 .password-prompt {
@@ -799,8 +866,22 @@ div.text-container {
 		padding: 0 8px 8px;
 	}
 
-	#header_text {
-		font-size: 36px;
+	.header {
+		margin-top: 8px;
+		padding: 10px 14px;
+	}
+
+	a.header-brand:link,
+	a.header-brand:visited,
+	a.header-brand:hover,
+	a.header-brand:active {
+		font-size: 22px;
+	}
+
+	a.logout-button:link,
+	a.logout-button:visited,
+	a.logout-button:active {
+		padding: 7px 14px;
 	}
 
 	ul.vert-one {
@@ -862,7 +943,7 @@ div.text-container {
 	.alerts-table .alert-row td[data-label] {
 		display: grid;
 		gap: 8px;
-		grid-template-columns: 86px minmax(0, 1fr);
+		grid-template-columns: 100px minmax(0, 1fr);
 	}
 
 	.alerts-table .alert-row td[data-label]::before {
