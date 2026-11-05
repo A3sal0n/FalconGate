@@ -186,8 +186,8 @@ function clearField(input,val) {
             <h3>Login</h3>
             <fieldset>
                 <form action="includes/process_login.php" method="post" name="login_form">
-                    <input type="uname" name="uname" value="Username" onblur="fillField(this,'Username');" onfocus="clearField(this,'Username');"/>
-                    <input type="password" name="passwd" value="Password" onblur="fillField(this,'Password');" onfocus="clearField(this,'Password');"/>
+                    <input type="uname" name="uname" value="" onblur="fillField(this,'Username');" onfocus="clearField(this,'Username');"/>
+                    <input type="password" name="passwd" value="" onblur="fillField(this,'Password');" onfocus="clearField(this,'Password');"/>
                     <input type="submit" value="Login">
                     <footer class="error_message">
                            <?php
