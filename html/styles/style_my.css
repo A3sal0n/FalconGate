@@ -292,6 +292,12 @@ div.text-container {
 	justify-content: space-between;
 }
 
+.password-prompt-success {
+	color: #1a7f37;
+	font-weight: bold;
+	margin: 0;
+}
+
 .password-prompt .config_button:disabled {
 	opacity: 0.6;
 	cursor: default;

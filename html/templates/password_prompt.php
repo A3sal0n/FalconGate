@@ -20,6 +20,7 @@ if (!function_exists('is_default_password') || !is_default_password()) {
 			<input class="config_button" type="submit" id="password_prompt_submit" value="Change password">
 		</div>
 	</form>
+	<p id="password_prompt_success" class="password-prompt-success" role="status" hidden>Your password was changed successfully.</p>
 </dialog>
 <script>
 (function(){
@@ -47,7 +48,12 @@ if (!function_exists('is_default_password') || !is_default_password()) {
 			})
 			.then(function(result){
 				if (result.ok) {
-					window.location.reload();
+					// Leave time to read the confirmation; the reload closes the window.
+					form.hidden = true;
+					document.getElementById("password_prompt_success").hidden = false;
+					setTimeout(function(){
+						window.location.reload();
+					}, 2500);
 				} else {
 					error.textContent = result.error;
 					submit.disabled = false;
