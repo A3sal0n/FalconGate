@@ -33,9 +33,6 @@ if (!$result){
     if (!is_array($alerts) || (isset($alerts[0]) && $alerts[0] === 'none')){
         $alerts = array();
     }
-    $format_time = function ($timestamp) {
-        return date('Y/m/d H:i:s', (int) $timestamp);
-    };
 ?>
 
 <div class="alerts-toolbar">
@@ -84,8 +81,8 @@ if (!$result){
         $reviewed = $alert[9] != 0;
     ?>
         <tr class="alert-row">
-            <td data-label="First seen" class="alert-time"><?php echo $format_time($alert[2]); ?></td>
-            <td data-label="Last seen" class="alert-time"><?php echo $format_time($alert[3]); ?></td>
+            <td data-label="First seen" class="alert-time"><?php echo esc_html($alert[2]); ?></td>
+            <td data-label="Last seen" class="alert-time"><?php echo esc_html($alert[3]); ?></td>
             <td data-label="Host" class="alert-host"><?php echo esc_html($alert[7]); ?></td>
             <td data-label="Threat"><span class="alert-threat"><?php echo esc_html($alert[6]); ?></span></td>
             <td data-label="Indicators"><div class="alert-indicators"><?php echo esc_html(implode(' | ', $indicators)); ?></div></td>
@@ -98,8 +95,8 @@ if (!$result){
                     <dt>Alert ID</dt><dd><?php echo $id; ?></dd>
                     <dt>Threat category</dt><dd><?php echo esc_html($alert[6]); ?></dd>
                     <dt>Source</dt><dd><?php echo esc_html($alert[7]); ?></dd>
-                    <dt>First seen</dt><dd><?php echo $format_time($alert[2]); ?></dd>
-                    <dt>Last seen</dt><dd><?php echo $format_time($alert[3]); ?></dd>
+                    <dt>First seen</dt><dd><?php echo esc_html($alert[2]); ?></dd>
+                    <dt>Last seen</dt><dd><?php echo esc_html($alert[3]); ?></dd>
                     <dt>Indicators</dt>
                     <dd>
                         <ul>

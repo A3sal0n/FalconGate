@@ -32,9 +32,8 @@ if (!$result){
     if ($obj[0] != 'none'){
         foreach ($obj as $alert){
             $nextrow = array();
-            // Timestamps can be fractional, which date() no longer converts silently.
-            $nextrow[0] = date('Y/m/d H:i:s', (int) $alert[2]);
-            $nextrow[1] = date('Y/m/d H:i:s', (int) $alert[3]);
+            $nextrow[0] = $alert[2];
+            $nextrow[1] = $alert[3];
             $nextrow[2] = $alert[7];
             $nextrow[3] = $alert[6];
             $nextrow[4] = $alert[8];

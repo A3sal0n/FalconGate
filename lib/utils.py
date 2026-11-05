@@ -14,6 +14,7 @@ import sys
 import gc
 import json
 import fileinput
+from datetime import datetime, timezone
 from lib.settings import homenet, lock
 
 
@@ -202,6 +203,11 @@ def get_latest_alerts(nalerts):
     return res
 
 
+def format_utc_time(timestamp):
+    """Format a Unix timestamp, whole or fractional, as a labelled UTC time."""
+    return datetime.fromtimestamp(float(timestamp), timezone.utc).strftime('%Y/%m/%d %H:%M:%S UTC')
+
+
 def get_alerts_within_time(tframe, handled):
     con = connect_alert_db()
     ctime = int(time.time())
@@ -213,7 +219,8 @@ def get_alerts_within_time(tframe, handled):
                 cur.execute("select * from alerts where fseen > ? order by fseen desc", (str(ttime),))
             else:
                 cur.execute("select * from alerts where fseen > ? and handled = ? order by fseen desc", (str(ttime), handled))
-            res = cur.fetchall()
+            # Columns 2 and 3 hold the first and last seen timestamps.
+            res = [row[:2] + (format_utc_time(row[2]), format_utc_time(row[3])) + row[4:] for row in cur.fetchall()]
         except lite.OperationalError:
             res = ['none']
     con.close()
