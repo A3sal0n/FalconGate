@@ -75,24 +75,39 @@ table {
 	cursor: pointer;
 }
 
+/* Page layout
+-----------------------------------------------------------------------------*/
+.app {
+	box-sizing: border-box;
+	display: grid;
+	grid-template-areas:
+		"header header"
+		"menu content"
+		"footer footer";
+	grid-template-columns: 200px minmax(0, 1fr);
+	grid-template-rows: auto 1fr auto;
+	max-width: 1400px;
+	min-height: 100vh;
+	margin: 0 auto;
+	padding: 0 16px;
+}
+
 /* Menu
 -----------------------------------------------------------------------------*/
 .menu {
+	grid-area: menu;
 	border-bottom: 1px double #000000;
 	border-top: 1px solid #000000;
 	background-color: #282830;
-	width: 200px;
-	vertical-align: top;
 }
 
 ul.vert-one{margin:0;padding:0;list-style-type:none;display:block;
-	font:bold 16px Helvetica, Verdana, Arial, sans-serif;line-height:165%;
-	width:200px;}
+	font:bold 16px Helvetica, Verdana, Arial, sans-serif;line-height:165%;}
 
 ul.vert-one li{margin:0;padding:0;border-top:0px solid #4D0000;}
 
 ul.vert-one li a{display:block;text-decoration:none;color:#fff;
-	background:#282830;padding:0 0 0 20px;width:180px;}
+	background:#282830;padding:0 0 0 20px;}
 
 ul.vert-one li a:hover{
 	background: #1dabb8 url("../images/vert-one_arrow.gif") no-repeat 0 9px;}
@@ -106,7 +121,9 @@ ul.vert-one li a.current:hover{
 
 /* Header
 -----------------------------------------------------------------------------*/
-.header {}
+.header {
+	grid-area: header;
+}
 
 #logout {
 	text-align: right;
@@ -118,18 +135,52 @@ ul.vert-one li a.current:hover{
 #header_text {
 	color: #585B50;
 	font-size: 50px;
+	line-height: 1.2;
 	padding-bottom: 10px;
 }
 
 /* Content
 -----------------------------------------------------------------------------*/
 .content {
+	grid-area: content;
 	background-color: #FFFFFF;
 	border-right: 1px double #000000;
 	border-bottom: 1px double #000000;
 	border-top: 1px double #000000;
-	padding-top: 5px;
-	padding-left: 10px;
+	padding: 5px 16px 16px;
+	/* Wide tables scroll inside the panel instead of stretching the page. */
+	overflow-x: auto;
+}
+
+.content input[type="text"],
+.content input[type="password"],
+.content textarea {
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
+/* Content - Network Statistics
+------------------*/
+.chart-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+	gap: 24px;
+	margin-top: 16px;
+}
+
+.chart-card {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	min-width: 0;
+}
+
+.chart-card h2 {
+	margin: 0 0 12px;
+}
+
+.chart-canvas {
+	position: relative;
 }
 
 .TFtable{
@@ -198,8 +249,60 @@ div.text-container {
 /* Footer
 -----------------------------------------------------------------------------*/
 .footer {
+	grid-area: footer;
 	font: 400 12px/1.5em sans-serif;
 	color: #585B50;
 	padding: 2px;
 	text-align: right;
+}
+
+/* Phones and small tablets
+-----------------------------------------------------------------------------*/
+@media (max-width: 900px) {
+	.app {
+		grid-template-areas:
+			"header"
+			"menu"
+			"content"
+			"footer";
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto 1fr auto;
+		padding: 0 8px;
+	}
+
+	#header_text {
+		font-size: 36px;
+	}
+
+	ul.vert-one {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	ul.vert-one li {
+		flex: 1 1 50%;
+	}
+
+	.content {
+		border-left: 1px double #000000;
+		padding: 5px 10px 12px;
+	}
+
+	.config-form,
+	.config-form tbody,
+	.config-form tr,
+	.config-form td {
+		display: block;
+		width: 100%;
+	}
+
+	.config-form td {
+		padding: 2px 0;
+	}
+
+	.config-form input[type="text"],
+	.config-form input[type="password"],
+	.config-form textarea {
+		width: 100%;
+	}
 }

@@ -158,22 +158,25 @@ var myChart = new Chart(ctx_nc, {
 	</select>
 </form>
 				
-<div class="container">
-  <h2>Data sent in the previous <?php echo $display; ?> (KB) - Top 10 destination countries</h2>
-  <div>
-    <canvas id="countriesDataSent"></canvas>
-  </div>
-<br>
-  <h2>Data received in the previous <?php echo $display; ?> (KB) - Top 10 source countries</h2>
-  <div>
-    <canvas id="countriesDataReceived"></canvas>
-  </div>
-<br>
-  <h2>Total number of connections in the previous <?php echo $display; ?> - Top 10 destination countries</h2>
-  <div>
-    <canvas id="countriesNumConn"></canvas>
-  </div>
-
+<div class="chart-grid">
+  <section class="chart-card">
+    <h2>Data sent in the previous <?php echo $display; ?> (KB) - Top 10 destination countries</h2>
+    <div class="chart-canvas">
+      <canvas id="countriesDataSent" width="400" height="400"></canvas>
+    </div>
+  </section>
+  <section class="chart-card">
+    <h2>Data received in the previous <?php echo $display; ?> (KB) - Top 10 source countries</h2>
+    <div class="chart-canvas">
+      <canvas id="countriesDataReceived" width="400" height="400"></canvas>
+    </div>
+  </section>
+  <section class="chart-card">
+    <h2>Total number of connections in the previous <?php echo $display; ?> - Top 10 destination countries</h2>
+    <div class="chart-canvas">
+      <canvas id="countriesNumConn" width="400" height="400"></canvas>
+    </div>
+  </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
