@@ -293,10 +293,13 @@ curl -s -X POST http://127.0.0.1:5000/api/v1.0/falcongate/status \
 # Last 20 FalconGate log lines
 curl -s -X POST http://127.0.0.1:5000/api/v1.0/falcongate/status \
   -H 'Content-Type: application/json' -d '{"target":"logs","log_count":20}'
+
+# CPU, memory and disk usage
+curl -s http://127.0.0.1:5000/api/v1.0/falcongate/system/health
 ```
 
 ✅ Each returns HTTP 200 with a JSON body (devices array, network object, alert
-list, or log lines).
+list, log lines, or system health).
 
 ---
 

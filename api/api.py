@@ -7,6 +7,7 @@ from flask import Response
 import threading
 import json
 import lib.utils as utils
+import lib.system_health as system_health
 from lib.logger import *
 from lib.settings import homenet, lock, country_stats
 
@@ -84,6 +85,21 @@ class FlaskAPI(threading.Thread):
                 return resp
             else:
                 abort(400)
+        except Exception as e:
+            log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
+            resp = Response()
+            resp.status_code = 500
+            return resp
+
+    @staticmethod
+    @app.route('/api/v1.0/falcongate/system/health', methods=['GET'])
+    def get_system_health():
+        try:
+            resp = Response()
+            resp.data = json.dumps(system_health.get_system_health())
+            resp.status_code = 200
+            resp.mimetype = "application/json"
+            return resp
         except Exception as e:
             log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
             resp = Response()
