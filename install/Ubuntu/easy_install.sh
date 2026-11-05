@@ -146,7 +146,8 @@ installRequirements() {
 
   apt-get update
   apt-get install -y software-properties-common
-  add-apt-repository -y ppa:shevchuk/dnscrypt-proxy
+  # dnscrypt-proxy and hydra are in the universe component.
+  add-apt-repository -y universe
 
   apt-get update && apt-get upgrade -y
 

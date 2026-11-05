@@ -25,7 +25,6 @@ production host.
   in `lib/utils.py`. The installer assumes a standard Debian install that uses
   ifupdown; on a cloud image that uses `systemd-networkd` or cloud-init you will
   need to disable those first.
-- **No PPA**: dnscrypt-proxy is installed from Debian's own repositories.
 - **PHP-FPM** version differs by release (8.2 on bookworm, 8.4 on trixie), so the
   installer detects the installed version and points nginx at the correct
   `/run/php/phpX.Y-fpm.sock` socket automatically.
