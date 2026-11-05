@@ -4,19 +4,17 @@ replace the system Python. This Debian installer is a port of the Ubuntu one; it
 has not yet been validated on a Debian server, so treat the listed OS and Python
 versions as the target, not a tested-support claim.
 
-Debian is a reasonable choice for a long-lived appliance because its kernel
-changes far less often than Ubuntu's, which reduces the risk of a kernel update
-breaking the out-of-tree PF_RING capture module. To make that safe regardless,
-this installer builds the **PF_RING kernel module through DKMS**, so it is
-rebuilt automatically whenever the kernel is upgraded (as long as the matching
-`linux-headers` package is installed, which the `linux-headers-<arch>` meta
-package ensures).
+Zeek is not in Debian's stable repositories, so the installer adds the Zeek
+project's repository on the openSUSE Build Service (`security:zeek`) and installs
+the `zeek-8.0` LTS package to `/opt/zeek`. Later Zeek 8.0 patch releases arrive
+through apt. Zeek captures packets with its built-in **AF_PACKET** support, which
+needs no out-of-tree kernel module, so kernel upgrades don't affect capture.
 
 Run `easy_install.sh` from a Debian 12/13 installation with two active network
 interfaces and at least 5 GiB of free disk space. The script installs system
-packages, builds Python, Zeek, and PF_RING, configures networking, and reboots
-system services. Review the script and its network configuration before running
-it on a production host.
+packages including Zeek, builds Python, configures networking, and reboots system
+services. Review the script and its network configuration before running it on a
+production host.
 
 ## Differences from the Ubuntu installer
 
@@ -33,7 +31,6 @@ it on a production host.
   `/run/php/phpX.Y-fpm.sock` socket automatically.
 - **DNS**: `/etc/resolv.conf` is pointed directly at dnscrypt-proxy
   (`127.0.2.1`); systemd-resolved is disabled only if it happens to be present.
-- **PF_RING kernel module** is installed via DKMS.
 
 ## WAN/LAN interface detection
 

@@ -9,7 +9,7 @@ same; only a few distro-specific details differ (called out inline), chiefly the
 PHP-FPM service name and the networking backend (Ubuntu uses netplan, Debian uses
 ifupdown / `/etc/network/interfaces`).
 
-Work through the sections in order. The earlier components (PF_RING, Zeek,
+Work through the sections in order. The earlier components (packet capture, Zeek,
 dnsmasq, dnscrypt-proxy) are the foundation the detection logic is built on, so
 confirming them first makes later failures easier to diagnose.
 
@@ -61,60 +61,36 @@ ss -tulpn
 
 ---
 
-## 1. PF_RING (packet capture driver)
+## 1. Packet capture (Zeek AF_PACKET)
 
-Zeek captures traffic through the PF_RING kernel module. If it is not loaded,
-Zeek sees no packets and no detection works.
-
-```bash
-# Kernel module loaded?
-lsmod | grep pf_ring
-cat /proc/net/pf_ring/info
-
-# Loads automatically on boot?
-grep pf_ring /etc/modules
-```
-
-✅ `lsmod` lists `pf_ring`, `/proc/net/pf_ring/info` prints version/stats, and
-`/etc/modules` contains the `pf_ring` line.
-
-If the module is missing:
+Zeek captures traffic with its built-in AF_PACKET support, which needs no extra
+kernel module. If capture is misconfigured, Zeek sees no packets and no detection
+works.
 
 ```bash
-sudo modprobe pf_ring
+# Built-in AF_PACKET plugin available?
+/opt/zeek/bin/zeek -N Zeek::AF_Packet
+
+# Workers configured to capture through it?
+grep -E '^(interface|lb_method|lb_procs)=' /opt/zeek/etc/node.cfg
+
+# Zeek workers holding packet sockets?
+sudo ss --packet --processes | grep zeek
 ```
 
-### 1a. DKMS — the module survives kernel upgrades
+✅ `zeek -N` lists `Zeek::AF_Packet`, `node.cfg` shows
+`interface=af_packet::<IFACE0>` and `lb_method=custom`, and `ss` shows packet
+sockets owned by `zeek` once Zeek is running.
 
-The installer builds PF_RING through **DKMS** so the module is rebuilt
-automatically whenever the kernel is updated. Verify it is registered and built
-for the kernel you are running:
+Zeek is installed as an apt package from the Zeek project's repository. Confirm
+the package and its source:
 
 ```bash
-dkms status pfring
-uname -r
+apt-cache policy zeek-8.0
 ```
 
-✅ `dkms status` shows a line like
-`pfring/9.4.0, <kernel-version>, x86_64: installed`, and `<kernel-version>`
-matches the output of `uname -r`.
-
-This is the single most important check to repeat **after any kernel upgrade and
-reboot** — it is the failure mode that silently stops all detection. If after a
-reboot `lsmod | grep pf_ring` is empty, or `dkms status` lists the module only
-for an older kernel, the headers for the new kernel were missing when DKMS tried
-to rebuild it. Install them and rebuild:
-
-```bash
-sudo apt-get install -y "linux-headers-$(uname -r)"
-sudo dkms autoinstall
-sudo modprobe pf_ring
-```
-
-> Applies to both the Ubuntu and Debian installs (both use DKMS). It matters most
-> on Ubuntu, whose kernel is updated frequently; to reduce surprise reboots
-> breaking capture, you can hold the kernel (`sudo apt-mark hold "linux-image-*"`)
-> and apply kernel updates deliberately, re-running this check afterwards.
+✅ The installed version is listed with a
+`download.opensuse.org/repositories/security:/zeek` source.
 
 ---
 
@@ -498,7 +474,7 @@ email is delivered.
 
 | Symptom | First thing to check |
 |---|---|
-| No detections at all | PF_RING loaded (§1) and Zeek logs growing (§2) |
+| No detections at all | AF_PACKET capture configured (§1) and Zeek logs growing (§2) |
 | Clients get no DNS / no IP | dnsmasq running, `IP0` listener, DHCP range (§3) |
 | DNS works but not encrypted | dnscrypt-proxy on `127.0.2.1` (§4) |
 | Blocked IPs still reachable | ipset sets populated + iptables rules loaded (§5) |

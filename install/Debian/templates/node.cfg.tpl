@@ -17,6 +17,6 @@ host=localhost
 [worker-1]
 type=worker
 host=localhost
-interface=IFACE0
-lb_method=pf_ring
+interface=af_packet::IFACE0
+lb_method=custom
 lb_procs=2

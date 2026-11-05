@@ -149,7 +149,7 @@ installRequirements() {
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install -y cmake make gcc g++ flex bison libpcap-dev libssl-dev libffi-dev dialog swig zlib1g-dev libgeoip-dev build-essential libelf-dev dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev libnl-3-dev libnl-genl-3-dev python3 python3-dev python3-git python3-semantic-version cppzmq-dev libkrb5-dev libmaxminddb-dev dkms ifupdown "linux-headers-$(uname -r)" "linux-headers-$(dpkg --print-architecture)"
+  apt-get install -y make gcc g++ libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3 ifupdown
 }
 
 installPython() {
@@ -185,10 +185,9 @@ installPython() {
 # Exit if any error is detected
 set -e
 
-# Pinned versions of third-party components built from source.
-# Bump deliberately after testing; upstream development branches break the build.
-PF_RING_VERSION="9.4.0"   # https://github.com/ntop/PF_RING/releases
-ZEEK_VERSION="v8.0.11"    # LTS series, https://github.com/zeek/zeek/releases
+# Zeek package to install. The X.0 packages track an LTS series and receive its
+# patch releases through apt; change series deliberately after testing.
+ZEEK_PACKAGE="zeek-8.0"   # https://docs.zeek.org/en/lts/install.html
 
 # Check if script is running with root privs
 if [ "$(whoami)" != "root" ]; then
@@ -325,85 +324,23 @@ sleep 3
 /opt/fg/bin/python -m pip install --upgrade tzupdate
 /opt/fg/bin/tzupdate
 
-echo "Installing PF_RING from source..."
+echo "Installing Zeek from the Zeek project's package repository..."
 sleep 3
 
-git clone --branch "${PF_RING_VERSION}" --depth 1 https://github.com/ntop/PF_RING.git
+# Zeek is not available in the Debian stable repositories, so it comes from the
+# repository the Zeek project publishes on the openSUSE Build Service. Its key is
+# trusted for this repository only (signed-by). Packet capture uses Zeek's built-in
+# AF_PACKET support, which needs no kernel module (see templates/node.cfg.tpl).
+ZEEK_REPO_URL="https://download.opensuse.org/repositories/security:/zeek/Debian_${VERSION_ID}"
+ZEEK_REPO_KEY="/usr/share/keyrings/security_zeek.gpg"
 
-# Build and install the PF_RING userland library, libpcap and tcpdump under
-# /opt/PF_RING. These are independent of the kernel module.
-cd PF_RING/userland
+curl -fsSL "${ZEEK_REPO_URL}/Release.key" -o /tmp/security_zeek.key
+gpg --batch --yes --dearmor -o "${ZEEK_REPO_KEY}" /tmp/security_zeek.key
+rm -f /tmp/security_zeek.key
+echo "deb [signed-by=${ZEEK_REPO_KEY}] ${ZEEK_REPO_URL}/ /" > /etc/apt/sources.list.d/security_zeek.list
 
-make
-
-cd lib/
-
-./configure --prefix=/opt/PF_RING
-
-make install
-
-cd ../libpcap
-
-./configure --prefix=/opt/PF_RING/
-
-make install
-
-cd ../tcpdump
-
-./configure --prefix=/opt/PF_RING/
-
-make install
-
-cd /opt
-
-# Install the PF_RING kernel module through DKMS so it is rebuilt automatically
-# on every kernel upgrade. Without DKMS, a kernel update leaves the previously
-# compiled module unable to load, which silently stops packet capture - and
-# therefore all detection - after the next reboot.
-PFRING_DKMS_SRC="/usr/src/pfring-${PF_RING_VERSION}"
-rm -rf "${PFRING_DKMS_SRC}"
-cp -a /opt/PF_RING/kernel "${PFRING_DKMS_SRC}"
-
-cat > "${PFRING_DKMS_SRC}/dkms.conf" <<DKMS
-PACKAGE_NAME="pfring"
-PACKAGE_VERSION="${PF_RING_VERSION}"
-BUILT_MODULE_NAME[0]="pf_ring"
-DEST_MODULE_LOCATION[0]="/updates"
-AUTOINSTALL="yes"
-MAKE[0]="make -C /lib/modules/\${kernelver}/build M=\${dkms_tree}/pfring/${PF_RING_VERSION}/build modules"
-CLEAN="make -C /lib/modules/\${kernelver}/build M=\${dkms_tree}/pfring/${PF_RING_VERSION}/build clean"
-DKMS
-
-# Register, build and install the module for the running kernel. Future kernels
-# are handled automatically by DKMS (AUTOINSTALL) as long as their headers are
-# present (installed via the linux-headers-<arch> meta package).
-dkms remove -m pfring -v "${PF_RING_VERSION}" --all 2>/dev/null || true
-dkms add -m pfring -v "${PF_RING_VERSION}"
-dkms build -m pfring -v "${PF_RING_VERSION}"
-dkms install -m pfring -v "${PF_RING_VERSION}"
-
-modprobe pf_ring
-echo "pf_ring" >> /etc/modules
-
-echo "Installing Zeek from source..."
-sleep 3
-
-cd /tmp
-
-rm -rf /tmp/zeek
-git clone --branch "${ZEEK_VERSION}" --depth 1 --recursive https://github.com/zeek/zeek
-
-cd zeek/
-
-echo "Configuring and building Zeek..."
-echo "Sit back and relax because this can take some time :)"
-sleep 5
-
-./configure --with-pcap=/opt/PF_RING --prefix=/opt/zeek/
-
-make -j2
-
-make install
+apt-get update
+apt-get install -y "${ZEEK_PACKAGE}"
 
 echo "$PATH:/opt/zeek/bin" >/etc/environment
 

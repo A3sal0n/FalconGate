@@ -6,17 +6,16 @@ claim.
 
 Run `easy_install.sh` from an Ubuntu Server 24.04 installation with two active
 network interfaces and at least 5 GiB of free disk space. The script installs
-system packages, builds Python, Zeek, and PF_RING, configures networking, and
-reboots system services. Review the script and its network configuration before
-running it on a production host.
+system packages including Zeek, builds Python, configures networking, and reboots
+system services. Review the script and its network configuration before running
+it on a production host.
 
-The PF_RING kernel module is installed through **DKMS**, so it is rebuilt
-automatically on every kernel upgrade. This matters on Ubuntu because its kernel
-updates frequently; without DKMS a kernel bump would leave the previously
-compiled module unable to load and silently stop packet capture (and therefore
-all detection) after the next reboot. If you prefer a distribution with a more
-stable kernel, a Debian port of this installer is available under
-[`../Debian`](../Debian).
+Zeek is not in Ubuntu's stable repositories, so the installer adds the Zeek
+project's repository on the openSUSE Build Service (`security:zeek`) and installs
+the `zeek-8.0` LTS package to `/opt/zeek`. Later Zeek 8.0 patch releases arrive
+through apt. Zeek captures packets with its built-in **AF_PACKET** support, which
+needs no out-of-tree kernel module, so kernel upgrades don't affect capture. A
+Debian port of this installer is available under [`../Debian`](../Debian).
 
 After you select the two interfaces, the installer automatically detects which
 one has Internet access and uses it as the WAN (uplink, NAT'd). The other
