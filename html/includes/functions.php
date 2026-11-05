@@ -14,6 +14,8 @@ function login($uname, $password) {
         // Get the current user-agent string of the user
         $user_browser = $_SERVER['HTTP_USER_AGENT'];
         $_SESSION['ID'] = hash('sha512', $user_ip . $user_browser);
+        // Each login gets a new CSRF token.
+        unset($_SESSION['csrf_token']);
 
         return true;
     }else{
@@ -30,7 +32,8 @@ function login_check() {
     $user_browser = $_SERVER['HTTP_USER_AGENT'];
 
     $login_check = hash('sha512', $user_ip . $user_browser);
-    if ($_SESSION){
+    // Test for the ID itself: after logout the session can still hold a CSRF token.
+    if (isset($_SESSION['ID'])){
         if ($_SESSION['ID'] == $login_check){
             // Logged In!!!!
             return true;
@@ -44,6 +47,30 @@ function login_check() {
     }
 }
 
+
+function csrf_token() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . csrf_token() . '">';
+}
+
+// Stops the request unless it is a POST carrying this session's CSRF token.
+function require_csrf_token() {
+    $sent = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    $expected = isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : '';
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !is_string($sent) || $expected === ''
+        || !hash_equals($expected, $sent)) {
+        http_response_code(403);
+        echo ("<p><span class=error_message>This request could not be verified. Please return to the page and try again.</span></p>");
+        exit(0);
+    }
+}
 
 function esc_url($url) {
 

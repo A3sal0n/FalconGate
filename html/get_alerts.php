@@ -62,19 +62,23 @@ function getShowLinkText(currentText) {
 
 </script>
 <script type="text/javascript">
+var csrfToken = <?php echo json_encode(csrf_token()); ?>;
+
 function submitMe(dbid, handled)
     {
-	   variableString = 'id=' + dbid + '&handled=' + handled;
        jQuery.ajax({
        type: "POST",
        url: "alerts_review.php",
-       data: variableString,
+       data: {id: dbid, handled: handled, csrf_token: csrfToken},
        success: function(msg){
-		 if(handled == 1) {  
+		 if(handled == 1) {
 			alert( "Event ID " + dbid +" have been reviewed!");
 		 } else {
-			 alert( "Event ID " + dbid +" have been unreviewed!"); 
+			 alert( "Event ID " + dbid +" have been unreviewed!");
 		 }
+       },
+       error: function(){
+		 alert( "Event ID " + dbid +" could not be updated. Reload the page and try again.");
        }
      });
     }

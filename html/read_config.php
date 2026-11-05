@@ -47,6 +47,7 @@ $config = new Config_Lite('user_config.ini');
         $tor_value = "value=0";
     }
     echo ('<form name="user_config" id="user_config" action="save_config.php" onsubmit="return ValidateInput();" method="post">
+           '.csrf_field().'
            <table class="config-form" width=95% halign=left>
            <tr align=left><td width=300 title="Your personal VirusTotal API key.">VirusTotal API key:</td><td><input type=text size=71 name="vt_key" value='.$config['main']['vt_api_key'].'></td></tr>
            <tr align=left><td width=300 title="This is the list of recipients for the email alerts sent by Falcongate.">Alert recipients:</td><td><input type=text size=71 name="dst_emails" value='.$config['main']['dst_emails'].'></td></tr>

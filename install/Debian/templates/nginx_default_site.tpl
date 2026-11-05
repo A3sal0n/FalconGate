@@ -32,7 +32,7 @@ server {
                   try_files $uri =404;
                   include fastcgi_params;
           }	
-location ~ /(\.|pwd.db|readme.html|license.txt)
+location ~ /(\.|pwd.db|user_config\.ini|readme.html|license.txt)
 {
         deny all;
 }

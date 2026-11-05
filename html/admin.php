@@ -43,17 +43,20 @@ echo ('<script type="text/javascript">
 
 <h3>Admin actions</h3>
     <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return checkForm();">
+           '.csrf_field().'
            <table width=60% halign=left>
            <tr align=left><td>Set new admin password:</td><td><input type="password" name="pwd" id="pwd" size="20" maxlength="20"></td><td><input class="config_button" type="submit" value="Update" name="update_pwd" id="update_pwd"></form></td></tr>
            </table>
 
     <br>
     <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return confirmFormSubmission();">
+           '.csrf_field().'
            <table width=40% halign=left>
            <tr align=left><td>Reboot device:</td><td><input class="config_button" type="submit" value="Reboot" name="reboot"></form></td></tr>
            </table>
     <br>
     <form name="admin_actions" action="admin_actions.php" method="post" onsubmit="return confirmFormSubmission();">
+           '.csrf_field().'
            <table width=35% halign=left>
            <tr align=left><td>Reset Falcongate:</td><td><input class="config_button" type="submit" value="Reset" name="reset"></form></td></tr>
            </table><br>');
