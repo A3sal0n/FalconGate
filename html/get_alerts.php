@@ -38,7 +38,7 @@ if (!$result){
 
 <?php if (count($alerts) > 0){ ?>
 <section class="config-card chart-card alerts-chart-card">
-    <div>
+    <div class="alerts-chart-heading">
         <h2>Alerts per day</h2>
         <p class="config-hint"><?php echo $periods[$period]; ?>, by the day each alert was first seen (UTC).<?php echo $filter != 'all' ? ' ' . $filters[$filter] . ' alerts only.' : ''; ?></p>
     </div>
@@ -182,6 +182,7 @@ if (!$result){
 <script>
 (function(){
     var days = <?php echo json_encode(count_alerts_per_day($alerts, $period_days[$period]), JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+    var peak = Math.max.apply(null, days.map(function(day){ return day.count; }).concat(1));
 
     new Chart(document.getElementById("alerts_per_day").getContext("2d"), {
         type: "bar",
@@ -191,8 +192,10 @@ if (!$result){
                 label: "Alerts",
                 data: days.map(function(day){ return day.count; }),
                 backgroundColor: "#1dabb8",
-                borderRadius: 4,
-                maxBarThickness: 48
+                borderRadius: 2,
+                barPercentage: 0.9,
+                categoryPercentage: 1,
+                maxBarThickness: 32
             }]
         },
         options: {
@@ -210,8 +213,16 @@ if (!$result){
                 }
             },
             scales: {
-                x: {grid: {display: false}, ticks: {maxRotation: 0, autoSkipPadding: 12}},
-                y: {beginAtZero: true, grid: {color: "#e3e6e7"}, ticks: {precision: 0}}
+                x: {grid: {display: false}, ticks: {maxRotation: 0, autoSkipPadding: 12, padding: 0, font: {size: 10}}},
+                // The strip is short, so the axis ends at the busiest day and only labels that and zero.
+                y: {
+                    min: 0,
+                    max: peak,
+                    border: {display: false},
+                    grid: {color: "#e3e6e7"},
+                    ticks: {font: {size: 10}},
+                    afterBuildTicks: function(axis){ axis.ticks = [{value: 0}, {value: peak}]; }
+                }
             }
         }
     });

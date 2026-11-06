@@ -473,13 +473,37 @@ div.text-container {
 
 /* Content - Recent Alerts
 ------------------*/
+/* A slim strip above the filters, so that the table stays the main content of the page. */
 .alerts-chart-card {
-	margin-bottom: 16px;
+	margin-bottom: 12px;
+	padding: 8px 12px;
+}
+
+.alerts-chart-heading {
+	align-items: baseline;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 10px;
+	margin-bottom: 4px;
+}
+
+.alerts-chart-card h2 {
+	border-bottom: 0;
+	font-size: 13px;
+	margin: 0;
+	padding: 0;
+}
+
+.alerts-chart-card .config-hint {
+	margin: 0;
 }
 
 .chart-canvas-alerts {
+	background: none;
+	border: 0;
 	box-sizing: border-box;
-	height: 240px;
+	height: 84px;
+	padding: 0;
 }
 
 .alerts-toolbar {
