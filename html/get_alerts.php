@@ -38,10 +38,6 @@ if (!$result){
 
 <?php if (count($alerts) > 0){ ?>
 <section class="config-card chart-card alerts-chart-card">
-    <div class="alerts-chart-heading">
-        <h2>Alerts per day</h2>
-        <p class="config-hint"><?php echo $periods[$period]; ?>, by the day each alert was first seen (UTC).<?php echo $filter != 'all' ? ' ' . $filters[$filter] . ' alerts only.' : ''; ?></p>
-    </div>
     <div class="chart-canvas chart-canvas-alerts">
         <canvas id="alerts_per_day" role="img" aria-label="Bar chart of the number of alerts per day"></canvas>
     </div>

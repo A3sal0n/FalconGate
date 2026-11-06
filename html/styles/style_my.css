@@ -479,25 +479,6 @@ div.text-container {
 	padding: 8px 12px;
 }
 
-.alerts-chart-heading {
-	align-items: baseline;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0 10px;
-	margin-bottom: 4px;
-}
-
-.alerts-chart-card h2 {
-	border-bottom: 0;
-	font-size: 13px;
-	margin: 0;
-	padding: 0;
-}
-
-.alerts-chart-card .config-hint {
-	margin: 0;
-}
-
 .chart-canvas-alerts {
 	background: none;
 	border: 0;
