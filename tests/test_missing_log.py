@@ -1,9 +1,14 @@
 import os
+import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from lib import logparser, system_health
+from lib import system_health
+
+# These tests don't use these packages, and they aren't installed in the CI job.
+with patch.dict(sys.modules, {name: MagicMock() for name in ('GeoIP', 'requests', 'user_agents')}):
+    from lib import logparser
 
 DAY = logparser.MISSING_LOG_NOTICE_SECONDS
 READERS = {
