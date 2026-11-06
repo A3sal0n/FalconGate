@@ -387,8 +387,10 @@ def update_alert_handled(alert_id, handled):
     with con:
         cur = con.cursor()
         cur.execute("update alerts set handled = ? where id = ?", (handled, alert_id))
+        updated = cur.rowcount > 0
     con.commit()
     con.close()
+    return json.dumps({'updated': updated})
 
 
 def get_active_devices():

@@ -69,6 +69,15 @@ class AlertTimeTests(unittest.TestCase):
         self.assertEqual(len(json.loads(utils.get_alerts_within_time(3600, '0'))), 1)
         self.assertEqual(json.loads(utils.get_alerts_within_time(3600, '1')), [])
 
+    def test_update_alert_handled_saves_and_reports_the_change(self):
+        self.add_alert(int(time.time()) - 60, int(time.time()) - 60)
+
+        self.assertEqual(json.loads(utils.update_alert_handled('1', '1')), {'updated': True})
+        self.assertEqual(len(json.loads(utils.get_alerts_within_time(3600, '1'))), 1)
+
+    def test_update_alert_handled_reports_an_alert_that_does_not_exist(self):
+        self.assertEqual(json.loads(utils.update_alert_handled('999', '1')), {'updated': False})
+
 
 if __name__ == '__main__':
     unittest.main()
