@@ -65,7 +65,7 @@ if (!$result){
     </section>
 </div>
 
-<script type="text/javascript" src="scripts/system_health.js"></script>
+<script type="text/javascript" src="<?php echo asset_url('scripts/system_health.js'); ?>"></script>
 
 <?php
 require 'templates/footer.html';
