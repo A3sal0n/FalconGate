@@ -36,8 +36,14 @@ class CheckConfigFileModification(threading.Thread):
                     homenet.fg_intel_creds = [u.strip().strip('"') for u in
                                               core_config.get('api_urls', 'fg_intel_creds').split(',')
                                               if u.strip()]
-                    homenet.fg_intel_domains = core_config.get('api_urls', 'fg_intel_domains').strip('"')
-                    homenet.fg_intel_ip = core_config.get('api_urls', 'fg_intel_ip').strip('"')
+                    try:
+                        homenet.fg_intel_domains = core_config.get('api_urls', 'fg_intel_domains').strip('"')
+                    except Exception:
+                        homenet.fg_intel_domains = None
+                    try:
+                        homenet.fg_intel_ip = core_config.get('api_urls', 'fg_intel_ip').strip('"')
+                    except Exception:
+                        homenet.fg_intel_ip = None
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')

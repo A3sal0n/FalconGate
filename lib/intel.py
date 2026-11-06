@@ -186,30 +186,34 @@ class DownloadIntel(threading.Thread):
     def retrieve_fg_intel(self):
         headers = {"User-Agent": "Mozilla/5.0"}
 
-        # Downloading the list of malicious IP addresses
-        try:
-            response = session.get(homenet.fg_intel_ip, headers=headers, verify=False)
-            rjson = response.json()
-            for threat in rjson.keys():
-                if threat == 'Tor' and homenet.allow_tor == 'true':
-                    pass
-                else:
-                    set1 = set(homenet.bad_ips[threat])
-                    set2 = set(rjson[threat])
-                    homenet.bad_ips[threat] = list(set1 | set2)
-        except Exception as e:
-            log.debug('FG-ERROR: There was an error while downloading the IP blacklist - ' + str(e))
+        # Downloading the list of malicious IP addresses (skipped unless a
+        # feed URL is configured)
+        if homenet.fg_intel_ip:
+            try:
+                response = session.get(homenet.fg_intel_ip, headers=headers, verify=False)
+                rjson = response.json()
+                for threat in rjson.keys():
+                    if threat == 'Tor' and homenet.allow_tor == 'true':
+                        pass
+                    else:
+                        set1 = set(homenet.bad_ips[threat])
+                        set2 = set(rjson[threat])
+                        homenet.bad_ips[threat] = list(set1 | set2)
+            except Exception as e:
+                log.debug('FG-ERROR: There was an error while downloading the IP blacklist - ' + str(e))
 
-        # Downloading the list of malicious domains
-        try:
-            response = session.get(homenet.fg_intel_domains, headers=headers, verify=False)
-            rjson = response.json()
-            for threat in rjson.keys():
-                set1 = set(homenet.bad_domains[threat])
-                set2 = set(rjson[threat])
-                homenet.bad_domains[threat] = list(set1 | set2)
-        except Exception as e:
-            log.debug('FG-ERROR: There was an error while downloading the domain blacklist - ' + str(e))
+        # Downloading the list of malicious domains (skipped unless a feed URL
+        # is configured)
+        if homenet.fg_intel_domains:
+            try:
+                response = session.get(homenet.fg_intel_domains, headers=headers, verify=False)
+                rjson = response.json()
+                for threat in rjson.keys():
+                    set1 = set(homenet.bad_domains[threat])
+                    set2 = set(rjson[threat])
+                    homenet.bad_domains[threat] = list(set1 | set2)
+            except Exception as e:
+                log.debug('FG-ERROR: There was an error while downloading the domain blacklist - ' + str(e))
 
     def retrieve_default_creds(self):
         # Download the SecLists default-credential lists, normalise each line
