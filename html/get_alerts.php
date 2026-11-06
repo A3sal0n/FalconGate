@@ -17,6 +17,7 @@ require 'templates/header.html';
 
 <?php
 $periods = array('alerts_week' => 'Last 7 days', 'alerts_month' => 'Last 30 days', 'alerts_all' => 'All time');
+$period_days = array('alerts_week' => 7, 'alerts_month' => 30, 'alerts_all' => null);
 $filters = array('all' => 'All', 'notreviewed' => 'Not reviewed', 'reviewed' => 'Reviewed');
 
 $period = isset($_GET['period']) && is_string($_GET['period']) && isset($periods[$_GET['period']]) ? $_GET['period'] : 'alerts_week';
@@ -34,6 +35,18 @@ if (!$result){
         $alerts = array();
     }
 ?>
+
+<?php if (count($alerts) > 0){ ?>
+<section class="config-card chart-card alerts-chart-card">
+    <div>
+        <h2>Alerts per day</h2>
+        <p class="config-hint"><?php echo $periods[$period]; ?>, by the day each alert was first seen (UTC).<?php echo $filter != 'all' ? ' ' . $filters[$filter] . ' alerts only.' : ''; ?></p>
+    </div>
+    <div class="chart-canvas chart-canvas-alerts">
+        <canvas id="alerts_per_day" role="img" aria-label="Bar chart of the number of alerts per day"></canvas>
+    </div>
+</section>
+<?php } ?>
 
 <div class="alerts-toolbar">
     <form action="" method="get">
@@ -161,6 +174,46 @@ if (!$result){
             .then(function(){
                 checkbox.disabled = false;
             });
+    });
+})();
+</script>
+
+<script src="scripts/chart-4.6.1.umd.min.js"></script>
+<script>
+(function(){
+    var days = <?php echo json_encode(count_alerts_per_day($alerts, $period_days[$period]), JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+
+    new Chart(document.getElementById("alerts_per_day").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: days.map(function(day){ return day.label; }),
+            datasets: [{
+                label: "Alerts",
+                data: days.map(function(day){ return day.count; }),
+                backgroundColor: "#1dabb8",
+                borderRadius: 4,
+                maxBarThickness: 48
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            // Hovering anywhere above a day shows its count, including days with no bar to point at.
+            interaction: {mode: "index", intersect: false},
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    displayColors: false,
+                    callbacks: {
+                        // The axis leaves out the year, so the tooltip gives the full date.
+                        title: function(items){ return days[items[0].dataIndex].date; }
+                    }
+                }
+            },
+            scales: {
+                x: {grid: {display: false}, ticks: {maxRotation: 0, autoSkipPadding: 12}},
+                y: {beginAtZero: true, grid: {color: "#e3e6e7"}, ticks: {precision: 0}}
+            }
+        }
     });
 })();
 </script>

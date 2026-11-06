@@ -201,6 +201,33 @@ function CallAPI($method, $url, $data = false, $timeout = 0)
     return $result;
 }
 
+// Counts alerts per UTC day, from the first day of the period through today, including days with
+// no alerts. A period of N days is a rolling window, so it touches N + 1 days. With no period, the
+// range starts at the oldest alert.
+function count_alerts_per_day($alerts, $period_days) {
+    $counts = array();
+    foreach ($alerts as $alert) {
+        // First seen, formatted by the API as "YYYY/MM/DD HH:MM:SS UTC".
+        $day = substr((string) $alert[2], 0, 10);
+        $counts[$day] = isset($counts[$day]) ? $counts[$day] + 1 : 1;
+    }
+    ksort($counts);
+
+    $today = strtotime(gmdate('Y/m/d') . ' UTC');
+    $first = $period_days === null ? strtotime(array_key_first($counts) . ' UTC') : $today - $period_days * 86400;
+
+    $days = array();
+    for ($day = $first; $day <= $today; $day += 86400) {
+        $key = gmdate('Y/m/d', $day);
+        $days[] = array(
+            'label' => gmdate('d/m', $day),
+            'date' => gmdate('d/m/Y', $day),
+            'count' => isset($counts[$key]) ? $counts[$key] : 0,
+        );
+    }
+    return $days;
+}
+
 function redirect($url)
 {
     $string = '<script type="text/javascript">';

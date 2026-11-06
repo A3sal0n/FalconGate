@@ -473,6 +473,15 @@ div.text-container {
 
 /* Content - Recent Alerts
 ------------------*/
+.alerts-chart-card {
+	margin-bottom: 16px;
+}
+
+.chart-canvas-alerts {
+	box-sizing: border-box;
+	height: 240px;
+}
+
 .alerts-toolbar {
 	align-items: center;
 	background: #f7f8f8;
