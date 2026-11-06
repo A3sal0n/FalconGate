@@ -22,7 +22,7 @@ ERROR_PRIORITY = 3
 # Most programs log errors at normal priority, including Falcongate, which logs FG-ERROR at debug
 # priority and whose Python tracebacks arrive through stderr. So the text is checked as well.
 ERROR_TEXT = re.compile(r'error|fatal|failed|failure|traceback|exception', re.IGNORECASE)
-NOT_AN_ERROR = re.compile(r'FG-(DEBUG|INFO|WARN)|\b(no|0) errors?\b', re.IGNORECASE)
+NOT_AN_ERROR = re.compile(r'FG-(DEBUG|INFO|NOTICE|WARN)|\b(no|0) errors?\b', re.IGNORECASE)
 
 # Oneshot services stay "active" after they exit, so Zeek also needs a running process.
 SERVICES = (

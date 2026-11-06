@@ -15,12 +15,39 @@ import hashlib
 import GeoIP
 from lib.settings import homenet, lock, top_domains
 
+MISSING_LOG_NOTICE_SECONDS = 86400
+
+
+class MissingLogTimer:
+    """Writes a notice when a Zeek log stays missing, and again every 24 hours until it returns.
+
+    Zeek removes each log at rotation and only recreates it when it next has something to write,
+    so a log being missing for a while is normal, especially on a quiet network.
+    """
+
+    def __init__(self, path):
+        self.path = path
+        self.missing_since = None
+
+    def found(self):
+        self.missing_since = None
+
+    def missing(self):
+        # Monotonic, so that the appliance's clock being set at boot can't trigger a notice.
+        now = time.monotonic()
+        if self.missing_since is None:
+            self.missing_since = now
+        elif now - self.missing_since > MISSING_LOG_NOTICE_SECONDS:
+            log.log(NOTICE, 'FG-NOTICE: ' + self.path + ' has been missing for more than 24 hours')
+            self.missing_since = now
+
 
 class ReadBroConn(threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.bro_conn_log_path = '/opt/zeek/spool/manager/conn.log'
+        self.missing_log = MissingLogTimer(self.bro_conn_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -75,6 +102,7 @@ class ReadBroConn(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_conn_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_conn_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -89,6 +117,9 @@ class ReadBroConn(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e))
             return False
@@ -147,6 +178,7 @@ class ReadBroDNS(threading.Thread):
         self.threadID = threadID
         self.tld_whitelist = ['local', 'test', 'localhost', 'example', 'invalid', 'arpa']
         self.bro_dns_log_path = '/opt/zeek/spool/manager/dns.log'
+        self.missing_log = MissingLogTimer(self.bro_dns_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -214,6 +246,7 @@ class ReadBroDNS(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_dns_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_dns_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -228,6 +261,9 @@ class ReadBroDNS(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e))
             return False
@@ -313,6 +349,7 @@ class ReadBroNotice(threading.Thread):
         self._cached_stamp = 0
         self.recorded = set()
         self.bro_notice_log_path = '/opt/zeek/spool/manager/notice.log'
+        self.missing_log = MissingLogTimer(self.bro_notice_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -371,6 +408,7 @@ class ReadBroNotice(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_notice_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_notice_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -385,6 +423,9 @@ class ReadBroNotice(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
             return False
@@ -399,6 +440,7 @@ class ReadBroFiles(threading.Thread):
         self.recorded = set()
         self.bro_file_path = '/opt/zeek/spool/manager/extract_files/'
         self.bro_files_log_path = '/opt/zeek/spool/manager/files.log'
+        self.missing_log = MissingLogTimer(self.bro_files_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -472,6 +514,7 @@ class ReadBroFiles(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_files_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_files_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -486,6 +529,9 @@ class ReadBroFiles(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e))
             return False
@@ -527,6 +573,7 @@ class ReadBroHTTP(threading.Thread):
         self.threadID = threadID
         self.target_mime_types = homenet.target_mime_types
         self.bro_http_log_path = '/opt/zeek/spool/manager/http.log'
+        self.missing_log = MissingLogTimer(self.bro_http_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -576,6 +623,7 @@ class ReadBroHTTP(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_http_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_http_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -590,6 +638,9 @@ class ReadBroHTTP(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e))
             return False
