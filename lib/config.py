@@ -42,6 +42,10 @@ class CheckConfigFileModification(threading.Thread):
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')
                     homenet.hibp_api_url = core_config.get('api_urls', 'hibp_api_url').strip('"')
+                    try:
+                        homenet.fg_premium_url = core_config.get('api_urls', 'fg_premium_url').strip('"')
+                    except Exception:
+                        homenet.fg_premium_url = None
 
                     for option in core_config.options('blacklists_ip'):
                         homenet.blacklist_sources_ip[option.capitalize()] = core_config.get('blacklists_ip', option).strip('"').split(',')
@@ -63,6 +67,10 @@ class CheckConfigFileModification(threading.Thread):
                     homenet.dst_emails = (user_config.get('main', 'dst_emails')).strip('"').split(",")
                     homenet.email_watchlist = (user_config.get('main', 'email_watchlist')).strip('"').split(",")
                     homenet.vt_api_key = user_config.get('main', 'vt_api_key').strip('"')
+                    try:
+                        homenet.fg_api_key = user_config.get('main', 'fg_api_key').strip('"')
+                    except Exception:
+                        homenet.fg_api_key = None
                     homenet.user_blacklist = (user_config.get('main', 'blacklist')).strip('"').split(",")
                     homenet.user_whitelist = (user_config.get('main', 'whitelist')).strip('"').split(",")
                     homenet.user_domain_blacklist = (user_config.get('main', 'domain_blacklist')).strip('"').split(",")

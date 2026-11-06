@@ -13,6 +13,7 @@ import json
 import sys
 import hashlib
 import GeoIP
+import lib.settings as settings
 from lib.settings import homenet, lock, top_domains
 
 MISSING_LOG_NOTICE_SECONDS = 86400
@@ -223,6 +224,16 @@ class ReadBroDNS(threading.Thread):
                                                 request.sip = fields["id.orig_h"]
                                                 request.qtype = qtype
                                                 request.qresult = rcode
+                                                # Flag lookups of domains on the
+                                                # detection blocklists (alert only,
+                                                # never blackholed). Skip anything
+                                                # on the top-domains whitelist.
+                                                dcat = settings.detect_domains.get(query)
+                                                if dcat is None and sld:
+                                                    dcat = settings.detect_domains.get(sld)
+                                                if dcat and sld not in top_domains:
+                                                    request.bad = True
+                                                    request.category = dcat
                                                 homenet.hosts[cip].dns[query] = request
                                             else:
                                                 homenet.hosts[cip].dns[query].lseen = float(fields["ts"])

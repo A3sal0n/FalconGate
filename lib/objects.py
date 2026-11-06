@@ -80,6 +80,7 @@ class DNSRequest:
         self.qtype = None
         self.qresult = None
         self.bad = False
+        self.category = None
         self.counter = 0
 
 
@@ -195,6 +196,9 @@ class Network:
         self.fg_intel_creds = []
         self.fg_intel_ip = None
         self.fg_intel_domains = None
+        # Premium (subscribed) threat-intel feed: authenticated endpoint + API key
+        self.fg_premium_url = None
+        self.fg_api_key = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None

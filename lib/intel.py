@@ -4,10 +4,12 @@ from lib.logger import *
 import os
 import shutil
 import time
+import gzip
 import re
 from datetime import datetime
 from lib.config import *
 import lib.utils as utils
+import lib.settings as settings
 from lib.settings import homenet, lock, top_domains
 
 # Reused across requests so TCP/TLS connections are pooled instead of a new
@@ -41,6 +43,18 @@ class DownloadIntel(threading.Thread):
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'default_creds.csv')
         self.creds_refresh_interval = 604800  # 7 days, in seconds
         self.last_creds_refresh = 0
+        # Detection-only domain blocklists (blocklistproject, public domain /
+        # Unlicense). These feed alerting only - they are never blackholed.
+        # Refreshed weekly from the plain-domain ("-nl") variants; the bundled
+        # gzip is the offline fallback. Category order sets precedence when a
+        # domain appears in several lists (worst first).
+        self.detect_base_url = 'https://raw.githubusercontent.com/blocklistproject/Lists/master/alt-version'
+        self.detect_categories = ['malware', 'ransomware', 'phishing', 'fraud', 'scam',
+                                  'abuse', 'crypto', 'drugs', 'gambling', 'vaping']
+        self.detect_seed = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'detect_domains.csv.gz')
+        self.detect_refresh_interval = 604800  # 7 days, in seconds
+        self.last_detect_refresh = 0
 
     def run(self):
         time.sleep(60)
@@ -65,6 +79,9 @@ class DownloadIntel(threading.Thread):
 
                 # Retrieving intel from Falcongate public API
                 self.retrieve_fg_intel()
+
+                # Retrieving intel from the premium (subscribed) feed, if enabled
+                self.retrieve_premium_intel()
 
                 for threat in homenet.bad_ips.keys():
                     for ip in homenet.bad_ips[threat]:
@@ -101,6 +118,17 @@ class DownloadIntel(threading.Thread):
                     or not os.path.isfile(self.creds_file):
                 if self.retrieve_default_creds():
                     self.last_creds_refresh = now
+
+            # Refresh the detection-only domain blocklists about once a week, and
+            # whenever the in-memory map is empty (e.g. just after start). Done
+            # outside the lock: it rebinds settings.detect_domains atomically and
+            # building the multi-million-entry map must not block other threads.
+            # On failure last_detect_refresh is left unchanged so the next 4h
+            # cycle retries until a download succeeds.
+            if (now - self.last_detect_refresh) >= self.detect_refresh_interval \
+                    or not settings.detect_domains:
+                if self.refresh_detect_domains():
+                    self.last_detect_refresh = now
 
             time.sleep(14400)
 
@@ -233,6 +261,98 @@ class DownloadIntel(threading.Thread):
             except Exception as e:
                 log.debug('FG-ERROR: Could not seed default credentials from ' + self.creds_seed + ' - ' + str(e))
         return False
+
+    def load_detect_seed(self):
+        # Load the bundled gzipped blocklistproject lists ("domain,category" per
+        # line) into a fresh {domain: category} map and rebind it atomically.
+        # Used as the offline fallback when the remote refresh fails.
+        dmap = {}
+        try:
+            with gzip.open(self.detect_seed, 'rt', encoding='utf-8', errors='replace') as fin:
+                for line in fin:
+                    domain, _, category = line.strip().partition(',')
+                    if domain and category:
+                        dmap[domain] = category
+            settings.detect_domains = dmap
+            log.debug('FG-INFO: Loaded detection domains from bundled seed - ' + str(len(dmap)) + ' entries')
+            return True
+        except Exception as e:
+            log.debug('FG-ERROR: Could not load detection seed ' + self.detect_seed + ' - ' + str(e))
+            return False
+
+    def download_detect_domains(self):
+        # Download the plain-domain blocklistproject lists for each category and
+        # build a {domain: category} map. Categories are processed worst-first so
+        # a domain listed in several keeps its most severe category. Returns the
+        # map on success, or None if nothing could be downloaded.
+        dmap = {}
+        downloaded = False
+        for category in self.detect_categories:
+            url = self.detect_base_url + '/' + category + '-nl.txt'
+            try:
+                response = session.get(url, headers=self.headers, verify=False)
+                if response.status_code == 200 and response.text:
+                    downloaded = True
+                    for line in response.text.splitlines():
+                        domain = line.strip()
+                        if not domain or domain.startswith('#'):
+                            continue
+                        if domain not in dmap:
+                            dmap[domain] = category
+            except Exception as e:
+                log.debug('FG-ERROR: Error while downloading detection domains from ' + url + ' - ' + str(e))
+        if downloaded and dmap:
+            return dmap
+        return None
+
+    def refresh_detect_domains(self):
+        # Refresh the detection blocklist. Frees the current map before building
+        # the new one so memory does not spike to ~2x the (multi-million entry)
+        # map. Falls back to the bundled seed when the remote is unreachable.
+        # Returns True only when a fresh remote copy was loaded.
+        if settings.detect_domains:
+            settings.detect_domains = {}
+        dmap = self.download_detect_domains()
+        if dmap:
+            settings.detect_domains = dmap
+            log.debug('FG-INFO: Refreshed detection domains - ' + str(len(dmap)) + ' entries')
+            return True
+        # Remote failed: make sure detection still has data to work with.
+        if not settings.detect_domains:
+            self.load_detect_seed()
+        return False
+
+    def retrieve_premium_intel(self):
+        # Pull the premium (subscribed) threat-intel feed from the authenticated
+        # endpoint using the account API key. The endpoint is expected to return
+        # JSON of the form {"ips": {category: [...]}, "domains": {category: [...]}}.
+        # Entries are merged into the existing blacklists (same semantics as the
+        # public FalconGate feed). No-op when no key/URL is configured. Must be
+        # called while holding the lock (it mutates the shared blacklists).
+        if not homenet.fg_api_key or not homenet.fg_premium_url:
+            return
+        headers = dict(self.headers)
+        headers['Authorization'] = 'Bearer ' + homenet.fg_api_key
+        try:
+            response = session.get(homenet.fg_premium_url, headers=headers, verify=False)
+            if response.status_code in (401, 403):
+                log.debug('FG-ERROR: Premium feed rejected the API key (HTTP ' + str(response.status_code) + ')')
+                return
+            if response.status_code != 200:
+                log.debug('FG-ERROR: Premium feed returned HTTP ' + str(response.status_code))
+                return
+            rjson = response.json()
+        except Exception as e:
+            log.debug('FG-ERROR: There was an error while downloading the premium feed - ' + str(e))
+            return
+
+        for threat, values in rjson.get('ips', {}).items():
+            if threat in homenet.bad_ips:
+                homenet.bad_ips[threat] = list(set(homenet.bad_ips[threat]) | set(values))
+        for threat, values in rjson.get('domains', {}).items():
+            if threat in homenet.bad_domains:
+                homenet.bad_domains[threat] = list(set(homenet.bad_domains[threat]) | set(values))
+        log.debug('FG-INFO: Merged premium threat intel feed')
 
 
 class CheckVirusTotalIntel(threading.Thread):

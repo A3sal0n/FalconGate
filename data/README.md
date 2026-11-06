@@ -28,7 +28,44 @@ normalisation used at runtime (`DownloadIntel.retrieve_default_creds` in
 `lib/intel.py`): trim whitespace, drop blank and `#` comment lines, prefix a
 colon to any colon-less line, and drop duplicates.
 
+## detect_domains.csv.gz
+
+A gzipped, deduplicated map of domains to a threat category, one `domain,category`
+per line. Used for **detection/alerting only** — these domains are **never**
+blackholed (unlike the `[blacklists_domain]` feeds). At runtime `lib/intel.py`
+(`DownloadIntel.refresh_detect_domains`) refreshes the map about once a week from
+the upstream blocklistproject plain-domain lists and holds it in memory
+(`settings.detect_domains`); a DNS lookup of a listed domain flags that lookup and
+raises a "bad domain" alert tagged with its category. This bundled gzip is the
+offline fallback used when the upstream lists cannot be downloaded.
+
+### Source and format
+
+Built from the `alt-version/<category>-nl.txt` lists of the blocklistproject
+repository, for these categories (processed worst-first, so a domain appearing in
+several lists keeps its most severe category):
+
+`malware, ransomware, phishing, fraud, scam, abuse, crypto, drugs, gambling, vaping`
+
+To rebuild: download each `<category>-nl.txt`, drop blank/`#` lines, emit
+`domain,category`, dedupe by domain keeping the first (worst-first) occurrence,
+and gzip.
+
 ## Attribution
+
+The detection domain lists are from the **blocklistproject** project
+(https://github.com/blocklistproject/Lists), released into the public domain under
+the **Unlicense**:
+
+```
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
+
+For more information, please refer to <https://unlicense.org/>
+```
 
 The credential lists are from the SecLists project
 (https://github.com/danielmiessler/SecLists), redistributed here under its

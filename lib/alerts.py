@@ -137,11 +137,14 @@ class MinuteAlerts(threading.Thread):
             time.sleep(60)
 
     def create_bad_domain_alert(self, src, dst):
+        category = homenet.hosts[src].dns[dst].category
         description = 'This host was detected trying to resolve the IP address of a domain ' \
-                      'which has recent Malware history according to VirusTotal and/or the ' \
-                      'local Falcongate blacklist. This could be an indicator of the presence ' \
-                      'of Malware on this host.'
+                      'flagged by VirusTotal, the FalconGate premium feed, and/or the bundled ' \
+                      'detection blocklists. This could indicate the presence of Malware or ' \
+                      'other unwanted/abusive activity on this host.'
         indicators = homenet.hosts[src].dns[dst].query
+        if category:
+            indicators = 'Category: ' + category + '|' + indicators
         reference = 'https://www.virustotal.com/en/domain/' + homenet.hosts[src].dns[dst].query + '/information/'
         a = [0, 'malware', self.ctime, self.ctime, 0, 0, 'Malware', src, indicators, 0, description, reference]
         alert_id = utils.add_alert_to_db(a)

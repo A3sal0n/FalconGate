@@ -40,6 +40,14 @@ good_ips = []
 global top_domains
 top_domains = get_top_domains("db/top_domains.sqlite")
 
+# Detection-only domain blocklist (blocklistproject): {domain: category}.
+# Used to flag DNS lookups for alerting (never blackholed). Populated and
+# atomically rebound by lib.intel; access it as settings.detect_domains so
+# readers always see the current map after a refresh. Kept here (not on the
+# pickled Network object) so the multi-million-entry map is never pickled.
+global detect_domains
+detect_domains = {}
+
 # Master thread list
 global threads
 threads = {}
