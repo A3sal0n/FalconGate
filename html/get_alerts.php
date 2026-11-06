@@ -100,28 +100,32 @@ if (!$result){
         </tr>
         <tr class="alert-details" id="alert_details_<?php echo $id; ?>" hidden>
             <td colspan="7">
-                <dl>
-                    <dt>Alert ID</dt><dd><?php echo $id; ?></dd>
-                    <dt>Threat category</dt><dd><?php echo esc_html($alert[6]); ?></dd>
-                    <dt>Source</dt><dd><?php echo esc_html($alert[7]); ?></dd>
-                    <dt>First seen</dt><dd><?php echo esc_html($alert[2]); ?></dd>
-                    <dt>Last seen</dt><dd><?php echo esc_html($alert[3]); ?></dd>
-                    <dt>Indicators</dt>
-                    <dd>
-                        <ul>
+                <div class="alert-panel">
+                    <div>
+                        <h3 class="alert-panel-label">What this means</h3>
+                        <p class="alert-panel-text"><?php echo esc_html(strip_tags((string) $alert[10])); ?></p>
+                        <p class="alert-panel-meta">
+                            <?php if (preg_match('#^https?://#i', $reference)){ ?>
+                            <a href="<?php echo esc_html($reference); ?>" target="_blank" rel="noopener noreferrer" title="<?php echo esc_html($reference); ?>">Read more on <?php echo esc_html(parse_url($reference, PHP_URL_HOST) ?: $reference); ?> <span aria-hidden="true">&#8599;</span></a>
+                            <?php }elseif ($reference !== ''){ ?>
+                            <span><?php echo esc_html($reference); ?></span>
+                            <?php } ?>
+                            <span>Alert #<?php echo $id; ?></span>
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="alert-panel-label">Indicators <span class="alert-panel-count"><?php echo count($indicators); ?></span></h3>
+                        <?php if (count($indicators) == 0){ ?>
+                        <p class="alert-panel-text">None recorded.</p>
+                        <?php }else{ ?>
+                        <ul class="alert-chips" tabindex="0" aria-label="Indicators for alert <?php echo $id; ?>">
                             <?php foreach ($indicators as $indicator){ ?>
                             <li><?php echo esc_html($indicator); ?></li>
                             <?php } ?>
                         </ul>
-                    </dd>
-                    <dt>Description</dt><dd><?php echo esc_html(strip_tags((string) $alert[10])); ?></dd>
-                    <dt>Reference</dt>
-                    <dd>
-                        <?php if (preg_match('#^https?://#i', $reference)){ ?>
-                        <a href="<?php echo esc_html($reference); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($reference); ?></a>
-                        <?php }else{ echo esc_html($reference); } ?>
-                    </dd>
-                </dl>
+                        <?php } ?>
+                    </div>
+                </div>
             </td>
         </tr>
     <?php } ?>

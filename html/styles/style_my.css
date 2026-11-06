@@ -624,25 +624,67 @@ div.text-container {
 	padding: 12px 16px;
 }
 
-.alert-details dl {
+.alert-panel {
+	border-left: 3px solid #1dabb8;
 	display: grid;
-	gap: 6px 16px;
-	grid-template-columns: max-content minmax(0, 1fr);
-	margin: 0;
+	gap: 12px 28px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	padding-left: 14px;
 }
 
-.alert-details dt {
-	font-weight: bold;
+.alert-panel-label {
+	color: #5b6163;
+	font-size: 11px;
+	letter-spacing: 0.05em;
+	margin: 0 0 6px;
+	text-transform: uppercase;
 }
 
-.alert-details dd {
+.alert-panel-count {
+	background: #dcdfe0;
+	border-radius: 8px;
+	color: #33383a;
+	font-size: 11px;
+	letter-spacing: 0;
+	padding: 0 6px;
+}
+
+.alert-panel-text {
+	line-height: 1.45;
 	margin: 0;
 	overflow-wrap: anywhere;
 }
 
-.alert-details ul {
+.alert-panel-meta {
+	color: #5b6163;
+	display: flex;
+	flex-wrap: wrap;
+	font-size: 12px;
+	gap: 4px 16px;
+	margin: 8px 0 0;
+}
+
+/* Long lists, such as the domains of a DGA alert, scroll instead of stretching the page. */
+.alert-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	list-style: none;
 	margin: 0;
-	padding-left: 18px;
+	max-height: 120px;
+	overflow-y: auto;
+	padding: 0;
+}
+
+.alert-chips li {
+	background: #ffffff;
+	border: 1px solid #dcdfe0;
+	border-radius: 4px;
+	font-family: Consolas, Menlo, monospace;
+	font-size: 12px;
+	min-width: 0;
+	overflow-wrap: anywhere;
+	padding: 1px 6px;
 }
 
 .visually-hidden {
@@ -1099,11 +1141,7 @@ div.text-container {
 		text-align: right;
 	}
 
-	.alert-details dl {
+	.alert-panel {
 		grid-template-columns: minmax(0, 1fr);
-	}
-
-	.alert-details dd {
-		margin-bottom: 6px;
 	}
 }
