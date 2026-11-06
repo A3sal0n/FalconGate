@@ -192,7 +192,7 @@ class Network:
         self.vt_api_key = None
         self.dst_emails = None
         self.email_watchlist = []
-        self.fg_intel_creds = None
+        self.fg_intel_creds = []
         self.fg_intel_ip = None
         self.fg_intel_domains = None
         self.vt_api_domain_url = None

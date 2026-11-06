@@ -101,14 +101,17 @@ class ScheduledScans(threading.Thread):
                         homenet.hosts[tip].vuln_accounts.append(new_issue)
                     self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], groups[0][4])
                 else:
-                    groups = re.findall(self.hydra_regex1, line.strip())
+                    # Empty-password hits: Hydra logs these without a "password:"
+                    # field, so they are matched by hydra_regex2 (4 groups, no
+                    # password) rather than hydra_regex1.
+                    groups = re.findall(self.hydra_regex2, line.strip())
                     if groups:
                         with lock:
                             new_issue = DefaultCredentials()
                             new_issue.service = groups[0][1]
                             new_issue.port = groups[0][0]
                             new_issue.user = groups[0][3]
-                            new_issue.password = groups[0][4]
+                            new_issue.password = ''
                             homenet.hosts[tip].vuln_accounts.append(new_issue)
                         self.create_default_creds_alert('default_creds', tip, groups[0][1], groups[0][3], '<EMPTY>')
         except Exception as e:

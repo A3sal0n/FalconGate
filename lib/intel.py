@@ -1,6 +1,9 @@
 import threading
 import requests
 from lib.logger import *
+import os
+import shutil
+import time
 import re
 from datetime import datetime
 from lib.config import *
@@ -30,6 +33,14 @@ class DownloadIntel(threading.Thread):
         self.headers = {'User-Agent': 'Mozilla/5.0'}
         self.all_ips = set()
         self.all_domains = set()
+        # Hydra default-credentials list: refreshed weekly from the remote
+        # SecLists lists, with a bundled seed used until the first download
+        # succeeds (or whenever the remote is unreachable).
+        self.creds_file = '/tmp/default_creds.csv'
+        self.creds_seed = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'default_creds.csv')
+        self.creds_refresh_interval = 604800  # 7 days, in seconds
+        self.last_creds_refresh = 0
 
     def run(self):
         time.sleep(60)
@@ -80,6 +91,16 @@ class DownloadIntel(threading.Thread):
                 # Blocking IP addresses from threat intel open sources it's disabled by default. Remove the comment in the line below to enable at your own risk :)
                 #self.configure_ipset()
                 self.configure_dnsmasq()
+
+            # Refresh the Hydra default-credentials list about once a week, and
+            # whenever the file is missing (e.g. after a reboot clears /tmp). On
+            # failure last_creds_refresh is left unchanged so the next 4h cycle
+            # retries until a download succeeds.
+            now = int(time.time())
+            if (now - self.last_creds_refresh) >= self.creds_refresh_interval \
+                    or not os.path.isfile(self.creds_file):
+                if self.retrieve_default_creds():
+                    self.last_creds_refresh = now
 
             time.sleep(14400)
 
@@ -162,14 +183,56 @@ class DownloadIntel(threading.Thread):
         except Exception as e:
             log.debug('FG-ERROR: There was an error while downloading the domain blacklist - ' + str(e))
 
-        # Downloading the list of default user names and passwords
-        try:
-            response = session.get(homenet.fg_intel_creds, headers=headers, verify=False)
-            fout = open('/tmp/default_creds.csv', 'w')
-            fout.write(response.text)
-            fout.close()
-        except Exception as e:
-            log.debug('FG-ERROR: There was an error while downloading the list of default credentials - ' + str(e))
+    def retrieve_default_creds(self):
+        # Download the SecLists default-credential lists, normalise each line
+        # into Hydra's "-C" login:password format and merge them into a single
+        # deduplicated file for brute_force_service(). Returns True only if at
+        # least one remote list was fetched and the merged file was written, so
+        # the caller keeps retrying (and the existing file is left untouched)
+        # until a refresh actually succeeds.
+        entries = []
+        seen = set()
+        downloaded = False
+        for url in homenet.fg_intel_creds:
+            if not url:
+                continue
+            try:
+                response = session.get(url, headers=self.headers, verify=False)
+                if response.status_code == 200 and response.text:
+                    downloaded = True
+                    for line in response.text.splitlines():
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        # Password-only lists (e.g. VNC) have no username; Hydra's
+                        # -C format still needs a colon, so use an empty login.
+                        if ':' not in line:
+                            line = ':' + line
+                        if line not in seen:
+                            seen.add(line)
+                            entries.append(line)
+            except Exception as e:
+                log.debug('FG-ERROR: Error while downloading default credentials from ' + url + ' - ' + str(e))
+
+        if downloaded and entries:
+            try:
+                with open(self.creds_file, 'w') as fout:
+                    fout.write('\n'.join(entries) + '\n')
+                log.debug('FG-INFO: Refreshed default credentials list - ' + str(len(entries)) + ' entries')
+                return True
+            except Exception as e:
+                log.debug('FG-ERROR: Could not write ' + self.creds_file + ' - ' + str(e))
+                return False
+
+        # Remote refresh failed: make sure Hydra still has a list to work with
+        # by seeding from the bundled copy if none is present yet.
+        if not os.path.isfile(self.creds_file):
+            try:
+                shutil.copyfile(self.creds_seed, self.creds_file)
+                log.debug('FG-INFO: Seeded default credentials from bundled list ' + self.creds_seed)
+            except Exception as e:
+                log.debug('FG-ERROR: Could not seed default credentials from ' + self.creds_seed + ' - ' + str(e))
+        return False
 
 
 class CheckVirusTotalIntel(threading.Thread):

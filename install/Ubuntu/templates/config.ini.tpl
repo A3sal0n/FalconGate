@@ -2,7 +2,7 @@
 iface = IFACE0
 
 [api_urls]
-fg_intel_creds = https://falcongate-blacklists.s3.eu-central-1.amazonaws.com/default_credentials
+fg_intel_creds = https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Default-Credentials/ssh-betterdefaultpasslist.txt, https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt, https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Default-Credentials/telnet-betterdefaultpasslist.txt, https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Default-Credentials/vnc-betterdefaultpasslist.txt, https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Default-Credentials/windows-betterdefaultpasslist.txt
 fg_intel_domains = https://falcongate-blacklists.s3.eu-central-1.amazonaws.com/domain_blacklist
 fg_intel_ip = https://falcongate-blacklists.s3.eu-central-1.amazonaws.com/ip_blacklist
 vt_api_domain_url = https://www.virustotal.com/vtapi/v2/domain/report
