@@ -24,6 +24,15 @@ require 'templates/header.html';
         <div class="health-disks" id="health_disks"></div>
     </section>
 
+    <section class="config-card" id="system_services" data-url="system_health.php?target=services">
+        <h2>Services</h2>
+        <p class="config-hint health-state" id="services_state" role="status">Loading service status...</p>
+        <div class="service-tiles" id="service_tiles"></div>
+
+        <h3 class="health-subheading">Errors since the last start</h3>
+        <div id="service_errors"></div>
+    </section>
+
     <section class="config-card">
         <h2>System logs</h2>
 <?php

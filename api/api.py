@@ -108,6 +108,21 @@ class FlaskAPI(threading.Thread):
             return resp
 
     @staticmethod
+    @app.route('/api/v1.0/falcongate/system/services', methods=['GET'])
+    def get_system_services():
+        try:
+            resp = Response()
+            resp.data = json.dumps(system_health.get_services_status())
+            resp.status_code = 200
+            resp.mimetype = "application/json"
+            return resp
+        except Exception as e:
+            log.debug('FG-WARN: ' + str(e.__doc__) + " - " + str(e))
+            resp = Response()
+            resp.status_code = 500
+            return resp
+
+    @staticmethod
     @app.route('/api/v1.0/falcongate/response/host', methods=['POST'])
     def host_response():
         if not request.json:

@@ -732,6 +732,55 @@ div.text-container {
 	margin-bottom: 0;
 }
 
+.service-tiles {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+}
+
+.service-tile {
+	background: #ffffff;
+	border: 1px solid #dcdfe0;
+	border-left: 4px solid #1dabb8;
+	border-radius: 6px;
+	padding: 10px 12px;
+}
+
+.service-tile-high {
+	border-left-color: #fab219;
+}
+
+.service-tile-critical {
+	border-left-color: #d03b3b;
+}
+
+.service-tile .config-hint {
+	margin: 2px 0 0;
+	overflow-wrap: anywhere;
+}
+
+.service-error {
+	background: #ffffff;
+	border: 1px solid #dcdfe0;
+	border-left: 4px solid #d03b3b;
+	border-radius: 6px;
+	display: grid;
+	gap: 2px 10px;
+	grid-template-columns: max-content minmax(0, 1fr);
+	margin-bottom: 8px;
+	padding: 8px 12px;
+}
+
+.service-error .config-hint {
+	margin: 0;
+}
+
+.service-error code {
+	font: 12px/1.5 Consolas, "Courier New", monospace;
+	grid-column: 1 / -1;
+	overflow-wrap: anywhere;
+}
+
 .log-toolbar {
 	align-items: center;
 	display: flex;

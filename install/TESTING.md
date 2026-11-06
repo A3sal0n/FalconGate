@@ -296,10 +296,13 @@ curl -s -X POST http://127.0.0.1:5000/api/v1.0/falcongate/status \
 
 # CPU, memory and disk usage
 curl -s http://127.0.0.1:5000/api/v1.0/falcongate/system/health
+
+# Service states and errors since each service last started
+curl -s http://127.0.0.1:5000/api/v1.0/falcongate/system/services
 ```
 
 ✅ Each returns HTTP 200 with a JSON body (devices array, network object, alert
-list, log lines, or system health).
+list, log lines, system health, or service status).
 
 ---
 

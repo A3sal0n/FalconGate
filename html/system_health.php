@@ -12,7 +12,8 @@ if (login_check() != true){
     exit(0);
 }
 
-$result = CallAPI('GET', 'http://127.0.0.1:5000/api/v1.0/falcongate/system/health');
+$endpoint = isset($_GET['target']) && $_GET['target'] === 'services' ? 'services' : 'health';
+$result = CallAPI('GET', 'http://127.0.0.1:5000/api/v1.0/falcongate/system/' . $endpoint);
 
 if (!$result){
     http_response_code(502);

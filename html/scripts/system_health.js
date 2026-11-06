@@ -174,6 +174,84 @@
 			});
 	}
 
+	var servicesRoot = document.getElementById("system_services");
+	var serviceTiles = document.getElementById("service_tiles");
+	var serviceErrors = document.getElementById("service_errors");
+	var servicesState = document.getElementById("services_state");
+	var loadingServices = false;
+	var servicesUpdated = null;
+	var LEVEL_ICONS = {normal: "✓", high: "▲", critical: "✖"};
+
+	function serviceTile(service){
+		var node = element("div", "service-tile service-tile-" + service.level);
+		var header = element("div", "health-tile-header");
+		header.appendChild(element("strong", "", service.name));
+		header.appendChild(element("span", "health-status health-status-" + service.level, LEVEL_ICONS[service.level] + " " + service.label));
+		node.appendChild(header);
+		node.appendChild(element("p", "config-hint", service.description));
+		var details = service.since ? "Since " + service.since : service.unit;
+		if (service.restarts > 0) {
+			details += ", restarted " + service.restarts + (service.restarts === 1 ? " time" : " times");
+		}
+		node.appendChild(element("p", "config-hint", details));
+		return node;
+	}
+
+	function serviceErrorRows(services){
+		var rows = [];
+		services.forEach(function(service){
+			if (!service.errors_available) {
+				rows.push(element("p", "config-hint", service.name + ": the errors could not be read."));
+			}
+			service.errors.forEach(function(error){
+				var row = element("div", "service-error");
+				row.appendChild(element("strong", "", service.name));
+				row.appendChild(element("span", "config-hint", error.time + (error.count > 1 ? ", repeated " + error.count + " times" : "")));
+				row.appendChild(element("code", "", error.message));
+				rows.push(row);
+			});
+		});
+		return rows.length > 0 ? rows : [element("p", "config-hint", "✓ No errors have been reported since the services last started.")];
+	}
+
+	function showServicesState(message, failed){
+		servicesState.textContent = message;
+		servicesState.classList.toggle("health-state-error", failed);
+	}
+
+	function refreshServices(){
+		if (loadingServices) {
+			return;
+		}
+		loadingServices = true;
+		fetch(servicesRoot.getAttribute("data-url"), {credentials: "same-origin", cache: "no-store"})
+			.then(function(response){
+				return response.json().then(function(result){
+					if (!response.ok) {
+						throw new Error(result.error);
+					}
+					return result;
+				});
+			})
+			.then(function(status){
+				replaceChildren(serviceTiles, status.services.map(serviceTile));
+				replaceChildren(serviceErrors, serviceErrorRows(status.services));
+				servicesUpdated = status.updated;
+				showServicesState("Updated " + servicesUpdated + ". Refreshes every 30 seconds.", false);
+			})
+			.catch(function(error){
+				var reason = error.message || "The service status could not be loaded.";
+				showServicesState(reason + (servicesUpdated ? " Showing data from " + servicesUpdated + "." : ""), true);
+			})
+			.then(function(){
+				loadingServices = false;
+			});
+	}
+
 	refresh();
-	setInterval(refresh, REFRESH_MS);
+	refreshServices();
+	setInterval(function(){
+		refresh();
+		refreshServices();
+	}, REFRESH_MS);
 })();
