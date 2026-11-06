@@ -41,7 +41,7 @@ Falcongate was built on top of other open source software so it has multiple dep
 ### Supported Operating Systems
 
 The primary deployment target is Ubuntu Server 24.04 LTS with CPython 3.15.0.
-A Debian 12/13 port of the installer is also provided. In both cases the installer
+A Debian 13 port of the installer is also provided. In both cases the installer
 builds CPython in `/opt/python/3.15.0` and uses it only for FalconGate; it does
 not replace the system Python.
 
@@ -68,7 +68,7 @@ Currently Falcongate uses [have i been pwned](https://haveibeenpwned.com/API/v2)
 ### Installing Falcongate
 
 - [Ubuntu 24.04 installation notes](install/Ubuntu/README.md)
-- [Debian 12/13 installation notes](install/Debian/README.md)
+- [Debian 13 installation notes](install/Debian/README.md)
 
 
 ### Collaborators

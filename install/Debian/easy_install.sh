@@ -149,7 +149,7 @@ installRequirements() {
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install -y make gcc g++ libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3 ifupdown
+  apt-get install -y make gcc g++ libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3 ifupdown rsyslog
 }
 
 installPython() {
@@ -201,8 +201,8 @@ if [ ! -r /etc/os-release ]; then
 fi
 
 . /etc/os-release
-if [ "${ID:-}" != "debian" ] || { [ "${VERSION_ID:-}" != "12" ] && [ "${VERSION_ID:-}" != "13" ]; }; then
-  echo "This installer targets Debian 12 (bookworm) or 13 (trixie) only." >&2
+if [ "${ID:-}" != "debian" ] || [ "${VERSION_ID:-}" != "13" ]; then
+  echo "This installer targets Debian 13 (trixie) only." >&2
   exit 1
 fi
 
@@ -367,8 +367,7 @@ fi
 systemctl enable networking.service 2>/dev/null || true
 
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" FalconGate/install/Debian/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
-# Debian's PHP version varies by release (8.2 on bookworm, 8.4 on trixie), so
-# detect the installed PHP-FPM socket instead of hard-coding it.
+# Detect the installed PHP-FPM socket instead of hard-coding the PHP version.
 PHP_FPM_VERSION="$(ls /etc/php/ 2>/dev/null | sort -V | tail -1)"
 PHP_FPM_SOCK="/run/php/php${PHP_FPM_VERSION}-fpm.sock"
 echo "Using PHP-FPM socket: ${PHP_FPM_SOCK}"

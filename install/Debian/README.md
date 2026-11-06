@@ -1,8 +1,12 @@
-The installation script targets **Debian 12 (bookworm)** or **Debian 13
-(trixie)** and builds CPython 3.15.0 under `/opt/python/3.15.0`. It does not
-replace the system Python. This Debian installer is a port of the Ubuntu one; it
-has not yet been validated on a Debian server, so treat the listed OS and Python
-versions as the target, not a tested-support claim.
+The installation script targets **Debian 13 (trixie)** only and builds CPython
+3.15.0 under `/opt/python/3.15.0`. It does not replace the system Python. This
+Debian installer is a port of the Ubuntu one; it has not yet been fully validated
+on a Debian server, so treat the listed OS and Python versions as the target, not
+a tested-support claim.
+
+Debian 12 (bookworm) is not supported, and the installer stops if it runs on any
+other release. Debian 12 has no `dnscrypt-proxy` package, and FalconGate's
+configuration needs the 2.1 series that Debian 13 ships.
 
 Zeek is not in Debian's stable repositories, so the installer adds the Zeek
 project's repository on the openSUSE Build Service (`security:zeek`) and installs
@@ -10,7 +14,7 @@ the `zeek-8.0` LTS package to `/opt/zeek`. Later Zeek 8.0 patch releases arrive
 through apt. Zeek captures packets with its built-in **AF_PACKET** support, which
 needs no out-of-tree kernel module, so kernel upgrades don't affect capture.
 
-Run `easy_install.sh` from a Debian 12/13 installation with two active network
+Run `easy_install.sh` from a Debian 13 installation with two active network
 interfaces and at least 5 GiB of free disk space. The script installs system
 packages including Zeek, builds Python, configures networking, and reboots system
 services. Review the script and its network configuration before running it on a
@@ -25,11 +29,17 @@ production host.
   in `lib/utils.py`. The installer assumes a standard Debian install that uses
   ifupdown; on a cloud image that uses `systemd-networkd` or cloud-init you will
   need to disable those first.
-- **PHP-FPM** version differs by release (8.2 on bookworm, 8.4 on trixie), so the
-  installer detects the installed version and points nginx at the correct
-  `/run/php/phpX.Y-fpm.sock` socket automatically.
+- **PHP-FPM** is 8.4 on Debian 13. The installer detects the installed version and
+  points nginx at the correct `/run/php/phpX.Y-fpm.sock` socket automatically.
 - **DNS**: `/etc/resolv.conf` is pointed directly at dnscrypt-proxy
   (`127.0.2.1`); systemd-resolved is disabled only if it happens to be present.
+- **dnscrypt-proxy** is version 2.1.8 on Debian 13, which rejects the older
+  `fallback_resolver` key still used in the Ubuntu template, so
+  [`templates/dnscrypt-proxy.toml.tpl`](templates/dnscrypt-proxy.toml.tpl) uses
+  `bootstrap_resolvers` instead.
+- **Logging**: Debian doesn't install rsyslog by default, so this installer adds it.
+  The System logs section of the console reads `/var/log/syslog`, which rsyslog
+  writes.
 
 ## WAN/LAN interface detection
 

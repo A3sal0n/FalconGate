@@ -25,7 +25,7 @@ confirming them first makes later failures easier to diagnose.
 - Most commands need root. Prefix with `sudo` or run from a root shell.
 - A ✅ line shows what a healthy result looks like.
 - **PHP-FPM service name** depends on the PHP version your distro ships
-  (Ubuntu 24.04: `php8.3-fpm`; Debian 12: `php8.2-fpm`; Debian 13: `php8.4-fpm`).
+  (Ubuntu 24.04: `php8.3-fpm`; Debian 13: `php8.4-fpm`).
   Set a shell variable once and reuse it in the commands below:
 
   ```bash
@@ -33,8 +33,8 @@ confirming them first makes later failures easier to diagnose.
   echo "$PHP_FPM"   # e.g. php8.3-fpm
   ```
 - FalconGate logs through syslog and its logs API reads `/var/log/syslog`, so
-  **rsyslog must be installed** (the default on Ubuntu and on Debian 12/13). If
-  that file is absent, `journalctl | grep FG-` shows the same messages.
+  **rsyslog must be installed**. Ubuntu has it by default, and the Debian installer
+  adds it. If that file is absent, `journalctl | grep FG-` shows the same messages.
 
 ---
 

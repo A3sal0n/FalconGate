@@ -176,7 +176,7 @@ cert_refresh_delay = 240
 # tls_cipher_suite = [52392, 49199]
 
 
-## Fallback resolver
+## Bootstrap resolvers
 ## This is a normal, non-encrypted DNS resolver, that will be only used
 ## for one-shot queries when retrieving the initial resolvers list, and
 ## only if the system DNS configuration doesn't work.
@@ -190,11 +190,11 @@ cert_refresh_delay = 240
 ## People in China may need to use 114.114.114.114:53 here.
 ## Other popular options include 8.8.8.8 and 1.1.1.1.
 
-fallback_resolver = '9.9.9.9:53'
+bootstrap_resolvers = ['9.9.9.9:53']
 
 
 ## Never let dnscrypt-proxy try to use the system DNS settings;
-## unconditionally use the fallback resolver.
+## unconditionally use the bootstrap resolvers.
 
 ignore_system_dns = false
 
