@@ -1,39 +1,15 @@
-# Kernel sysctl configuration file for Linux
+# FalconGate kernel settings for Debian 13.
 #
-# Version 1.12 - 2015-09-30
-# Michiel Klaver - IT Professional
-# http://klaver.it/linux/ for the latest version - http://klaver.it/bsd/ for a BSD variant
+# The installer saves this file as /etc/sysctl.d/90-falcongate.conf, because Debian 13
+# no longer reads /etc/sysctl.conf at boot. To apply changes without restarting:
+#   sudo sysctl --system
 #
-# This file should be saved as /etc/sysctl.conf and can be activated using the command:
-# sysctl -e -p /etc/sysctl.conf
+# Based on version 1.12 (2015-09-30) of the configuration by Michiel Klaver,
+# http://klaver.it/linux/
 #
-# For binary values, 0 is disabled, 1 is enabled.  See sysctl(8) and sysctl.conf(5) for more details.
-#
-# Tested with: Ubuntu 14.04 LTS kernel version 3.13
-#              Debian 7 kernel version 3.2
-#              CentOS 7 kernel version 3.10
-
-#
-# Intended use for dedicated server systems at high-speed networks with loads of RAM and bandwidth available
-# Optimised and tuned for high-performance web/ftp/mail/dns servers with high connection-rates
-# DO NOT USE at busy networks or xDSL/Cable connections where packetloss can be expected
-# ----------
-
-# Credits:
-# http://www.enigma.id.au/linux_tuning.txt
-# http://www.securityfocus.com/infocus/1729
-# http://fasterdata.es.net/TCP-tuning/linux.html
-# http://fedorahosted.org/ktune/browser/sysctl.ktune
-# http://www.cymru.com/Documents/ip-stack-tuning.html
-# http://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
-# http://www.frozentux.net/ipsysctl-tutorial/chunkyhtml/index.html
-# http://knol.google.com/k/linux-performance-tuning-and-measurement
-# http://www.cyberciti.biz/faq/linux-kernel-tuning-virtual-memory-subsystem/
-# http://www.redbooks.ibm.com/abstracts/REDP4285.html
-# http://www.speedguide.net/read_articles.php?id=121
-# http://lartc.org/howto/lartc.kernel.obscure.html
-# http://en.wikipedia.org/wiki/Sysctl
-
+# Keep a setting out of this file if the kernel's current default is already stronger
+# or larger: for example vm.mmap_min_addr, fs.file-max, kernel.pid_max, kernel.shmmax,
+# kernel.shmall and the net.ipv4.ipfrag_* limits.
 
 
 ###
@@ -47,15 +23,7 @@ kernel.sysrq = 0
 # Useful for debugging multi-threaded applications.
 kernel.core_uses_pid = 1
 
-#Allow for more PIDs
-kernel.pid_max = 65535
-
-# The contents of /proc/<pid>/maps and smaps files are only visible to
-# readers that are allowed to ptrace() the process
-kernel.maps_protect = 1
-
-#Enable ExecShield protection
-kernel.exec-shield = 1
+# Randomize the layout of each process's memory
 kernel.randomize_va_space = 2
 
 # Controls the maximum size of a message, in bytes
@@ -71,32 +39,22 @@ fs.suid_dumpable = 0
 kernel.kptr_restrict = 1
 
 
-
 ###
 ### IMPROVE SYSTEM MEMORY MANAGEMENT ###
 ###
-
-# Increase size of file handles and inode cache
-fs.file-max = 209708
 
 # Do less swapping
 vm.swappiness = 30
 vm.dirty_ratio = 30
 vm.dirty_background_ratio = 5
 
-# specifies the minimum virtual address that a process is allowed to mmap
-vm.mmap_min_addr = 4096
-
 # 50% overcommitment of available memory
 vm.overcommit_ratio = 50
 vm.overcommit_memory = 0
 
-# Set maximum amount of memory allocated to shm to 256MB
-kernel.shmmax = 268435456
-kernel.shmall = 268435456
-
 # Keep at least 64MB of free RAM space available
 vm.min_free_kbytes = 65535
+
 
 ###
 ### GENERAL NETWORK SECURITY OPTIONS ###
@@ -108,7 +66,7 @@ net.ipv4.tcp_syn_retries = 2
 net.ipv4.tcp_synack_retries = 2
 net.ipv4.tcp_max_syn_backlog = 4096
 
-# Disables packet forwarding
+# FalconGate routes between its interfaces, over IPv4 only
 net.ipv4.ip_forward = 1
 net.ipv4.conf.all.forwarding = 1
 net.ipv4.conf.default.forwarding = 1
@@ -123,9 +81,10 @@ net.ipv4.conf.default.accept_source_route = 0
 net.ipv6.conf.all.accept_source_route = 0
 net.ipv6.conf.default.accept_source_route = 0
 
-# Enable IP spoofing protection, turn on source route verification
-net.ipv4.conf.all.rp_filter = 1
-net.ipv4.conf.default.rp_filter = 1
+# Enable IP spoofing protection in loose mode. Strict mode (1) can drop valid traffic in
+# attached mode, where both interfaces are on the same network.
+net.ipv4.conf.all.rp_filter = 2
+net.ipv4.conf.default.rp_filter = 2
 
 # Disable ICMP Redirect Acceptance
 net.ipv4.conf.all.accept_redirects = 0
@@ -172,25 +131,15 @@ net.ipv4.ip_local_port_range = 16384 65535
 net.ipv4.tcp_rfc1337 = 1
 
 # Do not auto-configure IPv6
-net.ipv6.conf.all.autoconf=0
-net.ipv6.conf.all.accept_ra=0
-net.ipv6.conf.default.autoconf=0
-net.ipv6.conf.default.accept_ra=0
-net.ipv6.conf.eth0.autoconf=0
-net.ipv6.conf.eth0.accept_ra=0
-
+net.ipv6.conf.all.autoconf = 0
+net.ipv6.conf.all.accept_ra = 0
+net.ipv6.conf.default.autoconf = 0
+net.ipv6.conf.default.accept_ra = 0
 
 
 ###
 ### TUNING NETWORK PERFORMANCE ###
 ###
-
-# For high-bandwidth low-latency networks, use 'htcp' congestion control
-# Do a 'modprobe tcp_htcp' first
-net.ipv4.tcp_congestion_control = htcp
-
-# For servers with tcp-heavy workloads, enable 'fq' queue management scheduler (kernel > 3.12)
-net.core.default_qdisc = fq
 
 # Turn on the tcp_window_scaling
 net.ipv4.tcp_window_scaling = 1
@@ -220,17 +169,12 @@ net.core.optmem_max = 65535
 # Increase the tcp-time-wait buckets pool size to prevent simple DOS attacks
 net.ipv4.tcp_max_tw_buckets = 1440000
 
-# try to reuse time-wait connections, but don't recycle them (recycle can break clients behind NAT)
-net.ipv4.tcp_tw_recycle = 0
+# Reuse time-wait connections
 net.ipv4.tcp_tw_reuse = 1
 
 # Limit number of orphans, each orphan can eat up to 16M (max wmem) of unswappable memory
 net.ipv4.tcp_max_orphans = 16384
 net.ipv4.tcp_orphan_retries = 0
-
-# Increase the maximum memory used to reassemble IP fragments
-net.ipv4.ipfrag_high_thresh = 512000
-net.ipv4.ipfrag_low_thresh = 446464
 
 # don't cache ssthresh from previous connection
 net.ipv4.tcp_no_metrics_save = 1
@@ -270,13 +214,3 @@ net.ipv4.tcp_slow_start_after_idle = 0
 
 # Allow the TCP fastopen flag to be used, beware some firewalls do not like TFO! (kernel > 3.7)
 net.ipv4.tcp_fastopen = 3
-
-# This will enusre that immediatly subsequent connections use the new values
-net.ipv4.route.flush = 1
-net.ipv6.route.flush = 1
-
-
-
-###
-### Comments/suggestions/additions are welcome!
-###

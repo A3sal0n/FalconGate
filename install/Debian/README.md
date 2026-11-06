@@ -40,6 +40,12 @@ production host.
 - **Logging**: Debian doesn't install rsyslog by default, so this installer adds it.
   The System logs section of the console reads `/var/log/syslog`, which rsyslog
   writes.
+- **Kernel settings**: Debian 13 no longer reads `/etc/sysctl.conf` at boot, so the
+  installer saves packet forwarding and the hardening and tuning settings as
+  `/etc/sysctl.d/90-falcongate.conf`. They are a reviewed subset of the Ubuntu
+  template, and spoofing protection (`rp_filter`) uses loose mode.
+- **Firewall**: Debian 13 doesn't install `iptables` by default, so this installer
+  adds it.
 
 ## WAN/LAN interface detection
 

@@ -221,7 +221,7 @@ installRequirements() {
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install -y make gcc g++ libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3 ifupdown rsyslog
+  apt-get install -y make gcc g++ libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset iptables git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3 ifupdown rsyslog
 }
 
 installPython() {
@@ -451,7 +451,8 @@ rm -f /etc/nginx/sites-enabled/default
 systemctl enable "php${PHP_FPM_VERSION}-fpm" 2>/dev/null || true
 cp FalconGate/install/Debian/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" FalconGate/install/Debian/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
-cp FalconGate/install/Debian/templates/sysctl.conf.tpl /etc/sysctl.conf
+# Debian 13 no longer reads /etc/sysctl.conf at boot, so these settings need their own file.
+cp FalconGate/install/Debian/templates/sysctl.conf.tpl /etc/sysctl.d/90-falcongate.conf
 cp FalconGate/install/Debian/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 
 # Additional Zeek configuration
