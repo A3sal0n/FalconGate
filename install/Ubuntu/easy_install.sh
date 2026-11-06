@@ -140,6 +140,78 @@ selectWanInterface() {
     printf '%s' "$choice"
 }
 
+# Prints why an address can't be the LAN address, or nothing if it can. The network
+# templates use a /24 network, and its DHCP pool is .100 to .200 (see the MAIN section).
+#   $1 the address   $2 deployment mode
+#   $3 attached mode: the existing network's gateway
+#   $4 router mode: the WAN interface's current address as a.b.c.d/prefix, if it has one
+lanAddressProblem() {
+    local ip="$1" mode="$2" gateway="$3" wan="$4"
+    local octet='(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])'
+    local a b c d
+
+    if ! [[ "$ip" =~ ^$octet\.$octet\.$octet\.$octet$ ]]; then
+        echo "'$ip' is not a valid IPv4 address."
+        return 0
+    fi
+    IFS=. read -r a b c d <<< "$ip"
+
+    # Zeek only treats private networks as local, and the detection logic depends on that.
+    if ! { [ "$a" -eq 10 ] || { [ "$a" -eq 172 ] && [ "$b" -ge 16 ] && [ "$b" -le 31 ]; } \
+           || { [ "$a" -eq 192 ] && [ "$b" -eq 168 ]; }; }; then
+        echo "$ip is not a private address (10.x.x.x, 172.16-31.x.x or 192.168.x.x)."
+    elif [ "$d" -eq 0 ] || [ "$d" -eq 255 ]; then
+        echo "$ip is the network or broadcast address of its /24 network."
+    elif [ "$d" -ge 100 ] && [ "$d" -le 200 ]; then
+        echo "$ip is inside the DHCP pool (.100 to .200). Choose a last number outside it."
+    elif [ "$mode" == "attached" ]; then
+        if [ "${ip%.*}" != "${gateway%.*}" ]; then
+            echo "$ip is not on the existing network (${gateway%.*}.0/24)."
+        elif [ "$ip" == "$gateway" ]; then
+            echo "$ip is the address of the existing gateway."
+        elif [ "$d" -eq 3 ]; then
+            echo "$ip is reserved for the WAN interface in attached mode."
+        fi
+    elif [ -n "$wan" ]; then
+        local e f g h prefix mask
+        IFS=./ read -r e f g h prefix <<< "$wan"
+        # The two networks overlap if they match at the shorter of their prefixes.
+        [ "$prefix" -gt 24 ] && prefix=24
+        mask=$(( prefix == 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF ))
+        if [ $(( ((a << 24) + (b << 16) + (c << 8)) & mask )) -eq $(( ((e << 24) + (f << 16) + (g << 8) + h) & mask )) ]; then
+            echo "$ip is on the same network as the WAN interface ($wan). Choose a different network."
+        fi
+    fi
+    return 0
+}
+
+# Asks for the LAN address until it gets a usable one, and stores it in IP0.
+#   $1 the suggested address, and then the arguments of lanAddressProblem from $2 on
+selectLanAddress() {
+    local choice="$1" mode="$2" gateway="$3" wan="$4" problem
+    local prompt="Enter an unused static IP address for the LAN interface ($IFACE0).\n\nIt will use a /24 network, and the DHCP server will give devices addresses from .100 to .200 of that network."
+    local message="$prompt"
+
+    while true; do
+        if ! choice=$(dialog --clear --backtitle "Falcongate" \
+                             --title "LAN IP address" \
+                             --inputbox "$message" 15 60 "$choice" \
+                             2>&1 >/dev/tty); then
+            clear
+            echo "Installation cancelled: no LAN IP address was chosen." >&2
+            exit 1
+        fi
+        choice="${choice//[[:space:]]/}"
+        problem=$(lanAddressProblem "$choice" "$mode" "$gateway" "$wan")
+        if [ -z "$problem" ]; then
+            break
+        fi
+        message="$problem\n\n$prompt"
+    done
+    clear
+    IP0="$choice"
+}
+
 installRequirements() {
   echo "Updating system software..."
   sleep 3
@@ -268,24 +340,26 @@ if [ "$deploymentMode" == "attached" ]; then
   # Find the default gateway reachable through the WAN interface
   GATE=$(ip route | awk 'match($0, /default\s+via\s+(.+)\s+dev\s+'"$IFACE1"'/, a) {print a[1]}')
   BASE=$(echo $GATE | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+/, a) {print a[1]}')
+  if [ -z "$BASE" ]; then
+    echo "Could not find the default gateway on $IFACE1, which attached mode needs." >&2
+    exit 1
+  fi
   # IP address for IFACE0
-  IP0="$BASE.2"
+  selectLanAddress "$BASE.2" "$deploymentMode" "$GATE" ""
   # IP address for IFACE1
   IP1="$BASE.3"
   # Gateway
   GATEWAY=$GATE
   # Network mask
   NETMASK="255.255.255.0"
-  # DHCP range
-  DHCPSTART="$BASE.100"
-  DHCPEND="$BASE.200"
 else
   # IP address for IFACE0
-  IP0="192.168.100.1"
-  # DHCP range
-  DHCPSTART="192.168.100.100"
-  DHCPEND="192.168.100.200"
+  selectLanAddress "192.168.100.1" "$deploymentMode" "" "$(ip -4 -o addr show dev "$IFACE1" | awk '{print $4; exit}')"
 fi
+
+# DHCP range, on the LAN address's /24 network
+DHCPSTART="${IP0%.*}.100"
+DHCPEND="${IP0%.*}.200"
 
 echo "Installing Falcongate in $deploymentMode configuration"
 sleep 3

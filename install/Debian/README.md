@@ -45,12 +45,26 @@ production host.
 
 After you select the two interfaces, the installer automatically detects which
 one has Internet access and uses it as the WAN (uplink, NAT'd). The other
-interface becomes the LAN: it receives the static IP (`192.168.100.1` in router
+interface becomes the LAN: it receives the static IP you choose (`192.168.100.1` by default in router
 mode) and runs the DHCP server that clients connect to, and it is also the
 interface Zeek monitors. Connect your management/client device to the LAN
 interface to reach the dashboard and SSH. If auto-detection cannot determine
 which interface reaches the Internet (for example, neither is online during
 install), the script falls back to asking you to pick the WAN interface.
+
+## LAN IP address
+
+The installer asks you for the static IP address of the LAN interface. It suggests
+`192.168.100.1` in router mode and `<base>.2` in attached mode, so you can press
+Enter to keep the suggestion. The LAN uses a /24 network, and the DHCP pool is always
+`.100` to `.200` of that network: choosing `10.20.30.1`, for example, gives a pool of
+`10.20.30.100` to `10.20.30.200`.
+
+The address must be unused and private (`10.x.x.x`, `172.16-31.x.x` or `192.168.x.x`),
+and its last number can't be `0`, `255` or inside the DHCP pool. In attached mode it
+must be on your existing `<base>.0/24` network and can't be the gateway or `<base>.3`,
+which is the WAN interface's address. In router mode it can't be on the same network
+as the WAN interface. The installer asks again if the address doesn't meet these rules.
 
 ## Deployment modes
 
@@ -70,10 +84,10 @@ ruleset ([`fw/iptables.rules`](fw/iptables.rules)) is the same for both.
 | | Attached mode | Router mode |
 |---|---|---|
 | Appliance's role | Joins an **existing** network next to your current router | **Becomes the gateway** for a new, isolated LAN |
-| LAN interface (IFACE0) | Static `<base>.2` on your existing subnet | Static `192.168.100.1` on a new subnet |
+| LAN interface (IFACE0) | Static IP you choose on your existing subnet (default `<base>.2`) | Static IP you choose on a new subnet (default `192.168.100.1`) |
 | WAN interface (IFACE1) | Static `<base>.3` on the same existing subnet | **DHCP client** to your modem/ISP/upstream router |
 | Upstream gateway | Your existing router (reused) | Learned via DHCP on the WAN |
-| DHCP pool (dnsmasq) | `<base>.100`–`<base>.200` | `192.168.100.100`–`192.168.100.200` |
+| DHCP pool (dnsmasq) | `<base>.100`–`<base>.200` | `.100`–`.200` of the LAN subnet (default `192.168.100.100`–`192.168.100.200`) |
 | How devices get protected | Point a device's gateway/DNS at the appliance (or let its DHCP serve them) | Every device on the LAN is protected automatically |
 | interfaces template | [`templates/interfaces.attached.tpl`](templates/interfaces.attached.tpl) | [`templates/interfaces.router.tpl`](templates/interfaces.router.tpl) |
 
@@ -102,10 +116,12 @@ IP (`<base>.3`).
 
 The appliance **becomes the gateway** for a brand-new, isolated LAN. The WAN
 interface pulls its address via DHCP from your modem or upstream router, while
-the LAN interface takes the static address `192.168.100.1` and serves DHCP on
-`192.168.100.0/24`. Every client connected to the LAN interface is routed and
+the LAN interface takes the static address you choose (`192.168.100.1` by default)
+and serves DHCP on
+its /24 network (`192.168.100.0/24` by default). Every client connected to the LAN interface is routed and
 filtered through FalconGate by default — there is nothing to configure per
 device.
 
 Connect your management device to the LAN side and reach the dashboard at
-`https://192.168.100.1` (SSH: `ssh <your-user>@192.168.100.1`).
+`https://<LAN IP>` (SSH: `ssh <your-user>@<LAN IP>`), using the LAN address you
+chose.
