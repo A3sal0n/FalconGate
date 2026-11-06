@@ -256,6 +256,44 @@ a.header-brand:focus-visible {
 	grid-column: 1 / -1;
 }
 
+.map-card {
+	margin-top: 20px;
+}
+
+/* The world map is about twice as wide as it is tall. */
+.chart-canvas-map {
+	aspect-ratio: 2;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.map-legend {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+	list-style: none;
+	margin: 12px 0 0;
+	padding: 0;
+}
+
+.map-legend li {
+	align-items: center;
+	display: flex;
+	font-size: 14px;
+	gap: 8px;
+}
+
+.map-legend-dot {
+	border-radius: 50%;
+	display: inline-block;
+	flex: none;
+}
+
+.chart-card .map-note {
+	margin: 10px 0 0;
+}
+
 /* Content - Get Alerts (Show / Hide More)
 ------------------*/	
 div.text-container {

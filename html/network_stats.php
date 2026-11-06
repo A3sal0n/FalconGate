@@ -32,6 +32,7 @@ $datapoints_dr_labels = array();
 $datapoints_dr_data = array();
 $datapoints_nc_labels = array();
 $datapoints_nc_data = array();
+$map_traffic = array();
 
 if ($result){
 	$obj = json_decode($result, true);
@@ -82,6 +83,11 @@ if ($result){
 	foreach($top10 as $cc => $nc) {
 	    array_push($datapoints_nc_labels, $cc);
 	    array_push($datapoints_nc_data, $nc);
+	}
+
+	// The map shows every country, not only the top 10.
+	foreach($obj as $cc => $stats) {
+	    $map_traffic[$cc] = array('sent' => intval($stats["bytes_sent"]), 'received' => intval($stats["bytes_received"]));
 	}
 }
 $has_data = count($datapoints_nc_labels) > 0;
@@ -162,6 +168,22 @@ if ($result){
 		</div>
 	</section>
 </div>
+
+<section class="config-card chart-card map-card" id="traffic_map"
+	data-map-url="<?php echo esc_html(asset_url('scripts/countries-110m.json')); ?>"
+	data-positions-url="<?php echo esc_html(asset_url('scripts/country_points.json')); ?>"
+	data-traffic="<?php echo esc_html(json_encode($map_traffic)); ?>">
+	<div>
+		<h2>Traffic map</h2>
+		<p class="config-hint">All destination countries, <?php echo $period_hint; ?>, by data sent and received combined. Each circle sits at the center of the country, not at the destination's exact location.</p>
+	</div>
+	<p class="config-hint" id="traffic_map_state" role="status" hidden></p>
+	<div class="chart-canvas chart-canvas-map">
+		<canvas id="traffic_map_canvas" role="img" aria-label="World map of traffic by destination country"></canvas>
+	</div>
+	<ul class="map-legend" id="traffic_map_legend"></ul>
+	<p class="config-hint map-note" id="traffic_map_unplaced" hidden></p>
+</section>
 
 <script>
 window.onload = function() {
@@ -286,6 +308,10 @@ window.addEventListener("load", function(){
 
 <?php if ($has_data || $has_top_data){ ?>
 <script src="scripts/chart-4.6.1.umd.min.js"></script>
+<?php } ?>
+<?php if ($has_data){ ?>
+<script src="scripts/chartjs-chart-geo-4.3.6.umd.min.js"></script>
+<script src="<?php echo asset_url('scripts/traffic_map.js'); ?>"></script>
 <?php } ?>
 
 <?php
