@@ -363,6 +363,13 @@ class CheckVirusTotalIntel(threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
+        # Domain verdicts as {sld: (verdict, monotonic time checked)}, so clean
+        # domains aren't looked up again on every cycle. Only this thread uses it.
+        self.vt_domain_cache = {}
+        # Files VT had no report for as {sha1: monotonic time checked}. Known
+        # files don't need this because they are marked with vt_flag instead.
+        self.vt_unknown_files = {}
+        self.vt_cache_ttl = 86400  # 24 hours, in seconds
 
     def run(self):
 
@@ -376,10 +383,10 @@ class CheckVirusTotalIntel(threading.Thread):
                         for k1, dns in host.dns.items():
                             if not dns.bad:
                                 if dns.sld not in top_domains:
-                                    if dns.sld not in dns_lookup_list:
-                                        dns_lookup_list[dns.sld] = [k]
-                                    else:
-                                        dns_lookup_list[dns.sld].append(k)
+                                    # VT is queried by SLD, but host.dns is keyed
+                                    # by the full query, so keep both to apply
+                                    # the verdict back to the right entries.
+                                    dns_lookup_list.setdefault(dns.sld, []).append((k, k1))
 
                         # Get all files which need VT lookup
                         for k1, f in host.files.items():
@@ -390,51 +397,98 @@ class CheckVirusTotalIntel(threading.Thread):
                                     file_lookup_list[f.sha1].append(k)
 
                 # Processing files first and updating homenet for obvious reasons
-                files = list(file_lookup_list.keys())
+                files = self.get_uncached_files(file_lookup_list)
                 if len(files) > 0:
                     while len(files) > 0:
                         process = files[:4]
                         for fhash in process:
-                            res = self.eval_vt_intel_file(fhash)
-                            if res is None:
-                                continue
-                            else:
-                                try:
-                                    for host in file_lookup_list[fhash]:
-                                        with lock:
-                                            tmp = homenet.hosts[host].files[fhash]
-                                            tmp.vt_flag = True
-                                            tmp.vt_positives = res["positives"]
-                                            tmp.vt_report = res["report"]
-                                            homenet.hosts[host].files[fhash] = tmp
-                                except KeyError:
-                                    pass
+                            self.check_file(fhash, file_lookup_list[fhash])
                         del files[:4]
                         time.sleep(62)
 
-                domains = list(dns_lookup_list.keys())
+                domains = self.get_uncached_domains(dns_lookup_list)
                 time.sleep(10)
                 if len(domains) > 0:
                     while len(domains) > 0:
                         process = domains[:4]
                         for d in process:
-                            val = self.eval_vt_intel_domain(d)
-                            if val is None:
-                                continue
-                            else:
-                                try:
-                                    for host in dns_lookup_list[d]:
-                                        with lock:
-                                            tmp = homenet.hosts[host].dns[d]
-                                            tmp.bad = val
-                                            homenet.hosts[host].dns[d] = tmp
-                                except KeyError:
-                                    pass
+                            self.check_domain(d, dns_lookup_list[d])
                         del domains[:4]
                         time.sleep(62)
             else:
                 pass
             time.sleep(10)
+
+    def get_uncached_files(self, file_lookup_list):
+        now = time.monotonic()
+        self.vt_unknown_files = {fhash: checked for fhash, checked in self.vt_unknown_files.items()
+                                 if now - checked < self.vt_cache_ttl}
+        return [fhash for fhash in file_lookup_list if fhash not in self.vt_unknown_files]
+
+    def check_file(self, fhash, hosts):
+        res = self.eval_vt_intel_file(fhash)
+        if res is False:
+            self.vt_unknown_files[fhash] = time.monotonic()
+        elif res is not None:
+            self.apply_file_report(fhash, hosts, res)
+
+    @staticmethod
+    def apply_file_report(fhash, hosts, res):
+        for host in hosts:
+            try:
+                with lock:
+                    tmp = homenet.hosts[host].files[fhash]
+                    tmp.vt_flag = True
+                    tmp.vt_positives = res["positives"]
+                    tmp.vt_report = res["report"]
+                    homenet.hosts[host].files[fhash] = tmp
+            except KeyError:
+                # Removed since the lookup list was built; other hosts still apply.
+                pass
+
+    def get_uncached_domains(self, dns_lookup_list):
+        now = time.monotonic()
+        self.vt_domain_cache = {d: cached for d, cached in self.vt_domain_cache.items()
+                                if now - cached[1] < self.vt_cache_ttl}
+        domains = []
+        for d, entries in dns_lookup_list.items():
+            if d not in self.vt_domain_cache:
+                domains.append(d)
+            elif self.vt_domain_cache[d][0]:
+                # Known bad: new hosts or subdomains must still raise an alert.
+                self.apply_domain_verdict(entries, True)
+        return domains
+
+    def check_domain(self, domain, entries):
+        val = self.eval_vt_intel_domain(domain)
+        if val is not None:
+            self.vt_domain_cache[domain] = (val, time.monotonic())
+            self.apply_domain_verdict(entries, val)
+
+    @staticmethod
+    def apply_domain_verdict(entries, val):
+        for host, query in entries:
+            try:
+                with lock:
+                    tmp = homenet.hosts[host].dns[query]
+                    tmp.bad = val
+                    homenet.hosts[host].dns[query] = tmp
+            except KeyError:
+                # The entry was removed (e.g. already alerted on) since the
+                # lookup list was built; the host's other entries still apply.
+                pass
+
+    @staticmethod
+    def count_recent_vt_entries(entries, date_key, ctime):
+        count = 0
+        try:
+            for entry in entries:
+                d = datetime.strptime(entry[date_key], '%Y-%m-%d %H:%M:%S')
+                if time.mktime(d.timetuple()) > (ctime - 2592000):
+                    count += 1
+        except Exception as e:
+            log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
+        return count
 
     @staticmethod
     def eval_vt_intel_file(fhash):
@@ -449,10 +503,16 @@ class CheckVirusTotalIntel(threading.Thread):
             log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API - ' + str(e.__doc__) + " - " + str(e))
             return None
 
-        if response_json["response_code"] == 1:
+        # Returns the report, False if VT has no report for this file, or None if
+        # the lookup failed and should be retried.
+        response_code = response_json.get("response_code")
+        if response_code == 1:
             res = {"positives": int(response_json["positives"]), "report": response_json["permalink"]}
             return res
+        elif response_code == 0:
+            return False
         else:
+            log.debug('FG-ERROR: VirusTotal API returned an error - ' + str(response_json.get('verbose_msg')))
             return None
 
     @staticmethod
@@ -467,54 +527,24 @@ class CheckVirusTotalIntel(threading.Thread):
         except Exception as e:
             log.debug('FG-ERROR: There were some issues while connecting to VirusTotal API - ' + str(e.__doc__) + " - " + str(e))
             return None
-        domain = Domain()
-        domain.name = domain
-        try:
-                domain.categories = response_json["categories"]
+        # An API error says nothing about the domain, so it mustn't count as clean.
+        if response_json.get('response_code') == -1:
+            log.debug('FG-ERROR: VirusTotal API returned an error - ' + str(response_json.get('verbose_msg')))
+            return None
 
-                try:
-                    durls = response_json['detected_urls']
-                    count = 0
-                    for u in durls:
-                        d = u["scan_date"]
-                        d = datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
-                        ts = time.mktime(d.timetuple())
-                        if ts > (ctime - 2592000):
-                            count += 1
-                    domain.detected_urls = count
-                except Exception as e:
-                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
+        # VT leaves out any field it has nothing to report for, so none of them
+        # can be required: a domain with no categories can still have detections.
+        count_recent = CheckVirusTotalIntel.count_recent_vt_entries
+        result = Domain()
+        result.name = domain
+        result.categories = response_json.get('categories', [])
+        result.detected_urls = count_recent(response_json.get('detected_urls', []), 'scan_date', ctime)
+        result.detected_comm_payloads = count_recent(
+            response_json.get('detected_communicating_samples', []), 'date', ctime)
+        result.detected_down_payloads = count_recent(
+            response_json.get('detected_downloaded_samples', []), 'date', ctime)
 
-                try:
-                    samples = response_json['detected_communicating_samples']
-                    count = 0
-                    for s in samples:
-                        d = s["date"]
-                        d = datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
-                        ts = time.mktime(d.timetuple())
-                        if ts > (ctime - 2592000):
-                            count += 1
-                        domain.detected_comm_payloads = count
-                except Exception as e:
-                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
-
-                try:
-                    samples = response_json['detected_downloaded_samples']
-                    count = 0
-                    for s in samples:
-                        d = s["date"]
-                        d = datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
-                        ts = time.mktime(d.timetuple())
-                        if ts > (ctime - 2592000):
-                            count += 1
-                        domain.detected_down_payloads = count
-                except Exception as e:
-                    log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
-
-        except Exception as e:
-            log.debug('FG-DEBUG: ' + str(e.__doc__) + " - " + str(e))
-
-        if (domain.detected_urls > 1) or (domain.detected_comm_payloads > 1) or (domain.detected_down_payloads > 1):
+        if (result.detected_urls > 1) or (result.detected_comm_payloads > 1) or (result.detected_down_payloads > 1):
             return True
         else:
             return False
