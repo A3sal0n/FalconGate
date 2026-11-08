@@ -1,4 +1,4 @@
-# FalconGate kernel settings for Debian 13.
+# Falcongate kernel settings for Debian 13.
 #
 # The installer saves this file as /etc/sysctl.d/90-falcongate.conf, because Debian 13
 # no longer reads /etc/sysctl.conf at boot. To apply changes without restarting:
@@ -66,7 +66,7 @@ net.ipv4.tcp_syn_retries = 2
 net.ipv4.tcp_synack_retries = 2
 net.ipv4.tcp_max_syn_backlog = 4096
 
-# FalconGate routes between its interfaces, over IPv4 only
+# Falcongate routes between its interfaces, over IPv4 only
 net.ipv4.ip_forward = 1
 net.ipv4.conf.all.forwarding = 1
 net.ipv4.conf.default.forwarding = 1

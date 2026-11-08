@@ -331,7 +331,7 @@ class DownloadIntel(threading.Thread):
         # endpoint using the account API key. The endpoint is expected to return
         # JSON of the form {"ips": {category: [...]}, "domains": {category: [...]}}.
         # Entries are merged into the existing blacklists (same semantics as the
-        # public FalconGate feed). No-op when no key/URL is configured. Must be
+        # public Falcongate feed). No-op when no key/URL is configured. Must be
         # called while holding the lock (it mutates the shared blacklists).
         if not homenet.fg_api_key or not homenet.fg_premium_url:
             return

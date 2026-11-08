@@ -1,9 +1,9 @@
-##! Local site policy for FalconGate (Zeek 8 compatible).
+##! Local site policy for Falcongate (Zeek 8 compatible).
 ##!
 ##! The installer copies this file to /opt/zeek/share/zeek/site/local.zeek.
 ##! Script paths follow Zeek 8: no ".bro" suffixes, and scripts removed in
 ##! Zeek 8 (e.g. tuning/defaults, misc/scan) are not loaded. It is based on the
-##! stock Zeek local.zeek plus the three FalconGate-specific settings at the end.
+##! stock Zeek local.zeek plus the three Falcongate-specific settings at the end.
 
 # Log which scripts were loaded during each run.
 @load misc/loaded-scripts
@@ -73,16 +73,16 @@
 # Check file hashes against Team Cymru's Malware Hash Registry.
 @load frameworks/files/detect-MHR
 
-#### FalconGate customizations ####
+#### Falcongate customizations ####
 
 # Extract interesting files from traffic for inspection.
-@load FalconGate/extract-important-files
+@load Falcongate/extract-important-files
 
 # Detect port and address scans (replaces misc/scan, removed in Zeek 8).
 # Raises Scan::Port_Scan / Scan::Address_Scan notices read by lib/logparser.py.
-@load FalconGate/port-scan
+@load Falcongate/port-scan
 
-# Emit every log as JSON - the FalconGate log parsers (lib/logparser.py) read
+# Emit every log as JSON - the Falcongate log parsers (lib/logparser.py) read
 # the Zeek logs as JSON, so this is required, not optional.
 @load policy/tuning/json-logs
 

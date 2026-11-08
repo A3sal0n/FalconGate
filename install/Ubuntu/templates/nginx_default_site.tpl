@@ -12,7 +12,7 @@ server {
 	#
 	listen 0.0.0.0:443 ssl;
 
-	root /opt/FalconGate/html;
+	root /opt/Falcongate/html;
 
 	index index.html index.htm index.nginx-debian.html index.php;
 
@@ -20,8 +20,8 @@ server {
 	error_log /var/log/nginx/error.log;
 
 	server_name default_server;
-	ssl_certificate /opt/FalconGate/ssl/nginx.crt;
-	ssl_certificate_key /opt/FalconGate/ssl/nginx.key;
+	ssl_certificate /opt/Falcongate/ssl/nginx.crt;
+	ssl_certificate_key /opt/Falcongate/ssl/nginx.key;
 	
 	location ~\.php$ {
                   fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;

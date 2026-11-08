@@ -1,6 +1,6 @@
-# FalconGate — Component Testing Guide
+# Falcongate — Component Testing Guide
 
-This guide helps you verify that every component FalconGate depends on is
+This guide helps you verify that every component Falcongate depends on is
 installed and working after running the installer
 (`install/Ubuntu/easy_install.sh` or `install/Debian/easy_install.sh`).
 
@@ -15,7 +15,7 @@ confirming them first makes later failures easier to diagnose.
 
 ## Conventions
 
-- Run the commands **on the FalconGate appliance** over SSH unless a step says
+- Run the commands **on the Falcongate appliance** over SSH unless a step says
   "from a client device."
 - `IFACE0` is the **internal/monitoring** interface, `IFACE1` is the
   **uplink/WAN** interface. Substitute your real interface names (check with
@@ -32,7 +32,7 @@ confirming them first makes later failures easier to diagnose.
   PHP_FPM="php$(ls /etc/php | sort -V | tail -1)-fpm"
   echo "$PHP_FPM"   # e.g. php8.3-fpm
   ```
-- FalconGate logs through syslog and its logs API reads `/var/log/syslog`, so
+- Falcongate logs through syslog and its logs API reads `/var/log/syslog`, so
   **rsyslog must be installed**. Ubuntu has it by default, and the Debian installer
   adds it. If that file is absent, `journalctl | grep FG-` shows the same messages.
 
@@ -57,7 +57,7 @@ ss -tulpn
 ```
 
 ✅ You should see `:53` (dnsmasq), `:443` and `:80` (nginx), `127.0.0.1:5000`
-(FalconGate API), and `127.0.2.1:53` (dnscrypt-proxy).
+(Falcongate API), and `127.0.2.1:53` (dnscrypt-proxy).
 
 ---
 
@@ -96,7 +96,7 @@ apt-cache policy zeek-8.0
 
 ## 2. Zeek (network security monitor)
 
-Zeek watches `IFACE0` and writes the logs FalconGate parses.
+Zeek watches `IFACE0` and writes the logs Falcongate parses.
 
 ```bash
 # Cluster node status
@@ -105,7 +105,7 @@ Zeek watches `IFACE0` and writes the logs FalconGate parses.
 
 ✅ The `manager`, `proxy-1`, and `worker-1` nodes are listed as `running`.
 
-Confirm Zeek is actively producing logs (the FalconGate log parsers read these
+Confirm Zeek is actively producing logs (the Falcongate log parsers read these
 exact files):
 
 ```bash
@@ -115,13 +115,13 @@ tail -f /opt/zeek/spool/manager/conn.log
 
 ✅ `conn.log`, `dns.log`, `http.log`, `files.log`, and `notice.log` exist, and
 `conn.log` grows while traffic flows through the appliance. Each line is JSON
-(FalconGate relies on the `json-logs` policy).
+(Falcongate relies on the `json-logs` policy).
 
-Verify the FalconGate Zeek policy is installed:
+Verify the Falcongate Zeek policy is installed:
 
 ```bash
-ls /opt/zeek/share/zeek/policy/FalconGate/
-grep -r "FalconGate/extract-important-files" /opt/zeek/share/zeek/site/local.zeek
+ls /opt/zeek/share/zeek/policy/Falcongate/
+grep -r "Falcongate/extract-important-files" /opt/zeek/share/zeek/site/local.zeek
 ```
 
 ✅ The policy directory contains `extract-important-files.zeek`, and `local.zeek`
@@ -166,7 +166,7 @@ dig @IP0 <that-domain>
 ```
 
 ✅ A blocked domain resolves to `127.0.0.1` (dnsmasq returns the sinkhole entry
-written by FalconGate's intel downloader).
+written by Falcongate's intel downloader).
 
 **DHCP** — from a client set to DHCP on the internal network:
 
@@ -205,7 +205,7 @@ certificate retrieval.
 
 ## 5. iptables + ipset (firewall and IP blocking)
 
-FalconGate blocks malicious/blacklisted IPs through two ipset lists referenced
+Falcongate blocks malicious/blacklisted IPs through two ipset lists referenced
 by the iptables ruleset.
 
 ```bash
@@ -253,7 +253,7 @@ grep ipset /etc/crontab
 
 ---
 
-## 6. FalconGate service + internal API
+## 6. Falcongate service + internal API
 
 The main Python daemon runs all detection threads and exposes a local Flask API
 on `127.0.0.1:5000` (consumed by the PHP web UI).
@@ -290,7 +290,7 @@ curl -s -X POST http://127.0.0.1:5000/api/v1.0/falcongate/status \
   -H 'Content-Type: application/json' \
   -d '{"target":"alerts","timeframe":"alerts_week","filter":"all"}'
 
-# Last 20 FalconGate log lines
+# Last 20 Falcongate log lines
 curl -s -X POST http://127.0.0.1:5000/api/v1.0/falcongate/status \
   -H 'Content-Type: application/json' -d '{"target":"logs","log_count":20}'
 
@@ -316,7 +316,7 @@ systemctl status nginx "$PHP_FPM"
 ```
 
 ✅ `nginx -t` reports the config is OK. On Debian the installer also removes the
-distro's default site (`/etc/nginx/sites-enabled/default`) so FalconGate answers
+distro's default site (`/etc/nginx/sites-enabled/default`) so Falcongate answers
 on port 80.
 
 Test the HTTP→HTTPS redirect and that PHP executes:
@@ -341,9 +341,9 @@ with the admin account:
   script if the PHP CLI (`php-cli`) is installed:
 
   ```bash
-  cd /opt/FalconGate/html
+  cd /opt/Falcongate/html
   php encrypt_passwd.php 'yourNewPassword'   # prints the bcrypt hash
-  # then write "admin <hash>" into /opt/FalconGate/html/pwd.db
+  # then write "admin <hash>" into /opt/Falcongate/html/pwd.db
   ```
 
 ✅ After login the dashboard shows devices, alerts, logs, and network stats
@@ -353,7 +353,7 @@ without PHP errors (check `/var/log/nginx/error.log` if a page is blank).
 
 ## 8. Recon: Nmap port scanning
 
-FalconGate runs a daily Nmap scan of known hosts (the `PortScanner` thread) and
+Falcongate runs a daily Nmap scan of known hosts (the `PortScanner` thread) and
 stores discovered open ports per device.
 
 ```bash
@@ -361,7 +361,7 @@ stores discovered open ports per device.
 nmap --version
 
 # From a client on the network, generate a scannable target, or confirm
-# FalconGate's scan ran:
+# Falcongate's scan ran:
 grep "Port scan" /var/log/syslog | tail
 ```
 
@@ -415,8 +415,8 @@ section 3 against a freshly listed domain confirms the pipeline end-to-end.
 
 ## 11. Detection logic (optional, uses the test scripts)
 
-The `tests/` folder contains scripts that generate traffic patterns FalconGate
-should detect. **Run these from a client device connected to the FalconGate
+The `tests/` folder contains scripts that generate traffic patterns Falcongate
+should detect. **Run these from a client device connected to the Falcongate
 network**, not on the appliance:
 
 | Script | Simulates | Expected alert |
@@ -427,8 +427,8 @@ network**, not on the appliance:
 
 > **Port scanning note:** Zeek 8 no longer ships the built-in scan detector
 > (`misc/scan` was removed upstream), so the bundled `local.zeek` does not emit a
-> `Scan::*` notice and `tests/port_scanner.py` will not raise a FalconGate alert
-> on a stock install. FalconGate's own port-scan feature works the other way
+> `Scan::*` notice and `tests/port_scanner.py` will not raise a Falcongate alert
+> on a stock install. Falcongate's own port-scan feature works the other way
 > around: the `PortScanner` thread (`lib/recon.py`) uses Nmap to scan your LAN
 > devices and records their open ports (verified in section 8), rather than
 > detecting scans originating from clients. To get Zeek-side scan detection back,
@@ -437,7 +437,7 @@ network**, not on the appliance:
 The application-level unit tests run on the appliance:
 
 ```bash
-cd /opt/FalconGate
+cd /opt/Falcongate
 /opt/fg/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
@@ -458,7 +458,7 @@ every minute — allow a few minutes).
 
 ## 12. Email alerting (optional)
 
-If you configured Gmail reporting in the dashboard, FalconGate emails new alerts
+If you configured Gmail reporting in the dashboard, Falcongate emails new alerts
 via `smtp.gmail.com:587`.
 
 - Ensure `dst_emails`, `mailer_address`, and `mailer_pwd` are set in
@@ -489,7 +489,7 @@ email is delivered.
 | Dashboard blank / errors | API 200s (§6), then nginx + php-fpm logs (§7) |
 | No alerts emailed | user_config mail settings + Gmail App Password (§12) |
 
-All FalconGate daemon activity is tagged `FG-` in `/var/log/syslog`, so
+All Falcongate daemon activity is tagged `FG-` in `/var/log/syslog`, so
 `grep "FG-" /var/log/syslog` is the single most useful command when something
 behaves unexpectedly (use `journalctl | grep FG-` if your system has no
 `/var/log/syslog`).

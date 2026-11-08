@@ -5,7 +5,7 @@ After=nginx.service
 
 [Service]
 User=root
-WorkingDirectory=/opt/FalconGate
+WorkingDirectory=/opt/Falcongate
 ExecStart=/opt/fg/bin/python3 falcongate.py
 Restart=always
 

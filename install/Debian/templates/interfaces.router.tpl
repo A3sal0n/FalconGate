@@ -1,10 +1,10 @@
-# FalconGate router-mode network configuration (Debian / ifupdown)
+# Falcongate router-mode network configuration (Debian / ifupdown)
 # IFACE0 = LAN (static, serves DHCP), IFACE1 = WAN (DHCP client / uplink)
 
 auto lo
 iface lo inet loopback
 
-# LAN interface: static address, FalconGate serves DHCP here
+# LAN interface: static address, Falcongate serves DHCP here
 auto IFACE0
 iface IFACE0 inet static
     address IP0

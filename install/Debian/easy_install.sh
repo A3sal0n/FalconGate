@@ -362,7 +362,7 @@ sleep 3
 cd /opt
 
 # Source of the Falcongate code. Override for development:
-#   FG_SOURCE_DIR=/path/to/local/FalconGate  copy a local working tree (incl. uncommitted changes)
+#   FG_SOURCE_DIR=/path/to/local/Falcongate  copy a local working tree (incl. uncommitted changes)
 #   FG_REPO_URL=<url or path> FG_BRANCH=<branch>  clone a different repo and/or branch
 FG_REPO_URL="${FG_REPO_URL:-https://github.com/A3sal0n/FalconGate.git}"
 FG_BRANCH="${FG_BRANCH:-}"
@@ -373,19 +373,19 @@ if [[ -n "${FG_SOURCE_DIR:-}" ]]; then
     exit 1
   fi
   echo "Copying Falcongate from local source ${FG_SOURCE_DIR}..."
-  mkdir -p /opt/FalconGate
-  cp -a "${FG_SOURCE_DIR}/." /opt/FalconGate/
+  mkdir -p /opt/Falcongate
+  cp -a "${FG_SOURCE_DIR}/." /opt/Falcongate/
 else
   echo "Cloning Falcongate repository ${FG_REPO_URL} ${FG_BRANCH:+(branch ${FG_BRANCH})}..."
   sleep 3
-  git clone ${FG_BRANCH:+--branch "${FG_BRANCH}"} "${FG_REPO_URL}" FalconGate
+  git clone ${FG_BRANCH:+--branch "${FG_BRANCH}"} "${FG_REPO_URL}" Falcongate
 fi
 
-cd FalconGate/
+cd Falcongate/
 
 chmod +x falcongate.py
 
-ln -s /opt/FalconGate/falcongate.py /sbin/falcongate
+ln -s /opt/Falcongate/falcongate.py /sbin/falcongate
 
 cd ../
 
@@ -394,7 +394,7 @@ sleep 3
 
 "${PYTHON_BIN}" -m venv --upgrade /opt/fg
 /opt/fg/bin/python -m pip install --upgrade pip setuptools
-/opt/fg/bin/python -m pip install -r FalconGate/install/Debian/Python/requirements.txt
+/opt/fg/bin/python -m pip install -r Falcongate/install/Debian/Python/requirements.txt
 /opt/fg/bin/python -m pip install --upgrade tzupdate
 /opt/fg/bin/tzupdate
 
@@ -425,40 +425,40 @@ sleep 2
 
 cd /opt
 
-cp FalconGate/install/Debian/templates/zeek.service.tpl /etc/systemd/system/zeek.service
-cp FalconGate/install/Debian/templates/local.zeek.tpl /opt/zeek/share/zeek/site/local.zeek
-sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Debian/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
-sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Debian/templates/config.ini.tpl > FalconGate/config.ini
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Debian/fw/iptables.rules > /etc/iptables.rules
-cp FalconGate/install/Debian/templates/user_config.ini.tpl FalconGate/html/user_config.ini
-cp FalconGate/install/Debian/templates/pwd.db.tpl FalconGate/html/pwd.db
+cp Falcongate/install/Debian/templates/zeek.service.tpl /etc/systemd/system/zeek.service
+cp Falcongate/install/Debian/templates/local.zeek.tpl /opt/zeek/share/zeek/site/local.zeek
+sed -e "s/IFACE0/$IFACE0/g" Falcongate/install/Debian/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
+sed -e "s/IFACE0/$IFACE0/g" Falcongate/install/Debian/templates/config.ini.tpl > Falcongate/config.ini
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IFACE1/$IFACE1/g" Falcongate/install/Debian/fw/iptables.rules > /etc/iptables.rules
+cp Falcongate/install/Debian/templates/user_config.ini.tpl Falcongate/html/user_config.ini
+cp Falcongate/install/Debian/templates/pwd.db.tpl Falcongate/html/pwd.db
 # Debian uses ifupdown (/etc/network/interfaces) rather than netplan.
 if [ "$deploymentMode" == "attached" ]; then
-  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" -e "s/IP1/$IP1/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Debian/templates/interfaces.attached.tpl > /etc/network/interfaces
+  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" -e "s/IP1/$IP1/g" -e "s/GATEWAY/$GATEWAY/g" Falcongate/install/Debian/templates/interfaces.attached.tpl > /etc/network/interfaces
 else
-  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Debian/templates/interfaces.router.tpl > /etc/network/interfaces
+  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" Falcongate/install/Debian/templates/interfaces.router.tpl > /etc/network/interfaces
 fi
 systemctl enable networking.service 2>/dev/null || true
 
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" FalconGate/install/Debian/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" Falcongate/install/Debian/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
 # Detect the installed PHP-FPM socket instead of hard-coding the PHP version.
 PHP_FPM_VERSION="$(ls /etc/php/ 2>/dev/null | sort -V | tail -1)"
 PHP_FPM_SOCK="/run/php/php${PHP_FPM_VERSION}-fpm.sock"
 echo "Using PHP-FPM socket: ${PHP_FPM_SOCK}"
-sed -e "s#PHPFPMSOCK#${PHP_FPM_SOCK}#g" FalconGate/install/Debian/templates/nginx_default_site.tpl > /etc/nginx/conf.d/falcongate.conf
-# Remove Debian's default site so FalconGate is served on port 80 as well.
+sed -e "s#PHPFPMSOCK#${PHP_FPM_SOCK}#g" Falcongate/install/Debian/templates/nginx_default_site.tpl > /etc/nginx/conf.d/falcongate.conf
+# Remove Debian's default site so Falcongate is served on port 80 as well.
 rm -f /etc/nginx/sites-enabled/default
 systemctl enable "php${PHP_FPM_VERSION}-fpm" 2>/dev/null || true
-cp FalconGate/install/Debian/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" FalconGate/install/Debian/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
+cp Falcongate/install/Debian/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" Falcongate/install/Debian/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 # Debian 13 no longer reads /etc/sysctl.conf at boot, so these settings need their own file.
-cp FalconGate/install/Debian/templates/sysctl.conf.tpl /etc/sysctl.d/90-falcongate.conf
-cp FalconGate/install/Debian/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+cp Falcongate/install/Debian/templates/sysctl.conf.tpl /etc/sysctl.d/90-falcongate.conf
+cp Falcongate/install/Debian/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 
 # Additional Zeek configuration
-mkdir /opt/zeek/share/zeek/policy/FalconGate
-cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
-cp FalconGate/install/Debian/templates/port-scan.zeek.tpl /opt/zeek/share/zeek/policy/FalconGate/port-scan.zeek
+mkdir /opt/zeek/share/zeek/policy/Falcongate
+cp -R Falcongate/common/zeek/rules/* /opt/zeek/share/zeek/policy/Falcongate/
+cp Falcongate/install/Debian/templates/port-scan.zeek.tpl /opt/zeek/share/zeek/policy/Falcongate/port-scan.zeek
 /opt/zeek/bin/zeekctl install
 systemctl daemon-reload
 systemctl enable zeek.service
@@ -486,8 +486,8 @@ echo "127.0.1.1 falcongate" >> /etc/hosts
 
 # Other
 touch /etc/dnsmasq.block
-chown www-data:www-data FalconGate/html/user_config.ini
-chown www-data:www-data FalconGate/html/pwd.db
+chown www-data:www-data Falcongate/html/user_config.ini
+chown www-data:www-data Falcongate/html/pwd.db
 systemctl enable falcongate.service
 
 echo "All tasks finished!"

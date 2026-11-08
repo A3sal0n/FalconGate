@@ -367,7 +367,7 @@ sleep 3
 cd /opt
 
 # Source of the Falcongate code. Override for development:
-#   FG_SOURCE_DIR=/path/to/local/FalconGate  copy a local working tree (incl. uncommitted changes)
+#   FG_SOURCE_DIR=/path/to/local/Falcongate  copy a local working tree (incl. uncommitted changes)
 #   FG_REPO_URL=<url or path> FG_BRANCH=<branch>  clone a different repo and/or branch
 FG_REPO_URL="${FG_REPO_URL:-https://github.com/A3sal0n/FalconGate.git}"
 FG_BRANCH="${FG_BRANCH:-}"
@@ -378,19 +378,19 @@ if [[ -n "${FG_SOURCE_DIR:-}" ]]; then
     exit 1
   fi
   echo "Copying Falcongate from local source ${FG_SOURCE_DIR}..."
-  mkdir -p /opt/FalconGate
-  cp -a "${FG_SOURCE_DIR}/." /opt/FalconGate/
+  mkdir -p /opt/Falcongate
+  cp -a "${FG_SOURCE_DIR}/." /opt/Falcongate/
 else
   echo "Cloning Falcongate repository ${FG_REPO_URL} ${FG_BRANCH:+(branch ${FG_BRANCH})}..."
   sleep 3
-  git clone ${FG_BRANCH:+--branch "${FG_BRANCH}"} "${FG_REPO_URL}" FalconGate
+  git clone ${FG_BRANCH:+--branch "${FG_BRANCH}"} "${FG_REPO_URL}" Falcongate
 fi
 
-cd FalconGate/
+cd Falcongate/
 
 chmod +x falcongate.py
 
-ln -s /opt/FalconGate/falcongate.py /sbin/falcongate
+ln -s /opt/Falcongate/falcongate.py /sbin/falcongate
 
 cd ../
 
@@ -399,7 +399,7 @@ sleep 3
 
 "${PYTHON_BIN}" -m venv --upgrade /opt/fg
 /opt/fg/bin/python -m pip install --upgrade pip setuptools
-/opt/fg/bin/python -m pip install -r FalconGate/install/Ubuntu/Python/requirements.txt
+/opt/fg/bin/python -m pip install -r Falcongate/install/Ubuntu/Python/requirements.txt
 /opt/fg/bin/python -m pip install --upgrade tzupdate
 /opt/fg/bin/tzupdate
 
@@ -430,30 +430,30 @@ sleep 2
 
 cd /opt
 
-cp FalconGate/install/Ubuntu/templates/zeek.service.tpl /etc/systemd/system/zeek.service
-cp FalconGate/install/Ubuntu/templates/local.zeek.tpl /opt/zeek/share/zeek/site/local.zeek
-sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
-sed -e "s/IFACE0/$IFACE0/g" FalconGate/install/Ubuntu/templates/config.ini.tpl > FalconGate/config.ini
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Ubuntu/fw/iptables.rules > /etc/iptables.rules
-cp FalconGate/install/Ubuntu/templates/user_config.ini.tpl FalconGate/html/user_config.ini
-cp FalconGate/install/Ubuntu/templates/pwd.db.tpl FalconGate/html/pwd.db
+cp Falcongate/install/Ubuntu/templates/zeek.service.tpl /etc/systemd/system/zeek.service
+cp Falcongate/install/Ubuntu/templates/local.zeek.tpl /opt/zeek/share/zeek/site/local.zeek
+sed -e "s/IFACE0/$IFACE0/g" Falcongate/install/Ubuntu/templates/node.cfg.tpl > /opt/zeek/etc/node.cfg
+sed -e "s/IFACE0/$IFACE0/g" Falcongate/install/Ubuntu/templates/config.ini.tpl > Falcongate/config.ini
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IFACE1/$IFACE1/g" Falcongate/install/Ubuntu/fw/iptables.rules > /etc/iptables.rules
+cp Falcongate/install/Ubuntu/templates/user_config.ini.tpl Falcongate/html/user_config.ini
+cp Falcongate/install/Ubuntu/templates/pwd.db.tpl Falcongate/html/pwd.db
 if [ "$deploymentMode" == "attached" ]; then
-  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g"  -e "s/IP1/$IP1/g" -e "s/GATEWAY/$GATEWAY/g" FalconGate/install/Ubuntu/templates/50-cloud-init.yaml.tpl > /etc/netplan/50-cloud-init.yaml
+  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g"  -e "s/IP1/$IP1/g" -e "s/GATEWAY/$GATEWAY/g" Falcongate/install/Ubuntu/templates/50-cloud-init.yaml.tpl > /etc/netplan/50-cloud-init.yaml
 else
-  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" FalconGate/install/Ubuntu/templates/50-cloud-init.yaml.router.tpl > /etc/netplan/50-cloud-init.yaml
+  sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/IFACE1/$IFACE1/g" Falcongate/install/Ubuntu/templates/50-cloud-init.yaml.router.tpl > /etc/netplan/50-cloud-init.yaml
 fi
 
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" FalconGate/install/Ubuntu/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
-cp FalconGate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/falcongate.conf
-cp FalconGate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
-sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" FalconGate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
-cp FalconGate/install/Ubuntu/templates/sysctl.conf.tpl /etc/sysctl.conf
-cp FalconGate/install/Ubuntu/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" Falcongate/install/Ubuntu/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
+cp Falcongate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/falcongate.conf
+cp Falcongate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
+sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" Falcongate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
+cp Falcongate/install/Ubuntu/templates/sysctl.conf.tpl /etc/sysctl.conf
+cp Falcongate/install/Ubuntu/templates/dnscrypt-proxy.toml.tpl /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 
 # Additional Zeek configuration
-mkdir /opt/zeek/share/zeek/policy/FalconGate
-cp -R FalconGate/common/zeek/rules/* /opt/zeek/share/zeek/policy/FalconGate/
-cp FalconGate/install/Ubuntu/templates/port-scan.zeek.tpl /opt/zeek/share/zeek/policy/FalconGate/port-scan.zeek
+mkdir /opt/zeek/share/zeek/policy/Falcongate
+cp -R Falcongate/common/zeek/rules/* /opt/zeek/share/zeek/policy/Falcongate/
+cp Falcongate/install/Ubuntu/templates/port-scan.zeek.tpl /opt/zeek/share/zeek/policy/Falcongate/port-scan.zeek
 /opt/zeek/bin/zeekctl install
 systemctl daemon-reload
 systemctl enable zeek.service
@@ -479,8 +479,8 @@ echo "127.0.1.1 falcongate" >> /etc/hosts
 
 # Other
 touch /etc/dnsmasq.block
-chown www-data:www-data FalconGate/html/user_config.ini
-chown www-data:www-data FalconGate/html/pwd.db
+chown www-data:www-data Falcongate/html/user_config.ini
+chown www-data:www-data Falcongate/html/pwd.db
 systemctl enable falcongate.service
 
 echo "All tasks finished!"

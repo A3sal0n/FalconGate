@@ -74,10 +74,10 @@ yields `192.168.1`).
 The appliance sits **on your existing LAN** alongside the router you already
 have. Both of its interfaces get static addresses on that subnet — `<base>.2` on
 the LAN side and `<base>.3` on the WAN side — and both use your existing router as
-their upstream gateway. FalconGate does not replace your router; it protects only
+their upstream gateway. Falcongate does not replace your router; it protects only
 the devices whose traffic is sent through it.
 
-Because FalconGate is not inline, a device is only inspected/filtered when it
+Because Falcongate is not inline, a device is only inspected/filtered when it
 routes through the appliance. You achieve that either by setting the device's
 gateway (and DNS) to the appliance's LAN IP (`<base>.2`), or by letting the
 appliance's own DHCP server lease it an address. If you use the appliance's DHCP,
@@ -86,7 +86,7 @@ servers on the shared subnet don't conflict. Manage the appliance via its LAN IP
 (`<base>.2`): the firewall drops new inbound connections that arrive on the WAN
 IP (`<base>.3`).
 
-Choose attached mode when you want to add FalconGate to a network without
+Choose attached mode when you want to add Falcongate to a network without
 re-cabling it or changing the existing router, and you're comfortable steering
 selected devices through it.
 
@@ -97,14 +97,14 @@ interface pulls its address via DHCP from your modem or upstream router, while
 the LAN interface takes the static address you choose (`192.168.100.1` by default)
 and serves DHCP on
 its /24 network (`192.168.100.0/24` by default). Every client connected to the LAN interface is routed and
-filtered through FalconGate by default — there is nothing to configure per
+filtered through Falcongate by default — there is nothing to configure per
 device.
 
-This is the recommended mode for the typical "FalconGate is my router" topology:
+This is the recommended mode for the typical "Falcongate is my router" topology:
 plug your modem/uplink into the WAN interface and your switch/clients into the
 LAN interface. Connect your management device to the LAN side and reach the
 dashboard at `https://<LAN IP>` (SSH: `ssh ubuntu@<LAN IP>`), using the LAN address
 you chose.
 
-Choose router mode when FalconGate should be the single choke point for all of
+Choose router mode when Falcongate should be the single choke point for all of
 your LAN's traffic.

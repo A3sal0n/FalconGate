@@ -1,4 +1,4 @@
-# FalconGate attached-mode network configuration (Debian / ifupdown)
+# Falcongate attached-mode network configuration (Debian / ifupdown)
 # Both interfaces sit on the existing LAN subnet. IFACE0 = LAN (static + DHCP
 # server), IFACE1 = WAN (static, holds the default route to the existing router).
 

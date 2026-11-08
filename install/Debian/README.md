@@ -5,7 +5,7 @@ on a Debian server, so treat the listed OS and Python versions as the target, no
 a tested-support claim.
 
 Debian 12 (bookworm) is not supported, and the installer stops if it runs on any
-other release. Debian 12 has no `dnscrypt-proxy` package, and FalconGate's
+other release. Debian 12 has no `dnscrypt-proxy` package, and Falcongate's
 configuration needs the 2.1 series that Debian 13 ships.
 
 Zeek is not in Debian's stable repositories, so the installer adds the Zeek
@@ -25,7 +25,7 @@ production host.
 - **Networking** is configured with ifupdown (`/etc/network/interfaces`) instead
   of netplan — see [`templates/interfaces.router.tpl`](templates/interfaces.router.tpl)
   and [`templates/interfaces.attached.tpl`](templates/interfaces.attached.tpl).
-  This also matches the `/etc/network/interfaces` path FalconGate already expects
+  This also matches the `/etc/network/interfaces` path Falcongate already expects
   in `lib/utils.py`. The installer assumes a standard Debian install that uses
   ifupdown; on a cloud image that uses `systemd-networkd` or cloud-init you will
   need to disable those first.
@@ -106,10 +106,10 @@ yields `192.168.1`).
 The appliance sits **on your existing LAN** alongside the router you already
 have. Both of its interfaces get static addresses on that subnet — `<base>.2` on
 the LAN side and `<base>.3` on the WAN side — and the WAN side holds the default
-route to your existing router. FalconGate does not replace your router; it
+route to your existing router. Falcongate does not replace your router; it
 protects only the devices whose traffic is sent through it.
 
-Because FalconGate is not inline, a device is only inspected/filtered when it
+Because Falcongate is not inline, a device is only inspected/filtered when it
 routes through the appliance. You achieve that either by setting the device's
 gateway (and DNS) to the appliance's LAN IP (`<base>.2`), or by letting the
 appliance's own DHCP server lease it an address. If you use the appliance's DHCP,
@@ -125,7 +125,7 @@ interface pulls its address via DHCP from your modem or upstream router, while
 the LAN interface takes the static address you choose (`192.168.100.1` by default)
 and serves DHCP on
 its /24 network (`192.168.100.0/24` by default). Every client connected to the LAN interface is routed and
-filtered through FalconGate by default — there is nothing to configure per
+filtered through Falcongate by default — there is nothing to configure per
 device.
 
 Connect your management device to the LAN side and reach the dashboard at

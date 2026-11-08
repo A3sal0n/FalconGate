@@ -139,7 +139,7 @@ class MinuteAlerts(threading.Thread):
     def create_bad_domain_alert(self, src, dst):
         category = homenet.hosts[src].dns[dst].category
         description = 'This host was detected trying to resolve the IP address of a domain ' \
-                      'flagged by VirusTotal, the FalconGate premium feed, and/or the bundled ' \
+                      'flagged by VirusTotal, the Falcongate premium feed, and/or the bundled ' \
                       'detection blocklists. This could indicate the presence of Malware or ' \
                       'other unwanted/abusive activity on this host.'
         indicators = homenet.hosts[src].dns[dst].query

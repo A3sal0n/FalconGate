@@ -3,7 +3,7 @@
 ## default_creds.csv
 
 A seed list of default `login:password` combinations used by the Hydra
-default-credentials assessment (`lib/offensive.py`). At runtime FalconGate
+default-credentials assessment (`lib/offensive.py`). At runtime Falcongate
 refreshes this list about once a week from the upstream SecLists lists
 configured under `[api_urls] fg_intel_creds` in `config.ini`, writing the
 merged result to `/tmp/default_creds.csv`. This bundled copy is the fallback

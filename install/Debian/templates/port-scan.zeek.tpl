@@ -1,9 +1,9 @@
-##! FalconGate port and address scan detection (Zeek 8 compatible).
+##! Falcongate port and address scan detection (Zeek 8 compatible).
 ##!
-##! Zeek 8 no longer ships the misc/scan policy, so FalconGate provides its own.
+##! Zeek 8 no longer ships the misc/scan policy, so Falcongate provides its own.
 ##! The installer copies this file to
-##! /opt/zeek/share/zeek/policy/FalconGate/port-scan.zeek and local.zeek loads
-##! it with "@load FalconGate/port-scan".
+##! /opt/zeek/share/zeek/policy/Falcongate/port-scan.zeek and local.zeek loads
+##! it with "@load Falcongate/port-scan".
 ##!
 ##! It tracks failed TCP connection attempts per scanner with SumStats and
 ##! raises two notices in notice.log:
@@ -11,7 +11,7 @@
 ##!   Scan::Port_Scan    - one host probed many ports on a single victim.
 ##!   Scan::Address_Scan - one host probed the same port on many victims.
 ##!
-##! The module is named "Scan" so the notice names match what the FalconGate
+##! The module is named "Scan" so the notice names match what the Falcongate
 ##! notice log parser (lib/logparser.py) looks for. Port_Scan notices always
 ##! carry both $src (scanner) and $dst (victim), which the parser requires.
 
@@ -42,7 +42,7 @@ export {
 	## addr_scan_interval before an Address_Scan notice is raised.
 	const addr_scan_threshold = 25.0 &redef;
 
-	## Scanners to ignore entirely, e.g. the FalconGate appliance itself,
+	## Scanners to ignore entirely, e.g. the Falcongate appliance itself,
 	## which runs its own scheduled nmap scans of the home network.
 	## Example in local.zeek: redef Scan::ignore_scanners += { 192.168.1.1 };
 	const ignore_scanners: set[addr] = {} &redef;
