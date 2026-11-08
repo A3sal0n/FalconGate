@@ -451,8 +451,10 @@ curl -s -X POST http://127.0.0.1:5000/api/v1.0/falcongate/status \
   -d '{"target":"alerts","timeframe":"alerts_week","filter":"all"}'
 ```
 
-✅ A matching alert is present (DGA alerts are evaluated hourly; domain alerts
-every minute — allow a few minutes).
+✅ A matching alert is present. DGA alerts are evaluated hourly. Malware,
+ransomware, phishing, fraud, scam and abuse domains alert as soon as the DNS log
+line is read; crypto, drugs, gambling and vaping domains are bundled per device
+and reported hourly. VirusTotal domain alerts are evaluated every minute.
 
 ---
 

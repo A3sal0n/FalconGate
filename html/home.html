@@ -28,8 +28,11 @@
         <section class="config-card">
             <h2>Getting started</h2>
             <ol class="home-list">
-                <li>Change the default password after your first login to the console.</li>
+                <li>Set a strong password when the console prompts you during the first sign-in.</li>
                 <li>Fill in the fields on the <a href="read_config.php">Configuration</a> page. This is optional, but Falcongate needs these settings to use its full capabilities.</li>
+                <li>Open <a href="logs.php">System Overview</a> and confirm that all services are running.</li>
+                <li>Connect a device to the Falcongate network and confirm that it appears on the <a href="status.php">Status</a> page.</li>
+                <li>Test detection by running <code>nslookup malware.wicar.org</code> on that device. This only looks up a harmless test domain. A Malware alert should appear on <a href="get_alerts.php">Recent Alerts</a> within about a minute, and by email if you set that up.</li>
             </ol>
         </section>
 
