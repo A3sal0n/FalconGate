@@ -40,6 +40,8 @@ class StatsTests(unittest.TestCase):
         stats.create_stats_db()
         del stats.pending_connections[:]
         self.addCleanup(stats.pending_connections.clear)
+        del stats.pending_dns[:]
+        self.addCleanup(stats.pending_dns.clear)
 
     def connections(self):
         con = stats.connect_stats_db()
@@ -245,6 +247,128 @@ class StatsTests(unittest.TestCase):
 
         with patch.object(stats, 'homenet', network):
             self.assertEqual(stats.collect_country_totals(HOUR + 100)[HOUR], {})
+
+    def dns_fields(self, query='www.evil.test', src='192.168.100.10', server='192.168.100.1', ts=HOUR + 10.0, port=53, line='1'):
+        return {'uid': line, 'trans_id': 1, 'ts': ts, 'query': query, 'qtype_name': 'A', 'id.orig_h': src,
+                'id.resp_h': server, 'id.resp_p': port}
+
+    def dns_record(self, *args, rcode='NOERROR', category=None, **kwargs):
+        fields = self.dns_fields(*args, **kwargs)
+        stats.record_dns_lookup(fields, fields['query'], '.'.join(fields['query'].split('.')[-2:]), rcode, category)
+
+    def dns_activity(self, start=HOUR, end=HOUR + 100):
+        stats.save_dns_lookups(end)
+        with patch.object(stats, 'homenet', Network()):
+            return stats.get_dns_activity(start, end)
+
+    def test_only_plain_dns_to_internet_servers_counts_as_external(self):
+        self.assertTrue(stats.is_external_resolver(self.dns_fields(server='8.8.8.8')))
+        for fields in (self.dns_fields(), self.dns_fields(server='8.8.8.8', port=5353),
+                       self.dns_fields(server='224.0.0.251'), self.dns_fields(server='not-an-ip')):
+            self.assertFalse(stats.is_external_resolver(fields), fields['id.resp_h'])
+
+    def test_dns_summary_counts_lookups_failures_and_flags(self):
+        self.dns_record(line='1')
+        self.dns_record(line='2', rcode='NXDOMAIN', query='a.nope.test')
+        self.dns_record(line='3', query='bad.evil2.test', category='phishing')
+        self.dns_record(line='4')
+
+        summary = self.dns_activity()['summary']
+
+        self.assertEqual(summary, {'lookups': 4, 'domains': 3, 'flagged': 1, 'failed_percent': 25.0})
+
+    def test_rereading_dns_log_does_not_count_twice(self):
+        self.dns_record()
+        stats.save_dns_lookups(HOUR + 50)
+        self.dns_record()
+
+        self.assertEqual(self.dns_activity()['summary']['lookups'], 1)
+
+    def test_failed_dns_save_keeps_lookups(self):
+        self.dns_record()
+        with patch.object(stats, 'connect_stats_db', side_effect=stats.lite.OperationalError('database is locked')):
+            with self.assertRaises(stats.lite.OperationalError):
+                stats.save_dns_lookups(HOUR + 50)
+
+        self.assertEqual(len(stats.pending_dns), 1)
+        self.assertEqual(self.dns_activity()['summary']['lookups'], 1)
+
+    def test_dns_timeline_splits_series_and_fills_empty_hours(self):
+        self.dns_record(line='1', ts=HOUR - 3590.0)
+        self.dns_record(line='2', ts=HOUR + 10.0, rcode='NXDOMAIN')
+        self.dns_record(line='3', ts=HOUR + 20.0, category='gambling', query='x.bet.test')
+
+        timeline = self.dns_activity(HOUR - 7200, HOUR + 100)['timeline']
+
+        self.assertEqual(timeline['normal'], [0, 1, 0])
+        self.assertEqual(timeline['failed'], [0, 0, 1])
+        self.assertEqual(timeline['flagged'], [0, 0, 1])
+        self.assertEqual(len(timeline['labels']), 3)
+
+    def test_long_periods_are_limited_to_retained_days_and_grouped_by_day(self):
+        self.dns_record()
+
+        timeline = self.dns_activity(HOUR - 30 * 86400, HOUR + 100)['timeline']
+
+        self.assertEqual(len(timeline['labels']), 8)
+        self.assertEqual(sum(timeline['normal']), 1)
+
+    def test_failed_and_flagged_are_grouped_by_device(self):
+        self.dns_record(line='1', rcode='NXDOMAIN')
+        self.dns_record(line='2', rcode='NXDOMAIN', query='b.nope.test', src='192.168.100.20')
+        self.dns_record(line='3', rcode='NXDOMAIN', query='c.nope.test', src='192.168.100.20')
+        self.dns_record(line='4', query='a.bad.test', category='malware')
+        self.dns_record(line='5', query='a.bet.test', category='gambling')
+        self.dns_record(line='6', query='b.bet.test', category='gambling', src='192.168.100.20')
+
+        dns = self.dns_activity()
+
+        self.assertEqual(dns['failed_by_device'][0], {'label': '192.168.100.20', 'count': 2})
+        self.assertEqual(dns['flagged_by_device']['labels'], ['192.168.100.10', '192.168.100.20'])
+        self.assertEqual(dns['flagged_by_device']['series'], {'gambling': [1, 1], 'malware': [1, 0]})
+
+    def test_new_domains_skip_older_and_well_known_ones(self):
+        self.dns_record(line='1', query='www.older.test', ts=HOUR - 7200.0)
+        self.dns_record(line='2', query='cdn.older.test', ts=HOUR + 10.0)
+        self.dns_record(line='3', query='www.popular.test', ts=HOUR + 20.0)
+        self.dns_record(line='4', query='www.fresh.test', ts=HOUR + 30.0)
+        self.dns_record(line='5', query='api.fresh.test', ts=HOUR + 40.0, src='192.168.100.20')
+
+        with patch.object(stats, 'top_domains', {'popular.test'}):
+            domains = self.dns_activity()['new_domains']
+
+        self.assertEqual([row['domain'] for row in domains], ['fresh.test'])
+        self.assertEqual(domains[0]['lookups'], 2)
+        self.assertEqual(domains[0]['device'], '192.168.100.10 and 1 more')
+
+    def test_external_resolvers_are_listed_per_device_and_server(self):
+        self.dns_record(line='1', server='8.8.8.8')
+        self.dns_record(line='2', server='8.8.8.8')
+        self.dns_record(line='3')
+
+        resolvers = self.dns_activity()['external_resolvers']
+
+        self.assertEqual(len(resolvers), 1)
+        self.assertEqual((resolvers[0]['device'], resolvers[0]['server'], resolvers[0]['lookups']), ('192.168.100.10', '8.8.8.8', 2))
+
+    def test_dns_activity_is_empty_without_data(self):
+        dns = self.dns_activity()
+
+        self.assertEqual(dns['summary'], {'lookups': 0, 'domains': 0, 'flagged': 0, 'failed_percent': 0})
+        self.assertEqual(dns['new_domains'], [])
+
+    def test_old_dns_activity_is_deleted(self):
+        now = HOUR + 8 * 86400
+        self.dns_record(line='1', ts=HOUR + 10.0, server='8.8.8.8')
+        self.dns_record(line='2', ts=now - 60.0)
+        stats.save_dns_lookups(now)
+
+        stats.delete_old_dns(now)
+
+        con = stats.connect_stats_db()
+        self.assertEqual(con.execute("select count(*) from dns_activity").fetchone()[0], 1)
+        self.assertEqual(con.execute("select count(*) from dns_external_resolvers").fetchone()[0], 0)
+        con.close()
 
     def test_old_stats_are_deleted(self):
         now = HOUR + stats.RETENTION_SECONDS

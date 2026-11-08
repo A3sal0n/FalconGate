@@ -206,6 +206,8 @@ class FlaskAPI(threading.Thread):
             get_data = stats.get_country_stats
         elif stype == 'connections':
             get_data = stats.get_top_connections
+        elif stype == 'dns':
+            get_data = stats.get_dns_activity
         else:
             abort(400)
 

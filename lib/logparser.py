@@ -214,6 +214,16 @@ class ReadBroDNS(threading.Thread):
                                         # the new-query branch (it would otherwise be
                                         # stale from a previous line or unbound).
                                         qtype = fields.get("qtype_name")
+                                        # Detection blocklists (alert only, never
+                                        # blackholed). Skip anything on the
+                                        # top-domains whitelist.
+                                        dcat = settings.detect_domains.get(query)
+                                        if dcat is None and sld:
+                                            dcat = settings.detect_domains.get(sld)
+                                        if sld in top_domains:
+                                            dcat = None
+                                        if homenet.hosts[cip].mac != homenet.mac:
+                                            stats.record_dns_lookup(fields, query, sld, rcode, dcat)
                                         if rcode is not None:
                                             if query not in homenet.hosts[cip].dns:
                                                 request = DNSRequest()
@@ -225,14 +235,7 @@ class ReadBroDNS(threading.Thread):
                                                 request.sip = fields["id.orig_h"]
                                                 request.qtype = qtype
                                                 request.qresult = rcode
-                                                # Flag lookups of domains on the
-                                                # detection blocklists (alert only,
-                                                # never blackholed). Skip anything
-                                                # on the top-domains whitelist.
-                                                dcat = settings.detect_domains.get(query)
-                                                if dcat is None and sld:
-                                                    dcat = settings.detect_domains.get(sld)
-                                                if dcat and sld not in top_domains:
+                                                if dcat:
                                                     request.bad = True
                                                     request.category = dcat
                                                 homenet.hosts[cip].dns[query] = request

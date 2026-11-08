@@ -235,6 +235,53 @@ a.header-brand:focus-visible {
 	text-decoration: none;
 }
 
+.dns-tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+	gap: 20px;
+	margin-top: 16px;
+}
+
+.dns-tile {
+	background: #f7f8f8;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.dns-tile strong {
+	font-size: 24px;
+}
+
+.dns-timeline {
+	margin-top: 20px;
+}
+
+.chart-canvas-dns-timeline {
+	height: 260px;
+}
+
+.dns-table-wrap {
+	overflow-x: auto;
+}
+
+.dns-table {
+	width: 100%;
+}
+
+.dns-table th {
+	border-bottom: 2px solid #1dabb8;
+	padding: 8px 10px;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.dns-table td {
+	border-bottom: 1px solid #dcdfe0;
+	padding: 8px 10px;
+	overflow-wrap: anywhere;
+}
+
 .stats-refresh,
 .stats-refresh:hover {
 	font-size: 14px;

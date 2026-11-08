@@ -115,6 +115,16 @@ if ($result){
 		}
 	}
 }
+
+// The DNS overview comes from the hourly DNS activity table.
+$dns = null;
+$dns_result = false;
+if ($result){
+	$data['stats_type'] = 'dns';
+	$dns_result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/stats', json_encode($data));
+	$dns = $dns_result ? json_decode($dns_result, true) : null;
+}
+$has_dns_data = is_array($dns) && $dns['summary']['lookups'] > 0;
 ?>
 
 <div class="alerts-toolbar">
@@ -306,7 +316,217 @@ window.addEventListener("load", function(){
 <?php } ?>
 <?php } ?>
 
-<?php if ($has_data || $has_top_data){ ?>
+<?php if ($result){ ?>
+<h2 class="stats-section-title">DNS activity</h2>
+<p class="config-hint">Domain lookups made by your devices in the <?php echo $period_hint; ?>. Saved every 5 minutes and kept for 7 days, so longer periods show the last 7 days. Times are in UTC. Lookups sent over encrypted DNS by a device are not visible here.</p>
+<?php if (!$dns_result || !is_array($dns)){ ?>
+<p class="error_message">The DNS activity could not be loaded.</p>
+<?php }elseif (!$has_dns_data){ ?>
+<p class="alerts-empty">No DNS activity has been recorded for this period yet. It is saved every 5 minutes while devices are active.</p>
+<?php }else{
+	$dns_tiles = array(
+		array('label' => 'Lookups', 'value' => number_format($dns['summary']['lookups'])),
+		array('label' => 'Unique domains', 'value' => number_format($dns['summary']['domains'])),
+		array('label' => 'Failed lookups', 'value' => $dns['summary']['failed_percent'] . '%'),
+		array('label' => 'Flagged lookups', 'value' => number_format($dns['summary']['flagged'])),
+	);
+	$failed_rows = $dns['failed_by_device'];
+	$flagged_devices = $dns['flagged_by_device']['labels'];
+?>
+<div class="dns-tiles">
+	<?php foreach ($dns_tiles as $tile){ ?>
+	<section class="config-card dns-tile">
+		<span class="config-hint"><?php echo $tile['label']; ?></span>
+		<strong><?php echo esc_html($tile['value']); ?></strong>
+	</section>
+	<?php } ?>
+</div>
+
+<section class="config-card chart-card dns-timeline">
+	<div>
+		<h2>Lookups over time</h2>
+		<p class="config-hint">Sudden bursts, or activity at unusual hours, can point to malware. Flagged lookups are on the detection blocklists, and failed lookups are for domains that don't exist.</p>
+	</div>
+	<div class="chart-canvas chart-canvas-dns-timeline">
+		<canvas id="dnsTimeline" role="img" aria-label="Lookups over time, split into normal, failed and flagged"></canvas>
+	</div>
+</section>
+
+<div class="chart-grid">
+	<section class="config-card chart-card">
+		<div>
+			<h2>Failed lookups by device</h2>
+			<p class="config-hint">Many failures from one device can mean malware searching for its control server</p>
+		</div>
+		<?php if (count($failed_rows) == 0){ ?>
+		<p class="alerts-empty">No failed lookups in this period.</p>
+		<?php }else{ ?>
+		<div class="chart-canvas" style="height: <?php echo 70 + 30 * count($failed_rows); ?>px">
+			<canvas id="dnsFailedByDevice"></canvas>
+		</div>
+		<?php } ?>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Flagged lookups by device</h2>
+			<p class="config-hint">Lookups of domains on the detection blocklists, by category</p>
+		</div>
+		<?php if (count($flagged_devices) == 0){ ?>
+		<p class="alerts-empty">No flagged lookups in this period.</p>
+		<?php }else{ ?>
+		<div class="chart-canvas" style="height: <?php echo 100 + 30 * count($flagged_devices); ?>px">
+			<canvas id="dnsFlaggedByDevice"></canvas>
+		</div>
+		<?php } ?>
+	</section>
+</div>
+
+<div class="chart-grid">
+	<section class="config-card chart-card">
+		<div>
+			<h2>Newly seen domains</h2>
+			<p class="config-hint">Domains first seen in this period, newest first, leaving out well-known sites. Most are harmless, and the list settles down after a few days of learning.</p>
+		</div>
+		<?php if (count($dns['new_domains']) == 0){ ?>
+		<p class="alerts-empty">No new domains in this period.</p>
+		<?php }else{ ?>
+		<div class="dns-table-wrap">
+			<table class="dns-table">
+				<thead><tr><th>Domain</th><th>First seen</th><th>Device</th><th>Lookups</th><th>Flagged as</th></tr></thead>
+				<tbody>
+					<?php foreach ($dns['new_domains'] as $row){ ?>
+					<tr>
+						<td><?php echo esc_html($row['domain']); ?></td>
+						<td class="alert-time"><?php echo esc_html($row['first_seen']); ?></td>
+						<td><?php echo esc_html($row['device']); ?></td>
+						<td><?php echo intval($row['lookups']); ?></td>
+						<td><?php echo $row['category'] ? esc_html(ucfirst($row['category'])) : '-'; ?></td>
+					</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
+		<?php } ?>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Devices bypassing Falcongate DNS</h2>
+			<p class="config-hint">Devices sending plain DNS directly to Internet servers, which avoids Falcongate's DNS filtering</p>
+		</div>
+		<?php if (count($dns['external_resolvers']) == 0){ ?>
+		<p class="alerts-empty">No devices bypassed Falcongate DNS in this period.</p>
+		<?php }else{ ?>
+		<div class="dns-table-wrap">
+			<table class="dns-table">
+				<thead><tr><th>Device</th><th>DNS server</th><th>Lookups</th><th>Last seen</th></tr></thead>
+				<tbody>
+					<?php foreach ($dns['external_resolvers'] as $row){ ?>
+					<tr>
+						<td><?php echo esc_html($row['device']); ?></td>
+						<td><?php echo esc_html($row['server']); ?></td>
+						<td><?php echo intval($row['lookups']); ?></td>
+						<td class="alert-time"><?php echo esc_html($row['last_seen']); ?></td>
+					</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
+		<?php } ?>
+	</section>
+</div>
+
+<script>
+window.addEventListener("load", function(){
+	var dns = <?php echo json_encode($dns, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+	var gridColor = "#e3e6e7";
+	// Each category keeps its color whichever categories are present.
+	var categoryColors = {
+		malware: "rgba(251,128,114,0.8)", ransomware: "rgba(188,128,189,0.8)", phishing: "rgba(128,177,211,0.8)",
+		fraud: "rgba(253,180,98,0.8)", scam: "rgba(141,211,199,0.8)", abuse: "rgba(255,255,179,0.8)",
+		crypto: "rgba(190,186,218,0.8)", drugs: "rgba(179,222,105,0.8)", gambling: "rgba(252,205,229,0.8)",
+		vaping: "rgba(217,217,217,0.8)"
+	};
+	var deviceTicks = {
+		autoSkip: false,
+		callback: function(value){
+			var label = this.getLabelForValue(value);
+			var limit = window.innerWidth <= 900 ? 24 : 40;
+			return label.length > limit ? "…" + label.slice(1 - limit) : label;
+		}
+	};
+	var countTicks = {precision: 0};
+
+	new Chart(document.getElementById("dnsTimeline").getContext("2d"), {
+		type: "bar",
+		data: {
+			labels: dns.timeline.labels,
+			datasets: [
+				{label: "Normal", data: dns.timeline.normal, backgroundColor: "#1dabb8"},
+				{label: "Failed", data: dns.timeline.failed, backgroundColor: "rgba(253,180,98,0.8)"},
+				{label: "Flagged", data: dns.timeline.flagged, backgroundColor: "rgba(251,128,114,0.8)"}
+			]
+		},
+		options: {
+			maintainAspectRatio: false,
+			plugins: {legend: {position: "top"}},
+			scales: {
+				x: {stacked: true, grid: {display: false}},
+				y: {stacked: true, beginAtZero: true, grid: {color: gridColor}, ticks: countTicks}
+			}
+		}
+	});
+
+	var failedCanvas = document.getElementById("dnsFailedByDevice");
+	if (failedCanvas){
+		new Chart(failedCanvas.getContext("2d"), {
+			type: "bar",
+			data: {
+				labels: dns.failed_by_device.map(function(row){ return row.label; }),
+				datasets: [{label: "Failed lookups", data: dns.failed_by_device.map(function(row){ return row.count; }), backgroundColor: "#1dabb8"}]
+			},
+			options: {
+				indexAxis: "y",
+				maintainAspectRatio: false,
+				plugins: {legend: {display: false}},
+				scales: {
+					x: {beginAtZero: true, grid: {color: gridColor}, ticks: countTicks},
+					y: {grid: {display: false}, ticks: deviceTicks}
+				}
+			}
+		});
+	}
+
+	var flaggedCanvas = document.getElementById("dnsFlaggedByDevice");
+	if (flaggedCanvas){
+		new Chart(flaggedCanvas.getContext("2d"), {
+			type: "bar",
+			data: {
+				labels: dns.flagged_by_device.labels,
+				datasets: Object.keys(dns.flagged_by_device.series).map(function(category){
+					return {
+						label: category.charAt(0).toUpperCase() + category.slice(1),
+						data: dns.flagged_by_device.series[category],
+						backgroundColor: categoryColors[category] || "rgba(217,217,217,0.8)"
+					};
+				})
+			},
+			options: {
+				indexAxis: "y",
+				maintainAspectRatio: false,
+				plugins: {legend: {position: "top"}},
+				scales: {
+					x: {stacked: true, beginAtZero: true, grid: {color: gridColor}, ticks: countTicks},
+					y: {stacked: true, grid: {display: false}, ticks: deviceTicks}
+				}
+			}
+		});
+	}
+});
+</script>
+<?php } ?>
+<?php } ?>
+
+<?php if ($has_data || $has_top_data || $has_dns_data){ ?>
 <script src="scripts/chart-4.6.1.umd.min.js"></script>
 <?php } ?>
 <?php if ($has_data){ ?>
