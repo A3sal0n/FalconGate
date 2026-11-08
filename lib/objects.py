@@ -2,17 +2,22 @@ import collections
 from lib.logger import *
 
 
+def with_article(word):
+    return ("an " if word[:1].lower() in "aeiou" else "a ") + word
+
+
 class HostAlertTemplate:
     def __init__(self, homenet, alert):
         self.homenet = homenet
         self.alert = alert
-        self.subject = "A " + alert[6] + " alert was reported for host " + alert[7]
+        threat = with_article(alert[6])
+        self.subject = threat[0].upper() + threat[1:] + " alert was reported for host " + alert[7]
         self.indicators = alert[8].replace('.', '[.]').split('|')
         self.references = alert[11].split('|')
         self.body = ''
 
     def create_body(self):
-        self.body = "Falcongate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
+        self.body = "Falcongate has reported " + with_article(self.alert[6]) + " alert for the device below:\r\n\r\n" \
                     "IP address: " + self.alert[7] + "\r\n" \
                     "Hostname: " + str(self.homenet.hosts[self.alert[7]].hostname) + "\r\n" \
                     "MAC address: " + str(self.homenet.hosts[self.alert[7]].mac) + "\r\n" \
@@ -81,6 +86,7 @@ class DNSRequest:
         self.qresult = None
         self.bad = False
         self.category = None
+        self.bundled = False
         self.counter = 0
 
 

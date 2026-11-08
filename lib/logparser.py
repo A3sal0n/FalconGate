@@ -6,6 +6,7 @@ from user_agents import parse
 import os
 import lib.utils as utils
 import lib.stats as stats
+import lib.alerts as alerts
 import glob
 import requests
 import base64
@@ -235,6 +236,14 @@ class ReadBroDNS(threading.Thread):
                                                     request.bad = True
                                                     request.category = dcat
                                                 homenet.hosts[cip].dns[query] = request
+                                                # High-severity categories are alerted
+                                                # now instead of on the next minute pass.
+                                                # If this fails the entry stays flagged
+                                                # and the minute pass retries it.
+                                                if request.bad and alerts.is_immediate(request) \
+                                                        and homenet.hosts[cip].mac != homenet.mac:
+                                                    alerts.create_bad_domain_alert(cip, query, int(time.time()))
+                                                    del homenet.hosts[cip].dns[query]
                                             else:
                                                 homenet.hosts[cip].dns[query].lseen = float(fields["ts"])
                                                 homenet.hosts[cip].dns[query].counter += 1

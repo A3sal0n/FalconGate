@@ -36,8 +36,10 @@ blackholed (unlike the `[blacklists_domain]` feeds). At runtime `lib/intel.py`
 (`DownloadIntel.refresh_detect_domains`) refreshes the map about once a week from
 the upstream blocklistproject plain-domain lists and holds it in memory
 (`settings.detect_domains`); a DNS lookup of a listed domain flags that lookup and
-raises a "bad domain" alert tagged with its category. This bundled gzip is the
-offline fallback used when the upstream lists cannot be downloaded.
+raises an alert for its category. Malware, ransomware, phishing, fraud, scam and
+abuse hits are reported as soon as they are observed; other categories are bundled
+into one alert per device each hour. This bundled gzip is the offline fallback used
+when the upstream lists cannot be downloaded.
 
 ### Source and format
 
