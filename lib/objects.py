@@ -2,17 +2,22 @@ import collections
 from lib.logger import *
 
 
+def with_article(word):
+    return ("an " if word[:1].lower() in "aeiou" else "a ") + word
+
+
 class HostAlertTemplate:
     def __init__(self, homenet, alert):
         self.homenet = homenet
         self.alert = alert
-        self.subject = "A " + alert[6] + " alert was reported for host " + alert[7]
+        threat = with_article(alert[6])
+        self.subject = threat[0].upper() + threat[1:] + " alert was reported for host " + alert[7]
         self.indicators = alert[8].replace('.', '[.]').split('|')
         self.references = alert[11].split('|')
         self.body = ''
 
     def create_body(self):
-        self.body = "Falcongate has reported a " + self.alert[6] + " alert for the device below:\r\n\r\n" \
+        self.body = "Falcongate has reported " + with_article(self.alert[6]) + " alert for the device below:\r\n\r\n" \
                     "IP address: " + self.alert[7] + "\r\n" \
                     "Hostname: " + str(self.homenet.hosts[self.alert[7]].hostname) + "\r\n" \
                     "MAC address: " + str(self.homenet.hosts[self.alert[7]].mac) + "\r\n" \
@@ -80,6 +85,8 @@ class DNSRequest:
         self.qtype = None
         self.qresult = None
         self.bad = False
+        self.category = None
+        self.bundled = False
         self.counter = 0
 
 
@@ -192,9 +199,12 @@ class Network:
         self.vt_api_key = None
         self.dst_emails = None
         self.email_watchlist = []
-        self.fg_intel_creds = None
+        self.fg_intel_creds = []
         self.fg_intel_ip = None
         self.fg_intel_domains = None
+        # Premium (subscribed) threat-intel feed: authenticated endpoint + API key
+        self.fg_premium_url = None
+        self.fg_api_key = None
         self.vt_api_domain_url = None
         self.vt_api_ip_url = None
         self.vt_api_file_url = None
@@ -250,46 +260,6 @@ class DefaultCredentials:
         self.user = ''
         self.password = ''
 
-
-class Country:
-    def __init__(self, code, name):
-        self.code = code
-        self.name = name
-        self.is_risky = self.is_risky(code)
-        self.hourly_stats = {}
-
-    @staticmethod
-    def is_risky(ccode):
-        risk_countries = ["CN", "US", "TR", "BR", "RU", "VN", "JP", "IN", "TW", "RO", "HU"]
-        if ccode in risk_countries:
-            return True
-        else:
-            return False
-
-    def get_stats(self, stime, etime):
-        sout = {"bytes_sent": 0, "bytes_received": 0, "pqt_sent": 0, "pqt_received": 0, "nconn": 0}
-        skeys = sorted(self.hourly_stats)
-        try:
-            for k in skeys:
-                if stime <= k <= etime:
-                    sout["bytes_sent"] += self.hourly_stats[k].data_sent
-                    sout["bytes_received"] += self.hourly_stats[k].data_received
-                    sout["pqt_sent"] += self.hourly_stats[k].pqt_sent
-                    sout["pqt_received"] += self.hourly_stats[k].pqt_received
-                    sout["nconn"] += self.hourly_stats[k].nconn
-        except Exception as e:
-            log.debug('FG-ERROR: ' + str(e.__doc__) + " - " + str(e))
-
-        return sout
-
-
-class HourStats:
-    def __init__(self):
-        self.data_sent = 0
-        self.data_received = 0
-        self.pqt_sent = 0
-        self.pqt_received = 0
-        self.nconn = 0
 
 # Other useful stuff
 CC = {

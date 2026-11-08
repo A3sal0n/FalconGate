@@ -12,65 +12,118 @@ if (login_check() != true){
 require 'templates/header.html';
 ?>
 
-<script type="text/javascript">
-function show_hide_row(row)
-{
- $("#"+row).toggle();
-}
-</script>
-
 <h1>Status</h1>
 
 <?php
-$data = array("target" => "network");
-$result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
-if (!$result){
-    echo ("<h3><span class=error_message>Falcongate API process seems to be down!</span></h3>");
-    echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
-}else{
-    $obj = json_decode($result, true);
-    $iface = $obj['interface'];
-    $ip = $obj['ip'];
-    $gw = $obj['gateway'];
-    $netmask = $obj['netmask'];
-    $mac = strtoupper($obj['mac']);
-    echo ("<h2>Falcongate network configuration</h2>");
-    echo ('<table class=TFtable width=98% halign=left>');
-    echo ("<tr><td><b>Interface:</b></td><td>".$iface."</td></tr>");
-    echo ("<tr><td><b>MAC:</b></td><td>".$mac."</td></tr>");
-    echo ("<tr><td><b>IP Address:</b></td><td>".$ip."</td></tr>");
-    echo ("<tr><td><b>Default gateway:</b></td><td>".$gw."</td></tr>");
-    echo ("<tr><td><b>Network mask:</b></td><td>".$netmask."</td></tr></table>");
-    
-    $data = array("target" => "devices");
-    $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
-    $obj = json_decode($result, true);
-    echo ('<br><h2>Active home devices</h2>
-    <table class=TFtable width=98% halign=left id=table_detail><tr>
-    <td><b>Hostname</b></td><td><b>MAC</b></td><td><b>IP Address</b></td><td><b>Vendor</b></td><td><b>Details</b></td></tr>');
-    $i = 0;
-	foreach ($obj as $device){
-		$i++;
-        if ($device['ip'] == $ip){
-            echo ('<tr><td>'.$mac.'</td>'.'<td>'.$device['ip'].'</td>'.'<td>Falcongate</td></tr>');
-        }else{
-            $open_ports = array();
-            foreach ($device['tcp_ports'] as $port){
-                array_push($open_ports, 'TCP/'.$port);
-            }
-            foreach ($device['udp_ports'] as $port){
-                array_push($open_ports, 'UDP/'.$port);
-            }
-            echo ('<tr style="cursor: pointer;" onclick=show_hide_row("hidden_row'.$i.'");><td>'.$device['hostname'].'</td>'.'<td>'.strtoupper($device['mac']).'</td>'.'<td>'.$device['ip'].'</td>'.'<td>'.$device['vendor'].'</td>'.'<td><a href="#" onclick=show_hide_row("hidden_row'.$i.'");">Show more</a></td></tr>');
-			echo ('<tr id=hidden_row'.$i.' class=hidden_row><td colspan=5>');
-			echo ('<b>Hostname:</b> '.$device['hostname'].'<br><b>MAC Address: </b>'.$device['mac'].'<br><b>IP Address: </b>'.$device['ip'].'<br><b>Vendor: </b>'.$device['vendor'].'<br><b>Open Ports: </b>'.implode(', ', $open_ports).'');			
-			echo ('</td></tr>');
-			
-        }
-    }
-    echo ('</table><br>');
-}
+// The API sends missing values as the text "None", and dnsmasq uses "*" for an unknown hostname.
+$known = function ($value) {
+    $value = (string) $value;
+    return ($value === '' || $value === 'None' || $value === '*') ? 'Unknown' : $value;
+};
 
+$status_url = 'http://127.0.0.1:5000/api/v1.0/falcongate/status';
+$network = json_decode((string) CallAPI('POST', $status_url, json_encode(array("target" => "network"))), true);
+
+if (!is_array($network) || !isset($network['ip'])){
+    echo ('<p class="error_message">The status could not be loaded. The Falcongate API process may be down. Check your device\'s configuration and reboot if necessary.</p>');
+}else{
+    $devices = json_decode((string) CallAPI('POST', $status_url, json_encode(array("target" => "devices"))), true);
+    $settings = array(
+        'Interface' => $network['interface'],
+        'MAC address' => strtoupper((string) $network['mac']),
+        'IP address' => $network['ip'],
+        'Default gateway' => $network['gateway'],
+        'Network mask' => $network['netmask'],
+    );
+?>
+
+<div class="config-page">
+    <section class="config-card">
+        <h2>Network configuration</h2>
+        <div class="status-settings">
+            <?php foreach ($settings as $label => $value){ ?>
+            <div class="status-setting">
+                <span class="config-hint"><?php echo $label; ?></span>
+                <strong><?php echo esc_html($known($value)); ?></strong>
+            </div>
+            <?php } ?>
+        </div>
+    </section>
+
+    <section class="config-card">
+        <h2>Active devices</h2>
+<?php if (!is_array($devices)){ ?>
+        <p class="error_message">The device list could not be loaded.</p>
+<?php }elseif (count($devices) == 0){ ?>
+        <p class="config-hint">No devices have been detected yet.</p>
+<?php }else{ ?>
+        <p class="config-hint"><?php echo count($devices); ?> <?php echo count($devices) == 1 ? 'device' : 'devices'; ?>. Select a row to see open ports.</p>
+        <table class="alerts-table" id="devices_table">
+            <thead>
+                <tr>
+                    <th>Hostname</th>
+                    <th>MAC address</th>
+                    <th>IP address</th>
+                    <th>Vendor</th>
+                    <th><span class="visually-hidden">Details</span></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+            foreach ($devices as $index => $device){
+                $is_appliance = $device['ip'] == $network['ip'];
+                $hostname = $is_appliance ? 'Falcongate' : $known($device['hostname']);
+                $mac = strtoupper($known($device['mac']));
+                $vendor = $is_appliance ? 'Falcongate' : $known($device['vendor']);
+                $ports = array();
+                foreach ($device['tcp_ports'] as $port){
+                    $ports[] = 'TCP/' . (int) $port;
+                }
+                foreach ($device['udp_ports'] as $port){
+                    $ports[] = 'UDP/' . (int) $port;
+                }
+            ?>
+                <tr class="alert-row">
+                    <td data-label="Hostname" class="status-hostname"><?php echo esc_html($hostname); ?></td>
+                    <td data-label="MAC address"><?php echo esc_html($mac); ?></td>
+                    <td data-label="IP address"><?php echo esc_html($device['ip']); ?></td>
+                    <td data-label="Vendor"><?php echo esc_html($vendor); ?></td>
+                    <td class="alert-toggle"><button type="button" class="alert-details-button" aria-expanded="false" aria-controls="device_details_<?php echo (int) $index; ?>">Details</button></td>
+                </tr>
+                <tr class="alert-details" id="device_details_<?php echo (int) $index; ?>" hidden>
+                    <td colspan="5">
+                        <dl>
+                            <dt>Hostname</dt><dd><?php echo esc_html($hostname); ?></dd>
+                            <dt>MAC address</dt><dd><?php echo esc_html($mac); ?></dd>
+                            <dt>IP address</dt><dd><?php echo esc_html($device['ip']); ?></dd>
+                            <dt>Vendor</dt><dd><?php echo esc_html($vendor); ?></dd>
+                            <dt>Open ports</dt><dd><?php echo count($ports) > 0 ? implode(', ', $ports) : 'None detected'; ?></dd>
+                        </dl>
+                    </td>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+
+        <script>
+        document.getElementById("devices_table").addEventListener("click", function(event){
+            var row = event.target.closest(".alert-row");
+            if (!row) {
+                return;
+            }
+            var button = row.querySelector(".alert-details-button");
+            var details = document.getElementById(button.getAttribute("aria-controls"));
+            details.hidden = !details.hidden;
+            button.setAttribute("aria-expanded", String(!details.hidden));
+            button.textContent = details.hidden ? "Details" : "Hide";
+        });
+        </script>
+<?php } ?>
+    </section>
+</div>
+
+<?php
+}
 ?>
 
 <?php

@@ -14,6 +14,8 @@ function login($uname, $password) {
         // Get the current user-agent string of the user
         $user_browser = $_SERVER['HTTP_USER_AGENT'];
         $_SESSION['ID'] = hash('sha512', $user_ip . $user_browser);
+        // Each login gets a new CSRF token.
+        unset($_SESSION['csrf_token']);
 
         return true;
     }else{
@@ -30,7 +32,8 @@ function login_check() {
     $user_browser = $_SERVER['HTTP_USER_AGENT'];
 
     $login_check = hash('sha512', $user_ip . $user_browser);
-    if ($_SESSION){
+    // Test for the ID itself: after logout the session can still hold a CSRF token.
+    if (isset($_SESSION['ID'])){
         if ($_SESSION['ID'] == $login_check){
             // Logged In!!!!
             return true;
@@ -44,6 +47,91 @@ function login_check() {
     }
 }
 
+
+// Adds the file's modification time to its URL, so browsers fetch it again after an update.
+function asset_url($path) {
+    return $path . '?v=' . @filemtime(dirname(__DIR__) . '/' . $path);
+}
+
+function esc_html($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+// Returns the password hash from a "<user> <hash>" file, or null if unreadable.
+function read_password_hash($path) {
+    $contents = @file_get_contents($path);
+    if ($contents === false) {
+        return null;
+    }
+    $fields = preg_split('/\s+/', trim($contents));
+    return isset($fields[1]) ? $fields[1] : null;
+}
+
+// The hash every install ships with (the Ubuntu and Debian templates are identical).
+function default_password_hash() {
+    return read_password_hash(dirname(__DIR__, 2) . '/install/Ubuntu/templates/pwd.db.tpl');
+}
+
+function is_default_password() {
+    $default = default_password_hash();
+    $current = read_password_hash(dirname(__DIR__) . '/pwd.db');
+    return $default !== null && $current !== null && hash_equals($default, $current);
+}
+
+// Returns a message describing why a password is not acceptable, or null if it is.
+function password_problem($password) {
+    if (!is_string($password) || strpos($password, "\0") !== false) {
+        return 'The password contains invalid characters.';
+    }
+    if (strlen($password) < 8 || strlen($password) > 72) {
+        return 'The password must be between 8 and 72 characters long.';
+    }
+    if (!preg_match('/[a-z]/', $password) || !preg_match('/[A-Z]/', $password) || !preg_match('/\d/', $password)) {
+        return 'The password must contain lowercase letters, uppercase letters and digits.';
+    }
+    $default = default_password_hash();
+    if ($default !== null && password_verify($password, $default)) {
+        return 'The new password cannot be the default password.';
+    }
+    return null;
+}
+
+// Stores a new admin password. Returns an error message, or null on success.
+function set_admin_password($password) {
+    $problem = password_problem($password);
+    if ($problem !== null) {
+        return $problem;
+    }
+    $line = 'admin ' . password_hash($password, PASSWORD_DEFAULT);
+    if (file_put_contents(dirname(__DIR__) . '/pwd.db', $line, LOCK_EX) === false) {
+        return 'The new password could not be saved.';
+    }
+    return null;
+}
+
+function csrf_token() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . csrf_token() . '">';
+}
+
+// Stops the request unless it is a POST carrying this session's CSRF token.
+function require_csrf_token() {
+    $sent = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    $expected = isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : '';
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !is_string($sent) || $expected === ''
+        || !hash_equals($expected, $sent)) {
+        http_response_code(403);
+        echo ("<p><span class=error_message>This request could not be verified. Please return to the page and try again.</span></p>");
+        exit(0);
+    }
+}
 
 function esc_url($url) {
 
@@ -76,9 +164,10 @@ function esc_url($url) {
     }
 }
 
-function CallAPI($method, $url, $data = false)
+function CallAPI($method, $url, $data = false, $timeout = 0)
 {
     $curl = curl_init();
+    curl_setopt($curl, CURLOPT_TIMEOUT, $timeout);
     curl_setopt($curl, CURLOPT_HEADER, false);
     curl_setopt($curl, CURLOPT_HTTPHEADER,array("Content-type: application/json"));
 
@@ -110,6 +199,33 @@ function CallAPI($method, $url, $data = false)
     curl_close($curl);
 
     return $result;
+}
+
+// Counts alerts per UTC day, from the first day of the period through today, including days with
+// no alerts. A period of N days is a rolling window, so it touches N + 1 days. With no period, the
+// range starts at the oldest alert.
+function count_alerts_per_day($alerts, $period_days) {
+    $counts = array();
+    foreach ($alerts as $alert) {
+        // First seen, formatted by the API as "YYYY/MM/DD HH:MM:SS UTC".
+        $day = substr((string) $alert[2], 0, 10);
+        $counts[$day] = isset($counts[$day]) ? $counts[$day] + 1 : 1;
+    }
+    ksort($counts);
+
+    $today = strtotime(gmdate('Y/m/d') . ' UTC');
+    $first = $period_days === null ? strtotime(array_key_first($counts) . ' UTC') : $today - $period_days * 86400;
+
+    $days = array();
+    for ($day = $first; $day <= $today; $day += 86400) {
+        $key = gmdate('Y/m/d', $day);
+        $days[] = array(
+            'label' => gmdate('d/m', $day),
+            'date' => gmdate('d/m/Y', $day),
+            'count' => isset($counts[$key]) ? $counts[$key] : 0,
+        );
+    }
+    return $days;
 }
 
 function redirect($url)

@@ -12,21 +12,18 @@ if (login_check() != true){
 }
 require 'templates/header.html';
 ?>
+<h1>Network Statistics</h1>
+
 <?php
-$period = (!isset($_GET['period'])) ? 'stats_day': $_GET['period'];
-if($period == 'stats_day') {
-	$tframe = 86400;
-	$display = "24 hours";
-}elseif($period == 'stats_week') {
-	$tframe = 604800;
-	$display = "1 week";
-}elseif($period == 'stats_2week') {
-	$tframe = 1209600;
-	$display = "2 weeks";
-}elseif($period == 'stats_month') {
-	$tframe = 2592000;
-	$display = "1 month";
-}
+$periods = array(
+	'stats_day' => array('seconds' => 86400, 'label' => 'Previous 24 hours'),
+	'stats_week' => array('seconds' => 604800, 'label' => 'Previous week'),
+	'stats_2week' => array('seconds' => 1209600, 'label' => 'Previous 2 weeks'),
+	'stats_month' => array('seconds' => 2592000, 'label' => 'Previous month'),
+);
+$period = isset($_GET['period']) && is_string($_GET['period']) && isset($periods[$_GET['period']]) ? $_GET['period'] : 'stats_day';
+$tframe = $periods[$period]['seconds'];
+$period_hint = strtolower($periods[$period]['label']);
 $data = array("stats_type" => "country", "start_time" => strval(time()-$tframe), "end_time" => strval(time()));
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/stats', json_encode($data));
 $datapoints_ds_labels = array();
@@ -35,12 +32,13 @@ $datapoints_dr_labels = array();
 $datapoints_dr_data = array();
 $datapoints_nc_labels = array();
 $datapoints_nc_data = array();
+$map_traffic = array();
 
-if (!$result){
-    echo ("<h3><span class=error_message>Falcongate API process seems to be down!</span></h3>");
-    echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
-}else{
+if ($result){
 	$obj = json_decode($result, true);
+	if (!is_array($obj)){
+		$obj = array();
+	}
 
 	// Collecting data sent data points
 	$tmp_list = array();
@@ -54,7 +52,7 @@ if (!$result){
 
 	foreach($top10 as $cc => $bs) {
 	    array_push($datapoints_ds_labels, $cc);
-	    array_push($datapoints_ds_data, round($bs/1000,2));
+	    array_push($datapoints_ds_data, round($bs/1000000,2));
 	}
 
 	// Collecting data received data points
@@ -69,7 +67,7 @@ if (!$result){
 
 	foreach($top10 as $cc => $br) {
 	    array_push($datapoints_dr_labels, $cc);
-	    array_push($datapoints_dr_data, round($br/1000,2));
+	    array_push($datapoints_dr_data, round($br/1000000,2));
 	}
 
 	// Collecting connections data points
@@ -86,9 +84,117 @@ if (!$result){
 	    array_push($datapoints_nc_labels, $cc);
 	    array_push($datapoints_nc_data, $nc);
 	}
+
+	// The map shows every country, not only the top 10.
+	foreach($obj as $cc => $stats) {
+	    $map_traffic[$cc] = array('sent' => intval($stats["bytes_sent"]), 'received' => intval($stats["bytes_received"]));
+	}
 }
+$has_data = count($datapoints_nc_labels) > 0;
+
+// The top senders, destinations and pairs come from the connections table.
+$top_charts = array(
+	'senders' => array('id' => 'topSenders', 'title' => 'Top 10 data senders (MB)', 'hint' => 'Known devices on your network'),
+	'destinations' => array('id' => 'topDestinations', 'title' => 'Top 10 destination IPs (MB)', 'hint' => 'Internet addresses that received the most data, with their country'),
+	'pairs' => array('id' => 'topPairs', 'title' => 'Top 10 connection pairs (MB)', 'hint' => 'Device and Internet address pairs by data sent'),
+);
+$top_data = array();
+$has_top_data = false;
+$top_result = false;
+if ($result){
+	$data['stats_type'] = 'connections';
+	$top_result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/stats', json_encode($data));
+	$top = $top_result ? json_decode($top_result, true) : null;
+	foreach ($top_charts as $key => $chart){
+		$rows = is_array($top) && isset($top[$key]) ? $top[$key] : array();
+		$top_data[$chart['id']] = array('labels' => array(), 'values' => array());
+		foreach ($rows as $row){
+			array_push($top_data[$chart['id']]['labels'], $row['label']);
+			array_push($top_data[$chart['id']]['values'], round($row['bytes']/1000000,2));
+			$has_top_data = true;
+		}
+	}
+}
+
+// The DNS overview comes from the hourly DNS activity table.
+$dns = null;
+$dns_result = false;
+if ($result){
+	$data['stats_type'] = 'dns';
+	$dns_result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/stats', json_encode($data));
+	$dns = $dns_result ? json_decode($dns_result, true) : null;
+}
+$has_dns_data = is_array($dns) && $dns['summary']['lookups'] > 0;
 ?>
-<h1>Network Statistics</h1>
+
+<div class="alerts-toolbar">
+	<form id="period_form" action="" method="get">
+		<label for="period">Period</label>
+		<select id="period" name="period" onchange="this.form.submit()">
+			<?php foreach ($periods as $value => $option){ ?>
+			<option value="<?php echo $value; ?>" <?php echo $period == $value ? 'selected' : ''; ?>><?php echo $option['label']; ?></option>
+			<?php } ?>
+		</select>
+	</form>
+	<button class="config_button stats-refresh" type="submit" form="period_form">Refresh</button>
+</div>
+
+<?php if ($result){ ?>
+<h2 class="stats-section-title">Traffic by country</h2>
+<p class="config-hint">Outbound connections from your devices in the <?php echo $period_hint; ?>, grouped by the destination's country. Statistics are saved every 5 minutes.</p>
+<?php } ?>
+
+<?php if (!$result){ ?>
+<p class="error_message stats-message">The statistics could not be loaded. The Falcongate API process may be down. Check your device's configuration and reboot if necessary.</p>
+<?php }elseif (!$has_data){ ?>
+<p class="alerts-empty stats-message">No statistics have been recorded for this period yet. They are saved every 5 minutes while traffic flows.</p>
+<?php }else{ ?>
+<div class="chart-grid">
+	<section class="config-card chart-card">
+		<div>
+			<h2>Data sent (MB)</h2>
+			<p class="config-hint">Top 10 destination countries, <?php echo $period_hint; ?></p>
+		</div>
+		<div class="chart-canvas chart-canvas-square">
+			<canvas id="countriesDataSent"></canvas>
+		</div>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Data received (MB)</h2>
+			<p class="config-hint">Top 10 source countries, <?php echo $period_hint; ?></p>
+		</div>
+		<div class="chart-canvas chart-canvas-square">
+			<canvas id="countriesDataReceived"></canvas>
+		</div>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Connections</h2>
+			<p class="config-hint">Top 10 destination countries, <?php echo $period_hint; ?></p>
+		</div>
+		<div class="chart-canvas chart-canvas-square">
+			<canvas id="countriesNumConn"></canvas>
+		</div>
+	</section>
+</div>
+
+<section class="config-card chart-card map-card" id="traffic_map"
+	data-map-url="<?php echo esc_html(asset_url('scripts/countries-110m.json')); ?>"
+	data-positions-url="<?php echo esc_html(asset_url('scripts/country_points.json')); ?>"
+	data-traffic="<?php echo esc_html(json_encode($map_traffic)); ?>">
+	<div>
+		<h2>Traffic map</h2>
+		<p class="config-hint">All destination countries, <?php echo $period_hint; ?>, by data sent and received combined. Each circle sits at the center of the country, not at the destination's exact location.</p>
+	</div>
+	<p class="config-hint" id="traffic_map_state" role="status" hidden></p>
+	<div class="chart-canvas chart-canvas-map">
+		<canvas id="traffic_map_canvas" role="img" aria-label="World map of traffic by destination country"></canvas>
+	</div>
+	<ul class="map-legend" id="traffic_map_legend"></ul>
+	<p class="config-hint map-note" id="traffic_map_unplaced" hidden></p>
+</section>
+
 <script>
 window.onload = function() {
 colors = ["rgba(251,128,114,0.8)",
@@ -107,76 +213,326 @@ colors = ["rgba(251,128,114,0.8)",
 
 var ctx_ds = document.getElementById('countriesDataSent').getContext('2d');
 var myChart = new Chart(ctx_ds, {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: <?php echo json_encode($datapoints_ds_labels); ?>,
     datasets: [{
-      label: 'countries',
+      label: 'MB sent',
       data: <?php echo json_encode($datapoints_ds_data); ?>,
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50}
+  options: {maintainAspectRatio: false, plugins: {legend: {position: 'left'}}}
 });
 
 var ctx_dr = document.getElementById('countriesDataReceived').getContext('2d');
 var myChart = new Chart(ctx_dr, {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: <?php echo json_encode($datapoints_dr_labels); ?>,
     datasets: [{
-      label: 'countries',
+      label: 'MB received',
       data: <?php echo json_encode($datapoints_dr_data); ?>,
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50}
+  options: {maintainAspectRatio: false, plugins: {legend: {position: 'left'}}}
 });
 
 var ctx_nc = document.getElementById('countriesNumConn').getContext('2d');
 var myChart = new Chart(ctx_nc, {
-  type: 'pie',
+  type: 'doughnut',
   data: {
     labels: <?php echo json_encode($datapoints_nc_labels); ?>,
     datasets: [{
-      label: 'countries',
+      label: 'Connections',
       data: <?php echo json_encode($datapoints_nc_data); ?>,
       backgroundColor: colors,
     }]
   },
-  options: {cutoutPercentage: 50}
+  options: {maintainAspectRatio: false, plugins: {legend: {position: 'left'}}}
 });
 
 }
 </script>
-<form action="" method="get">
-	<select name="period" onchange="this.form.submit()">
-	<option value="stats_day" <?php echo ($period=='stats_day') ? 'selected':'' ?>>Previous 24 hours</option>
-	<option value="stats_week" <?php echo ($period=='stats_week') ? 'selected':'' ?>>Previous week</option>
-	<option value="stats_2week" <?php echo ($period=='stats_2week') ? 'selected':'' ?>>Previous 2 weeks</option>
-	<option value="stats_month" <?php echo ($period=='stats_month') ? 'selected':'' ?>>Previous month</option>
-	</select>
-</form>
-				
-<div class="container">
-  <h2>Data sent in the previous <?php echo $display; ?> (KB) - Top 10 destination countries</h2>
-  <div>
-    <canvas id="countriesDataSent"></canvas>
-  </div>
-<br>
-  <h2>Data received in the previous <?php echo $display; ?> (KB) - Top 10 source countries</h2>
-  <div>
-    <canvas id="countriesDataReceived"></canvas>
-  </div>
-<br>
-  <h2>Total number of connections in the previous <?php echo $display; ?> - Top 10 destination countries</h2>
-  <div>
-    <canvas id="countriesNumConn"></canvas>
-  </div>
+<?php } ?>
 
+<?php if ($result){ ?>
+<h2 class="stats-section-title">Top connections</h2>
+<p class="config-hint">Connections to the Internet that were active in the <?php echo $period_hint; ?>. Each total covers the connection since it was first seen, and connections are kept until 7 days after their last activity.</p>
+<?php if (!$top_result){ ?>
+<p class="error_message">The top connections could not be loaded.</p>
+<?php }elseif (!$has_top_data){ ?>
+<p class="alerts-empty">No connections have been recorded for this period yet. They are saved every 5 minutes while traffic flows.</p>
+<?php }else{ ?>
+<div class="chart-grid chart-grid-wide">
+	<?php foreach ($top_charts as $chart){ ?>
+	<section class="config-card chart-card">
+		<div>
+			<h2><?php echo $chart['title']; ?></h2>
+			<p class="config-hint"><?php echo $chart['hint']; ?></p>
+		</div>
+		<div class="chart-canvas" style="height: <?php echo 70 + 30 * count($top_data[$chart['id']]['labels']); ?>px">
+			<canvas id="<?php echo $chart['id']; ?>"></canvas>
+		</div>
+	</section>
+	<?php } ?>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+<script>
+window.addEventListener("load", function(){
+	var charts = <?php echo json_encode($top_data, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+	Object.keys(charts).forEach(function(id){
+		new Chart(document.getElementById(id).getContext("2d"), {
+			type: "bar",
+			data: {
+				labels: charts[id].labels,
+				datasets: [{label: "MB sent", data: charts[id].values, backgroundColor: "#1dabb8"}]
+			},
+			options: {
+				indexAxis: "y",
+				maintainAspectRatio: false,
+				plugins: {legend: {display: false}},
+				scales: {
+					x: {beginAtZero: true, grid: {color: "#e3e6e7"}},
+					y: {
+						grid: {display: false},
+						ticks: {
+							autoSkip: false,
+							// Shorten long axis labels, keeping the IP address. The tooltip shows them in full.
+							callback: function(value){
+								var label = this.getLabelForValue(value);
+								var limit = window.innerWidth <= 900 ? 24 : 40;
+								return label.length > limit ? "…" + label.slice(1 - limit) : label;
+							}
+						}
+					}
+				}
+			}
+		});
+	});
+});
+</script>
+<?php } ?>
+<?php } ?>
+
+<?php if ($result){ ?>
+<h2 class="stats-section-title">DNS activity</h2>
+<p class="config-hint">Domain lookups made by your devices in the <?php echo $period_hint; ?>. Saved every 5 minutes and kept for 7 days, so longer periods show the last 7 days. Times are in UTC. Lookups sent over encrypted DNS by a device are not visible here.</p>
+<?php if (!$dns_result || !is_array($dns)){ ?>
+<p class="error_message">The DNS activity could not be loaded.</p>
+<?php }elseif (!$has_dns_data){ ?>
+<p class="alerts-empty">No DNS activity has been recorded for this period yet. It is saved every 5 minutes while devices are active.</p>
+<?php }else{
+	$dns_tiles = array(
+		array('label' => 'Lookups', 'value' => number_format($dns['summary']['lookups'])),
+		array('label' => 'Unique domains', 'value' => number_format($dns['summary']['domains'])),
+		array('label' => 'Failed lookups', 'value' => $dns['summary']['failed_percent'] . '%'),
+		array('label' => 'Flagged lookups', 'value' => number_format($dns['summary']['flagged'])),
+	);
+	$failed_rows = $dns['failed_by_device'];
+	$flagged_devices = $dns['flagged_by_device']['labels'];
+?>
+<div class="dns-tiles">
+	<?php foreach ($dns_tiles as $tile){ ?>
+	<section class="config-card dns-tile">
+		<span class="config-hint"><?php echo $tile['label']; ?></span>
+		<strong><?php echo esc_html($tile['value']); ?></strong>
+	</section>
+	<?php } ?>
+</div>
+
+<section class="config-card chart-card dns-timeline">
+	<div>
+		<h2>Lookups over time</h2>
+		<p class="config-hint">Sudden bursts, or activity at unusual hours, can point to malware. Flagged lookups are on the detection blocklists, and failed lookups are for domains that don't exist.</p>
+	</div>
+	<div class="chart-canvas chart-canvas-dns-timeline">
+		<canvas id="dnsTimeline" role="img" aria-label="Lookups over time, split into normal, failed and flagged"></canvas>
+	</div>
+</section>
+
+<div class="chart-grid">
+	<section class="config-card chart-card">
+		<div>
+			<h2>Failed lookups by device</h2>
+			<p class="config-hint">Many failures from one device can mean malware searching for its control server</p>
+		</div>
+		<?php if (count($failed_rows) == 0){ ?>
+		<p class="alerts-empty">No failed lookups in this period.</p>
+		<?php }else{ ?>
+		<div class="chart-canvas" style="height: <?php echo 70 + 30 * count($failed_rows); ?>px">
+			<canvas id="dnsFailedByDevice"></canvas>
+		</div>
+		<?php } ?>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Flagged lookups by device</h2>
+			<p class="config-hint">Lookups of domains on the detection blocklists, by category</p>
+		</div>
+		<?php if (count($flagged_devices) == 0){ ?>
+		<p class="alerts-empty">No flagged lookups in this period.</p>
+		<?php }else{ ?>
+		<div class="chart-canvas" style="height: <?php echo 100 + 30 * count($flagged_devices); ?>px">
+			<canvas id="dnsFlaggedByDevice"></canvas>
+		</div>
+		<?php } ?>
+	</section>
+</div>
+
+<div class="chart-grid">
+	<section class="config-card chart-card">
+		<div>
+			<h2>Newly seen domains</h2>
+			<p class="config-hint">Domains first seen in this period, newest first, leaving out well-known sites. Most are harmless, and the list settles down after a few days of learning.</p>
+		</div>
+		<?php if (count($dns['new_domains']) == 0){ ?>
+		<p class="alerts-empty">No new domains in this period.</p>
+		<?php }else{ ?>
+		<div class="dns-table-wrap">
+			<table class="dns-table">
+				<thead><tr><th>Domain</th><th>First seen</th><th>Device</th><th>Lookups</th><th>Flagged as</th></tr></thead>
+				<tbody>
+					<?php foreach ($dns['new_domains'] as $row){ ?>
+					<tr>
+						<td><?php echo esc_html($row['domain']); ?></td>
+						<td class="alert-time"><?php echo esc_html($row['first_seen']); ?></td>
+						<td><?php echo esc_html($row['device']); ?></td>
+						<td><?php echo intval($row['lookups']); ?></td>
+						<td><?php echo $row['category'] ? esc_html(ucfirst($row['category'])) : '-'; ?></td>
+					</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
+		<?php } ?>
+	</section>
+	<section class="config-card chart-card">
+		<div>
+			<h2>Devices bypassing Falcongate DNS</h2>
+			<p class="config-hint">Devices sending plain DNS directly to Internet servers, which avoids Falcongate's DNS filtering</p>
+		</div>
+		<?php if (count($dns['external_resolvers']) == 0){ ?>
+		<p class="alerts-empty">No devices bypassed Falcongate DNS in this period.</p>
+		<?php }else{ ?>
+		<div class="dns-table-wrap">
+			<table class="dns-table">
+				<thead><tr><th>Device</th><th>DNS server</th><th>Lookups</th><th>Last seen</th></tr></thead>
+				<tbody>
+					<?php foreach ($dns['external_resolvers'] as $row){ ?>
+					<tr>
+						<td><?php echo esc_html($row['device']); ?></td>
+						<td><?php echo esc_html($row['server']); ?></td>
+						<td><?php echo intval($row['lookups']); ?></td>
+						<td class="alert-time"><?php echo esc_html($row['last_seen']); ?></td>
+					</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
+		<?php } ?>
+	</section>
+</div>
+
+<script>
+window.addEventListener("load", function(){
+	var dns = <?php echo json_encode($dns, JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+	var gridColor = "#e3e6e7";
+	// Each category keeps its color whichever categories are present.
+	var categoryColors = {
+		malware: "rgba(251,128,114,0.8)", ransomware: "rgba(188,128,189,0.8)", phishing: "rgba(128,177,211,0.8)",
+		fraud: "rgba(253,180,98,0.8)", scam: "rgba(141,211,199,0.8)", abuse: "rgba(255,255,179,0.8)",
+		crypto: "rgba(190,186,218,0.8)", drugs: "rgba(179,222,105,0.8)", gambling: "rgba(252,205,229,0.8)",
+		vaping: "rgba(217,217,217,0.8)"
+	};
+	var deviceTicks = {
+		autoSkip: false,
+		callback: function(value){
+			var label = this.getLabelForValue(value);
+			var limit = window.innerWidth <= 900 ? 24 : 40;
+			return label.length > limit ? "…" + label.slice(1 - limit) : label;
+		}
+	};
+	var countTicks = {precision: 0};
+
+	new Chart(document.getElementById("dnsTimeline").getContext("2d"), {
+		type: "bar",
+		data: {
+			labels: dns.timeline.labels,
+			datasets: [
+				{label: "Normal", data: dns.timeline.normal, backgroundColor: "#1dabb8"},
+				{label: "Failed", data: dns.timeline.failed, backgroundColor: "rgba(253,180,98,0.8)"},
+				{label: "Flagged", data: dns.timeline.flagged, backgroundColor: "rgba(251,128,114,0.8)"}
+			]
+		},
+		options: {
+			maintainAspectRatio: false,
+			plugins: {legend: {position: "top"}},
+			scales: {
+				x: {stacked: true, grid: {display: false}},
+				y: {stacked: true, beginAtZero: true, grid: {color: gridColor}, ticks: countTicks}
+			}
+		}
+	});
+
+	var failedCanvas = document.getElementById("dnsFailedByDevice");
+	if (failedCanvas){
+		new Chart(failedCanvas.getContext("2d"), {
+			type: "bar",
+			data: {
+				labels: dns.failed_by_device.map(function(row){ return row.label; }),
+				datasets: [{label: "Failed lookups", data: dns.failed_by_device.map(function(row){ return row.count; }), backgroundColor: "#1dabb8"}]
+			},
+			options: {
+				indexAxis: "y",
+				maintainAspectRatio: false,
+				plugins: {legend: {display: false}},
+				scales: {
+					x: {beginAtZero: true, grid: {color: gridColor}, ticks: countTicks},
+					y: {grid: {display: false}, ticks: deviceTicks}
+				}
+			}
+		});
+	}
+
+	var flaggedCanvas = document.getElementById("dnsFlaggedByDevice");
+	if (flaggedCanvas){
+		new Chart(flaggedCanvas.getContext("2d"), {
+			type: "bar",
+			data: {
+				labels: dns.flagged_by_device.labels,
+				datasets: Object.keys(dns.flagged_by_device.series).map(function(category){
+					return {
+						label: category.charAt(0).toUpperCase() + category.slice(1),
+						data: dns.flagged_by_device.series[category],
+						backgroundColor: categoryColors[category] || "rgba(217,217,217,0.8)"
+					};
+				})
+			},
+			options: {
+				indexAxis: "y",
+				maintainAspectRatio: false,
+				plugins: {legend: {position: "top"}},
+				scales: {
+					x: {stacked: true, beginAtZero: true, grid: {color: gridColor}, ticks: countTicks},
+					y: {stacked: true, grid: {display: false}, ticks: deviceTicks}
+				}
+			}
+		});
+	}
+});
+</script>
+<?php } ?>
+<?php } ?>
+
+<?php if ($has_data || $has_top_data || $has_dns_data){ ?>
+<script src="scripts/chart-4.6.1.umd.min.js"></script>
+<?php } ?>
+<?php if ($has_data){ ?>
+<script src="scripts/chartjs-chart-geo-4.3.6.umd.min.js"></script>
+<script src="<?php echo asset_url('scripts/traffic_map.js'); ?>"></script>
+<?php } ?>
 
 <?php
 require 'templates/footer.html';

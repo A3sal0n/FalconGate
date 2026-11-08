@@ -12,37 +12,60 @@ if (login_check() != true){
 }
 require 'templates/header.html';
 ?>
+<h1>System Overview</h1>
+
+<div class="config-page">
+    <section class="config-card" id="system_health" data-url="system_health.php">
+        <h2>Server health</h2>
+        <p class="config-hint health-state" id="health_state" role="status">Loading server health...</p>
+        <div class="health-tiles" id="health_tiles"></div>
+
+        <h3 class="health-subheading">Disk partitions</h3>
+        <div class="health-disks" id="health_disks"></div>
+    </section>
+
+    <section class="config-card" id="system_services" data-url="system_health.php?target=services">
+        <h2>Services</h2>
+        <p class="config-hint health-state" id="services_state" role="status">Loading service status...</p>
+        <div class="service-tiles" id="service_tiles"></div>
+
+        <h3 class="health-subheading">Errors since the last start</h3>
+        <div id="service_errors"></div>
+    </section>
+
+    <section class="config-card">
+        <h2>System logs</h2>
 <?php
-$log_count = (!isset($_GET['log_count'])) ? '50': $_GET['log_count'];
+$log_counts = array('50', '100', '500');
+$log_count = isset($_GET['log_count']) && in_array($_GET['log_count'], $log_counts, true) ? $_GET['log_count'] : '50';
+?>
+        <form class="log-toolbar" action="" method="get">
+            <label for="log_count">Entries to show</label>
+            <select id="log_count" name="log_count" onchange="this.form.submit()">
+                <?php foreach ($log_counts as $count){ ?>
+                <option value="<?php echo $count; ?>" <?php echo $log_count == $count ? 'selected' : ''; ?>><?php echo $count; ?></option>
+                <?php } ?>
+            </select>
+            <span class="config-hint">Falcongate entries from /var/log/syslog, newest first.</span>
+        </form>
+<?php
 $data = array("target" => "logs", "log_count" => $log_count);
 $result = CallAPI('POST', 'http://127.0.0.1:5000/api/v1.0/falcongate/status', json_encode($data));
 if (!$result){
-    echo ("<h3><span class=error_message>Falcongate API process seems to be down!</span></h3>");
-    echo ("<h3><span class=error_message>Check your device's configuration and reboot if necessary.</span></h3>");
+    echo ('<p class="error_message">The log entries could not be loaded. The Falcongate API process may be down, or /var/log/syslog may be missing.</p>');
 }else{
-	$obj = json_decode($result, true);
-?>
-<h1>System Overview</h1>
-<h3>The last <?php echo $log_count ?> lines of /var/log/syslog</h3>
-<p>How many lines to display? <form action="" method="get">
-	<select name="log_count" onchange="this.form.submit()">
-		<option value="50" <?php echo ($log_count=='50') ? 'selected':'' ?>>50</option>
-		<option value="100" <?php echo ($log_count=='100') ? 'selected':'' ?>>100</option>
-		<option value="500" <?php echo ($log_count=='500') ? 'selected':'' ?>>500</option>
-</select>
-</form></p>
-<textarea cols="160" rows="50" wrap="off" readonly="readonly" id="textarea" style="width:99%; font-family:'Courier New', Courier, mono; font-size:11px;background:#E5E5E5;color:#000000;">
-<?php
-if ($obj[0] != 'none'){
-    foreach ($obj as $log){    
-		//echo ('<tr><td nowrap>'.date('Y/m/d H:i:s', $alert[2]).'</td>'.'<td nowrap>'.date('Y/m/d H:i:s', $alert[3]).'</td>'.'<td nowrap>'.$alert[7].'</td>'.'<td nowrap>'.$alert[6].'</td>'.'<td>'.str_replace('|','| ',$alert[8]).'</td></tr>');
-        echo $log;
-		}
-	}
+    $logs = json_decode($result, true);
+    if (!is_array($logs) || count($logs) == 0){
+        echo ('<p class="config-hint">There are no log entries to show.</p>');
+    }else{
+        echo ('<pre class="log-view" tabindex="0">'.esc_html(implode('', $logs)).'</pre>');
+    }
 }
-
 ?>
-</textarea>
+    </section>
+</div>
+
+<script type="text/javascript" src="<?php echo asset_url('scripts/system_health.js'); ?>"></script>
 
 <?php
 require 'templates/footer.html';

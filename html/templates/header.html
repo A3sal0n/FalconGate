@@ -1,52 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Falcongate</title>
 	<meta name="keywords" content="" />
 	<meta name="description" content="" />
-	<link href="styles/style_my.css" rel="stylesheet">
-	<script type="text/javascript" src="scripts/form_validator.js"></script>
-	<script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
+	<link href="<?php echo asset_url('styles/style_my.css'); ?>" rel="stylesheet">
+	<script type="text/javascript" src="<?php echo asset_url('scripts/form_validator.js'); ?>"></script>
 	<script>
-	
-		$(function(){
-				$("a[href='home.php']").addClass("current");
-			$("a.scroll").click(function() {
-				$("a.scroll").removeClass("current");
-				$(this).addClass("current");
+		// Highlight the menu entry of the page being viewed.
+		document.addEventListener("DOMContentLoaded", function(){
+			var page = location.pathname.split("/").pop();
+			document.querySelectorAll("a.scroll").forEach(function(link){
+				if (link.getAttribute("href") === page) {
+					link.classList.add("current");
+				}
 			});
-		});		
+		});
 	</script>
 </head>
 
 <body>
-<table height="100%" width="100%">
-	<tr>
-		<td align="center" valign="top">
-			<table class="table" width="1000">
-				<tbody>
-					<tr class="header">
-						<td colspan="2">
-						<div id="logout"><a href="logout.php">Logout</a></div>
-						<div id="header_text">Falcongate</div>
-						</td>
-					</tr>
-					<tr>
-						<td class="menu">
-						<ul class="vert-one">
-							<li><a class="scroll" href="home.php">Home</a></li>
-							<li><a class="scroll" href="status.php">Status</a></li>
-							<li><a class="scroll" href="network_stats.php">Network Statistics</a></li>
-							<li><a class="scroll" href="get_alerts.php">Recent Alerts</a></li>
-							<li><a class="scroll" href="read_config.php">Configuration</a></li>
-							<li><a class="scroll" href="logs.php">System Overview</a></li>
-							<li><a class="scroll" href="admin.php">Admin</a></li>
-							<!--
-							<li><a class="scroll" href="#">TBA</a></li>
-							 -->
-						</ul>
-
-						</td>
-						<td class="content">
-						<div class="">
+<div class="app">
+	<header class="header">
+		<a class="header-brand" href="home.php">Falcongate</a>
+		<a class="logout-button" href="logout.php">Log out</a>
+	</header>
+	<nav class="menu">
+		<ul class="vert-one">
+			<li><a class="scroll" href="home.php">Home</a></li>
+			<li><a class="scroll" href="status.php">Status</a></li>
+			<li><a class="scroll" href="network_stats.php">Network Statistics</a></li>
+			<li><a class="scroll" href="get_alerts.php">Recent Alerts</a></li>
+			<li><a class="scroll" href="read_config.php">Configuration</a></li>
+			<li><a class="scroll" href="logs.php">System Overview</a></li>
+			<li><a class="scroll" href="admin.php">Admin</a></li>
+		</ul>
+	</nav>
+	<main class="content">

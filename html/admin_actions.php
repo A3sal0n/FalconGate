@@ -7,13 +7,14 @@ if (login_check() != true){
     echo ("<p><span class=error_message>You are not authorized to access this page. Please</span> <a href=index.php>login</a>.</p>");
     exit(0);
 }
+require_csrf_token();
 
 if (isset($_POST["update_pwd"])){
-//    echo ("form detected");
-    $new_pwd = password_hash($_POST["pwd"], PASSWORD_DEFAULT);
-    $myfile = fopen("./pwd.db", "w") or die("Unable to open file!");
-    fwrite($myfile, "admin ".$new_pwd);
-    fclose($myfile);
+    $error = set_admin_password(isset($_POST["pwd"]) ? $_POST["pwd"] : '');
+    if ($error !== null){
+        echo ("<p><span class=error_message>".htmlspecialchars($error)."</span> <a href=admin.php>Go back</a>.</p>");
+        exit(0);
+    }
     redirect('admin.php?updated=True');
 }
 

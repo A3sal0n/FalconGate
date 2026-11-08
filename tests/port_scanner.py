@@ -10,23 +10,23 @@ def main():
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex((target_ip, port))
             if result == 0:
-                print "Port {}: 	 Open".format(port)
+                print("Port {}: 	 Open".format(port))
             sock.close()
 
     except KeyboardInterrupt:
-        print "You pressed Ctrl+C"
+        print("You pressed Ctrl+C")
         sys.exit()
 
     except socket.gaierror:
-        print 'Hostname could not be resolved. Exiting'
+        print('Hostname could not be resolved. Exiting')
         sys.exit()
 
     except socket.error:
-        print "Couldn't connect to server"
+        print("Couldn't connect to server")
         sys.exit()
 
-    print 'Done!'
-    print 'Have a nice day!'
+    print('Done!')
+    print('Have a nice day!')
 
 
 if __name__ == '__main__':

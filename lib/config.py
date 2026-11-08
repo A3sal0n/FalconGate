@@ -1,9 +1,9 @@
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import threading
 import os
 import time
 import lib.utils as utils
-import netifaces
+import lib.network as network
 from lib.logger import *
 from lib.settings import homenet, lock
 
@@ -27,19 +27,31 @@ class CheckConfigFileModification(threading.Thread):
                 flag = True
                 self._cached_stamp_core = stamp
                 # Reading core configuration file
-                core_config = SafeConfigParser()
+                core_config = ConfigParser()
                 core_config.read('config.ini')
 
                 # main section
                 with lock:
                     homenet.interface = core_config.get('main', 'iface')
-                    homenet.fg_intel_creds = core_config.get('api_urls', 'fg_intel_creds').strip('"')
-                    homenet.fg_intel_domains = core_config.get('api_urls', 'fg_intel_domains').strip('"')
-                    homenet.fg_intel_ip = core_config.get('api_urls', 'fg_intel_ip').strip('"')
+                    homenet.fg_intel_creds = [u.strip().strip('"') for u in
+                                              core_config.get('api_urls', 'fg_intel_creds').split(',')
+                                              if u.strip()]
+                    try:
+                        homenet.fg_intel_domains = core_config.get('api_urls', 'fg_intel_domains').strip('"')
+                    except Exception:
+                        homenet.fg_intel_domains = None
+                    try:
+                        homenet.fg_intel_ip = core_config.get('api_urls', 'fg_intel_ip').strip('"')
+                    except Exception:
+                        homenet.fg_intel_ip = None
                     homenet.vt_api_domain_url = core_config.get('api_urls', 'vt_api_domain_url').strip('"')
                     homenet.vt_api_ip_url = core_config.get('api_urls', 'vt_api_ip_url').strip('"')
                     homenet.vt_api_file_url = core_config.get('api_urls', 'vt_api_file_url').strip('"')
                     homenet.hibp_api_url = core_config.get('api_urls', 'hibp_api_url').strip('"')
+                    try:
+                        homenet.fg_premium_url = core_config.get('api_urls', 'fg_premium_url').strip('"')
+                    except Exception:
+                        homenet.fg_premium_url = None
 
                     for option in core_config.options('blacklists_ip'):
                         homenet.blacklist_sources_ip[option.capitalize()] = core_config.get('blacklists_ip', option).strip('"').split(',')
@@ -52,21 +64,27 @@ class CheckConfigFileModification(threading.Thread):
                 flag = True
                 self._cached_stamp_user = stamp
                 # Reading user configuration file
-                user_config = SafeConfigParser()
+                user_config = ConfigParser()
                 user_config.read('html/user_config.ini')
 
-                # main section
-                homenet.dst_emails = (user_config.get('main', 'dst_emails')).strip('"').split(",")
-                homenet.email_watchlist = (user_config.get('main', 'email_watchlist')).strip('"').split(",")
-                homenet.vt_api_key = user_config.get('main', 'vt_api_key').strip('"')
-                homenet.user_blacklist = (user_config.get('main', 'blacklist')).strip('"').split(",")
-                homenet.user_whitelist = (user_config.get('main', 'whitelist')).strip('"').split(",")
-                homenet.user_domain_blacklist = (user_config.get('main', 'domain_blacklist')).strip('"').split(",")
-                homenet.user_domain_whitelist = (user_config.get('main', 'domain_whitelist')).strip('"').split(",")
-                homenet.mailer_mode = user_config.get('main', 'mailer_mode').strip('"')
-                homenet.mailer_address = user_config.get('main', 'mailer_address').strip('"')
-                homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').strip('"')
-                homenet.allow_tor = user_config.get('main', 'allow_tor').strip('"')
+                # main section (write shared homenet fields under the lock, to
+                # match the core-config section and the rest of the codebase)
+                with lock:
+                    homenet.dst_emails = (user_config.get('main', 'dst_emails')).strip('"').split(",")
+                    homenet.email_watchlist = (user_config.get('main', 'email_watchlist')).strip('"').split(",")
+                    homenet.vt_api_key = user_config.get('main', 'vt_api_key').strip('"')
+                    try:
+                        homenet.fg_api_key = user_config.get('main', 'fg_api_key').strip('"')
+                    except Exception:
+                        homenet.fg_api_key = None
+                    homenet.user_blacklist = (user_config.get('main', 'blacklist')).strip('"').split(",")
+                    homenet.user_whitelist = (user_config.get('main', 'whitelist')).strip('"').split(",")
+                    homenet.user_domain_blacklist = (user_config.get('main', 'domain_blacklist')).strip('"').split(",")
+                    homenet.user_domain_whitelist = (user_config.get('main', 'domain_whitelist')).strip('"').split(",")
+                    homenet.mailer_mode = user_config.get('main', 'mailer_mode').strip('"')
+                    homenet.mailer_address = user_config.get('main', 'mailer_address').strip('"')
+                    homenet.mailer_pwd = user_config.get('main', 'mailer_pwd').strip('"')
+                    homenet.allow_tor = user_config.get('main', 'allow_tor').strip('"')
 
             if flag:
                 counter += 1
@@ -85,8 +103,7 @@ class CheckNetworkModifications(threading.Thread):
     def run(self):
 
         while 1:
-            gws = netifaces.gateways()
-            cgw = gws['default'][netifaces.AF_INET][0]
+            cgw = network.get_default_gateway()
             if not homenet.gateway:
                 homenet.gateway = cgw
             else:

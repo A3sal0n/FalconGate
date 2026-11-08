@@ -1,16 +1,49 @@
 <h1>Home</h1>
 
-Welcome to Falcongate!<br><br>
+<div class="config-page">
+    <section class="config-card">
+        <h2>Welcome to Falcongate</h2>
+        <p>Falcongate monitors your network and alerts you to threats. Use the menu to review alerts, connected devices and network activity.</p>
+        <div class="home-links">
+            <a href="get_alerts.php">
+                <strong>Recent Alerts</strong>
+                <span class="config-hint">Review detected threats</span>
+            </a>
+            <a href="status.php">
+                <strong>Status</strong>
+                <span class="config-hint">See network settings and devices</span>
+            </a>
+            <a href="network_stats.php">
+                <strong>Network Statistics</strong>
+                <span class="config-hint">See traffic by country</span>
+            </a>
+            <a href="logs.php">
+                <strong>System Overview</strong>
+                <span class="config-hint">Check server health and logs</span>
+            </a>
+        </div>
+    </section>
 
-Change the default password after the first logon to the application.
-<br><br>
-Navigate to the <a href="read_config.php">"Configuration"</a> page and fill in the correct fields.<br>
-This configuration it's not mandatory but highly desired if you want to unleash Falcongate's full power. We recommend registering with our <a href="http://eepurl.com/cHtpQj">free cloud API</a> to obtain a key which enables advanced features in your Falcongate device like receiving regular updates containing block lists of Malware domains and IP addresses and centralized alert reporting over email and Telegram from our cloud servers.
-<br><br>
-<h2>Deployment</h2>
+    <div class="config-columns">
+        <section class="config-card">
+            <h2>Getting started</h2>
+            <ol class="home-list">
+                <li>Set a strong password when the console prompts you during the first sign-in.</li>
+                <li>Fill in the fields on the <a href="read_config.php">Configuration</a> page. This is optional, but Falcongate needs these settings to use its full capabilities.</li>
+                <li>Open <a href="logs.php">System Overview</a> and confirm that all services are running.</li>
+                <li>Connect a device to the Falcongate network and confirm that it appears on the <a href="status.php">Status</a> page.</li>
+                <li>Test detection by running <code>nslookup malware.wicar.org</code> on that device. This only looks up a harmless test domain. A Malware alert should appear on <a href="get_alerts.php">Recent Alerts</a> within about a minute, and by email if you set that up.</li>
+            </ol>
+        </section>
 
-Some important considerations to keep in mind when deploying Falcongate to a real environment: home or production network.
-<br><br>
-<li>Change the default SSH password in your Falcongate device</li>
-<li>Change the default password for the web console admin user</li>
-<li>Regenerate the openssh-server certificates for SSH encryption if Falcongate was deployed from an OVA image</li><br>
+        <section class="config-card">
+            <h2>Deployment</h2>
+            <p>Keep these points in mind when deploying Falcongate to a real home or production network:</p>
+            <ul class="home-list">
+                <li>Set a strong SSH password on your Falcongate device.</li>
+                <li>Set a strong password for the default admin user when prompted by the web console during the first sign-in.</li>
+                <li>Regenerate the openssh-server certificates for SSH encryption if Falcongate was deployed from a virtual image.</li>
+            </ul>
+        </section>
+    </div>
+</div>

@@ -5,6 +5,8 @@ from lib.logger import *
 from user_agents import parse
 import os
 import lib.utils as utils
+import lib.stats as stats
+import lib.alerts as alerts
 import glob
 import requests
 import base64
@@ -12,14 +14,42 @@ import json
 import sys
 import hashlib
 import GeoIP
+import lib.settings as settings
 from lib.settings import homenet, lock, top_domains
+
+MISSING_LOG_NOTICE_SECONDS = 86400
+
+
+class MissingLogTimer:
+    """Writes a notice when a Zeek log stays missing, and again every 24 hours until it returns.
+
+    Zeek removes each log at rotation and only recreates it when it next has something to write,
+    so a log being missing for a while is normal, especially on a quiet network.
+    """
+
+    def __init__(self, path):
+        self.path = path
+        self.missing_since = None
+
+    def found(self):
+        self.missing_since = None
+
+    def missing(self):
+        # Monotonic, so that the appliance's clock being set at boot can't trigger a notice.
+        now = time.monotonic()
+        if self.missing_since is None:
+            self.missing_since = now
+        elif now - self.missing_since > MISSING_LOG_NOTICE_SECONDS:
+            log.log(NOTICE, 'FG-NOTICE: ' + self.path + ' has been missing for more than 24 hours')
+            self.missing_since = now
 
 
 class ReadBroConn(threading.Thread):
     def __init__(self, threadID):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.bro_conn_log_path = '/opt/zeek/logs/current/conn.log'
+        self.bro_conn_log_path = '/opt/zeek/spool/manager/conn.log'
+        self.missing_log = MissingLogTimer(self.bro_conn_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -38,6 +68,8 @@ class ReadBroConn(threading.Thread):
                         cid = fields["id.orig_h"] + "|" + fields["id.resp_h"] + "|" + str(fields["id.resp_p"])
                         with lock:
                             if cip in homenet.hosts:
+                                if homenet.hosts[cip].mac != homenet.mac and stats.is_outbound_internet(fields):
+                                    stats.record_connection(fields, self.gi.country_code_by_addr(fields["id.resp_h"]))
                                 if cid not in homenet.hosts[cip].conns:
                                     homenet.hosts[cip].conns[cid] = self.map_conn_fields(fields)
                                 else:
@@ -72,6 +104,7 @@ class ReadBroConn(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_conn_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_conn_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -86,6 +119,9 @@ class ReadBroConn(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_conn_log - ' + str(e.__doc__) + " - " + str(e))
             return False
@@ -143,7 +179,8 @@ class ReadBroDNS(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.tld_whitelist = ['local', 'test', 'localhost', 'example', 'invalid', 'arpa']
-        self.bro_dns_log_path = '/opt/zeek/logs/current/dns.log'
+        self.bro_dns_log_path = '/opt/zeek/spool/manager/dns.log'
+        self.missing_log = MissingLogTimer(self.bro_dns_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -172,6 +209,21 @@ class ReadBroDNS(threading.Thread):
                                             rcode = fields["rcode_name"]
                                         except KeyError:
                                             rcode = None
+                                        # Derive qtype from the current record, not
+                                        # from a `request` object that only exists on
+                                        # the new-query branch (it would otherwise be
+                                        # stale from a previous line or unbound).
+                                        qtype = fields.get("qtype_name")
+                                        # Detection blocklists (alert only, never
+                                        # blackholed). Skip anything on the
+                                        # top-domains whitelist.
+                                        dcat = settings.detect_domains.get(query)
+                                        if dcat is None and sld:
+                                            dcat = settings.detect_domains.get(sld)
+                                        if sld in top_domains:
+                                            dcat = None
+                                        if homenet.hosts[cip].mac != homenet.mac:
+                                            stats.record_dns_lookup(fields, query, sld, rcode, dcat)
                                         if rcode is not None:
                                             if query not in homenet.hosts[cip].dns:
                                                 request = DNSRequest()
@@ -181,12 +233,20 @@ class ReadBroDNS(threading.Thread):
                                                 request.tld = utils.get_tld(query)
                                                 request.sld = sld
                                                 request.sip = fields["id.orig_h"]
-                                                try:
-                                                    request.qtype = fields["qtype_name"]
-                                                except KeyError:
-                                                    request.qtype = None
+                                                request.qtype = qtype
                                                 request.qresult = rcode
+                                                if dcat:
+                                                    request.bad = True
+                                                    request.category = dcat
                                                 homenet.hosts[cip].dns[query] = request
+                                                # High-severity categories are alerted
+                                                # now instead of on the next minute pass.
+                                                # If this fails the entry stays flagged
+                                                # and the minute pass retries it.
+                                                if request.bad and alerts.is_immediate(request) \
+                                                        and homenet.hosts[cip].mac != homenet.mac:
+                                                    alerts.create_bad_domain_alert(cip, query, int(time.time()))
+                                                    del homenet.hosts[cip].dns[query]
                                             else:
                                                 homenet.hosts[cip].dns[query].lseen = float(fields["ts"])
                                                 homenet.hosts[cip].dns[query].counter += 1
@@ -199,7 +259,7 @@ class ReadBroDNS(threading.Thread):
                                             except KeyError:
                                                 pass
 
-                                        if (request.qtype == "MX") or query.startswith('mail.'):
+                                        if (qtype == "MX") or query.startswith('mail.'):
                                             if query not in homenet.hosts[cip].spammed_domains:
                                                 homenet.hosts[cip].spammed_domains.append(query)
                     except Exception as e:
@@ -209,6 +269,7 @@ class ReadBroDNS(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_dns_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_dns_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -223,6 +284,9 @@ class ReadBroDNS(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_dns_log - ' + str(e.__doc__) + " - " + str(e))
             return False
@@ -306,60 +370,88 @@ class ReadBroNotice(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self._cached_stamp = 0
-        self.recorded = []
+        self.recorded = set()
+        self.bro_notice_log_path = '/opt/zeek/spool/manager/notice.log'
+        self.missing_log = MissingLogTimer(self.bro_notice_log_path)
+        self.last_pos = 0
+        self.last_file_size = 0
+        self.new_lines = []
 
     def run(self):
 
         while 1:
-            try:
-                f = open('/opt/zeek/logs/current/notice.log', 'r')
-                lines = f.readlines()
-                for line in lines:
+            if self.get_new_lines():
+                for line in self.new_lines:
                     line = line.strip()
-                    fields = json.loads(line)
-                    uid = fields["ts"]
-                    if uid not in self.recorded:
-                        if fields["note"] == "Scan::Port_Scan":
-                            ts = float(fields["ts"])
-                            src = fields["src"]
-                            dst = fields["dst"]
-                            with lock:
-                                if src in homenet.hosts:
-                                    ctime = int(time.time())
-                                    description = 'This host has been detected scanning one or multiple destination ' \
-                                                  'IP addresses for open ports. This could indicate that a hacker has ' \
-                                                  'compromised and taken control of this device and is now trying to locate ' \
-                                                  'and compromise other hosts in your network.'
-                                    reference = 'https://en.wikipedia.org/wiki/Port_scanner'
-                                    a = [0, 'port_scan', ts, ctime, 0, 0, 'Port Scan', src, dst, 0, description, reference]
-                                    alert_id = utils.add_alert_to_db(a)
-                                    homenet.hosts[src].alerts.append(alert_id)
-                        elif fields["note"] == "Traceroute::Detected":
-                            ts = float(fields["ts"])
-                            src = fields["src"]
-                            with lock:
-                                if src in homenet.hosts:
-                                    ctime = int(time.time())
-                                    indicator = '%s performed a traceroute' % src
-                                    description = 'This host has been detected performing traceroute on your network.' \
-                                                  'Traceroute is usually used by hackers during the initial stage ' \
-                                                  'of an attack on a new network (reconnaissance). With this the ' \
-                                                  'attacker gains visibility on how the traffic is travelling from ' \
-                                                  'your internal network to other internal networks or the ' \
-                                                  'Internet, which routers are on the way, etc.'
-                                    reference = 'https://en.wikipedia.org/wiki/Traceroute'
-                                    a = [0, 'traceroute', ts, ctime, 0, 0, 'Traceroute', src, indicator, 0, description, reference]
-                                    alert_id = utils.add_alert_to_db(a)
-                                    homenet.hosts[src].alerts.append(alert_id)
-                        self.recorded.append(uid)
-
-            except Exception as e:
-                log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
+                    try:
+                        fields = json.loads(line)
+                        uid = fields["ts"]
+                        if uid not in self.recorded:
+                            if fields["note"] == "Scan::Port_Scan":
+                                ts = float(fields["ts"])
+                                src = fields["src"]
+                                dst = fields["dst"]
+                                with lock:
+                                    if src in homenet.hosts:
+                                        ctime = int(time.time())
+                                        description = 'This host has been detected scanning one or multiple destination ' \
+                                                      'IP addresses for open ports. This could indicate that a hacker has ' \
+                                                      'compromised and taken control of this device and is now trying to locate ' \
+                                                      'and compromise other hosts in your network.'
+                                        reference = 'https://en.wikipedia.org/wiki/Port_scanner'
+                                        a = [0, 'port_scan', ts, ctime, 0, 0, 'Port Scan', src, dst, 0, description, reference]
+                                        alert_id = utils.add_alert_to_db(a)
+                                        homenet.hosts[src].alerts.append(alert_id)
+                            elif fields["note"] == "Traceroute::Detected":
+                                ts = float(fields["ts"])
+                                src = fields["src"]
+                                with lock:
+                                    if src in homenet.hosts:
+                                        ctime = int(time.time())
+                                        indicator = '%s performed a traceroute' % src
+                                        description = 'This host has been detected performing traceroute on your network.' \
+                                                      'Traceroute is usually used by hackers during the initial stage ' \
+                                                      'of an attack on a new network (reconnaissance). With this the ' \
+                                                      'attacker gains visibility on how the traffic is travelling from ' \
+                                                      'your internal network to other internal networks or the ' \
+                                                      'Internet, which routers are on the way, etc.'
+                                        reference = 'https://en.wikipedia.org/wiki/Traceroute'
+                                        a = [0, 'traceroute', ts, ctime, 0, 0, 'Traceroute', src, indicator, 0, description, reference]
+                                        alert_id = utils.add_alert_to_db(a)
+                                        homenet.hosts[src].alerts.append(alert_id)
+                            self.recorded.add(uid)
+                    except Exception as e:
+                        log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
 
             if len(self.recorded) > 100000:
-                del self.recorded[:]
+                self.recorded.clear()
 
             time.sleep(5)
+
+    def get_new_lines(self):
+        try:
+            f = open(self.bro_notice_log_path, 'r')
+            self.missing_log.found()
+            if os.path.getsize(self.bro_notice_log_path) < self.last_file_size:
+                f.seek(0)
+            else:
+                f.seek(self.last_pos)
+            lines = f.readlines()
+            if len(lines) > 0:
+                self.new_lines = lines
+                self.last_pos = f.tell()
+                self.last_file_size = os.path.getsize(self.bro_notice_log_path)
+                f.close()
+                return True
+            else:
+                f.close()
+                return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
+        except Exception as e:
+            log.debug('FG-DEBUG: read_bro_notice_log - ' + str(e.__doc__) + " - " + str(e))
+            return False
 
 
 class ReadBroFiles(threading.Thread):
@@ -368,15 +460,19 @@ class ReadBroFiles(threading.Thread):
         self.threadID = threadID
         self._cached_stamp = 0
         self.target_mime_types = homenet.target_mime_types
-        self.recorded = []
-        self.bro_file_path = '/opt/zeek/logs/current/extract_files/'
+        self.recorded = set()
+        self.bro_file_path = '/opt/zeek/spool/manager/extract_files/'
+        self.bro_files_log_path = '/opt/zeek/spool/manager/files.log'
+        self.missing_log = MissingLogTimer(self.bro_files_log_path)
+        self.last_pos = 0
+        self.last_file_size = 0
+        self.new_lines = []
 
     def run(self):
 
         while 1:
             try:
-                f = open('/opt/zeek/logs/current/files.log', 'r')
-                lines = f.readlines()
+                lines = self.new_lines if self.get_new_lines() else []
                 for line in lines:
                     line = line.strip()
                     try:
@@ -384,9 +480,24 @@ class ReadBroFiles(threading.Thread):
                         fuid = fields["fuid"]
                         if fuid not in self.recorded:
                             ts = float(fields["ts"])
-                            tx_hosts = fields["tx_hosts"][0]
-                            rx_hosts = fields["rx_hosts"][0]
-                            conn_id = fields["conn_uids"][0]
+                            # Zeek 8 files.log records a single connection (uid +
+                            # flattened id.*) instead of the old tx_hosts/rx_hosts/
+                            # conn_uids sets. is_orig tells us which end sent the
+                            # file; the receiver is the other end.
+                            if "tx_hosts" in fields:
+                                tx_hosts = fields["tx_hosts"][0]
+                                rx_hosts = fields["rx_hosts"][0]
+                                conn_id = fields["conn_uids"][0]
+                            else:
+                                orig_h = fields["id.orig_h"]
+                                resp_h = fields["id.resp_h"]
+                                if fields.get("is_orig", False):
+                                    tx_hosts = orig_h
+                                    rx_hosts = resp_h
+                                else:
+                                    tx_hosts = resp_h
+                                    rx_hosts = orig_h
+                                conn_id = fields["uid"]
                             try:
                                 mime = fields["mime_type"]
                             except KeyError:
@@ -412,16 +523,41 @@ class ReadBroFiles(threading.Thread):
                                         fpath = self.find_file(fuid)
                                     else:
                                         homenet.hosts[rx_hosts].files[sha1].lseen = ts
-                            self.recorded.append(fuid)
+                            self.recorded.add(fuid)
                     except Exception as e:
                         log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e) + " - " + str(sys.exc_info()[2].tb_lineno))
             except (IOError, OSError) as e:
                 log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e) + " - " + str(sys.exc_info()[2].tb_lineno))
 
             if len(self.recorded) > 100000:
-                del self.recorded[:]
+                self.recorded.clear()
 
             time.sleep(5)
+
+    def get_new_lines(self):
+        try:
+            f = open(self.bro_files_log_path, 'r')
+            self.missing_log.found()
+            if os.path.getsize(self.bro_files_log_path) < self.last_file_size:
+                f.seek(0)
+            else:
+                f.seek(self.last_pos)
+            lines = f.readlines()
+            if len(lines) > 0:
+                self.new_lines = lines
+                self.last_pos = f.tell()
+                self.last_file_size = os.path.getsize(self.bro_files_log_path)
+                f.close()
+                return True
+            else:
+                f.close()
+                return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
+        except Exception as e:
+            log.debug('FG-DEBUG: read_bro_file_log - ' + str(e.__doc__) + " - " + str(e))
+            return False
 
     def find_file(self, fuid):
         files = glob.glob(self.bro_file_path + "*")
@@ -436,7 +572,7 @@ class ReadBroFiles(threading.Thread):
     @staticmethod
     def is_top_domain(ip):
 
-        f = open('/opt/zeek/logs/current/dns.log', 'r')
+        f = open('/opt/zeek/spool/manager/dns.log', 'r')
         lines = f.readlines()
         f.close()
 
@@ -459,7 +595,8 @@ class ReadBroHTTP(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.target_mime_types = homenet.target_mime_types
-        self.bro_http_log_path = '/opt/zeek/logs/current/http.log'
+        self.bro_http_log_path = '/opt/zeek/spool/manager/http.log'
+        self.missing_log = MissingLogTimer(self.bro_http_log_path)
         self.last_pos = 0
         self.last_file_size = 0
         self.new_lines = []
@@ -492,8 +629,9 @@ class ReadBroHTTP(threading.Thread):
                                     if (device is not None) and (device not in homenet.hosts[sip].device_family) and (device != 'Other'):
                                         homenet.hosts[sip].device_family.append(device)
 
-                                if fields["resp_mime_types"][0] in self.target_mime_types:
-                                    if fields["id.resp_p"] == '80':
+                                resp_mimes = fields.get("resp_mime_types")
+                                if resp_mimes and resp_mimes[0] in self.target_mime_types:
+                                    if int(fields["id.resp_p"]) == 80:
                                         url = 'hxxp://' + fields["host"] + fields["uri"]
                                         if url not in homenet.hosts[sip].interesting_urls:
                                             if len(homenet.hosts[sip].interesting_urls) < 200:
@@ -508,6 +646,7 @@ class ReadBroHTTP(threading.Thread):
     def get_new_lines(self):
         try:
             f = open(self.bro_http_log_path, 'r')
+            self.missing_log.found()
             if os.path.getsize(self.bro_http_log_path) < self.last_file_size:
                 f.seek(0)
             else:
@@ -522,6 +661,9 @@ class ReadBroHTTP(threading.Thread):
             else:
                 f.close()
                 return False
+        except FileNotFoundError:
+            self.missing_log.missing()
+            return False
         except Exception as e:
             log.debug('FG-DEBUG: read_bro_http_log - ' + str(e.__doc__) + " - " + str(e))
             return False
