@@ -1,3 +1,5 @@
 .idea
 __pycache__/
 .bash_logout
+ssl/nginx.key
+ssl/nginx.crt

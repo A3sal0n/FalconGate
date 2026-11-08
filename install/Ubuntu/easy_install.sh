@@ -226,7 +226,7 @@ installRequirements() {
   echo "Installing software dependencies..."
   sleep 3
 
-  apt-get install -y make gcc g++ libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3
+  apt-get install -y make gcc g++ openssl libssl-dev libffi-dev dialog zlib1g-dev libgeoip-dev build-essential dnsmasq nginx php-fpm php-curl ipset git dnscrypt-proxy nmap hydra curl ca-certificates gnupg libbz2-dev libexpat1-dev libgdbm-dev liblzma-dev libncursesw5-dev libreadline-dev libsqlite3-dev tk-dev uuid-dev python3
 }
 
 installPython() {
@@ -387,6 +387,11 @@ else
 fi
 
 cd Falcongate/
+
+# Give this machine its own TLS key and certificate for the web console. Always
+# generated here, so no key is shared between installs or kept in the repository.
+mkdir -p ssl
+(umask 077 && openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 3650   -keyout ssl/nginx.key -out ssl/nginx.crt -subj "/CN=falcongate"   -addext "subjectAltName=DNS:falcongate,IP:${IP0}")
 
 chmod +x falcongate.py
 
