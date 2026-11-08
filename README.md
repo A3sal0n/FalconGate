@@ -4,6 +4,10 @@
 
 Falcongate turns a Linux machine with two network interfaces into a gateway that inspects network traffic, filters DNS, audits your devices for weak spots and raises alerts in a web console and by email. It is free, open source and runs entirely on hardware you control.
 
+[![Falcongate web console demo](https://img.youtube.com/vi/CODJt_dvWs4/maxresdefault.jpg)](https://www.youtube.com/watch?v=CODJt_dvWs4)
+
+▶ [Watch the web console demo](https://www.youtube.com/watch?v=CODJt_dvWs4)
+
 - [Why Falcongate](#why-falcongate)
 - [What it does](#what-it-does)
 - [How it works](#how-it-works)
