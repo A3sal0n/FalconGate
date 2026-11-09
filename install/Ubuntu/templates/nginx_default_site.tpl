@@ -1,6 +1,6 @@
 
 server {
-	listen 0.0.0.0:80;
+	listen IP0:80;
 	server_name default_server;
 	return 301 https://$server_addr$request_uri;
 }
@@ -10,7 +10,7 @@ server {
 
 	# SSL configuration
 	#
-	listen 0.0.0.0:443 ssl;
+	listen IP0:443 ssl;
 
 	root /opt/Falcongate/html;
 

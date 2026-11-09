@@ -449,7 +449,30 @@ else
 fi
 
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "s/DHCPEND/$DHCPEND/g" Falcongate/install/Ubuntu/templates/dnsmasq.conf.tpl > /etc/dnsmasq.conf
-cp Falcongate/install/Ubuntu/templates/nginx_default_site.tpl /etc/nginx/conf.d/falcongate.conf
+sed -e "s/IP0/$IP0/g" Falcongate/install/Ubuntu/templates/nginx_default_site.tpl > /etc/nginx/conf.d/falcongate.conf
+# Remove Ubuntu's default site: it listens on every interface, and the web console
+# must only be reachable on the LAN address.
+rm -f /etc/nginx/sites-enabled/default
+# nginx cannot bind to the LAN address until the interface has it, which may be after
+# nginx first starts at boot (or not until a cable is plugged in), so keep retrying.
+mkdir -p /etc/systemd/system/nginx.service.d
+printf '[Unit]\nStartLimitIntervalSec=0\n\n[Service]\nRestart=on-failure\nRestartSec=5\n' > /etc/systemd/system/nginx.service.d/falcongate.conf
+
+# Postfix is only used for mail generated on this machine, so it needs no network listener.
+if command -v postconf >/dev/null 2>&1; then
+  postconf -e "inet_interfaces = loopback-only"
+fi
+
+# Accept SSH on the LAN address only. Run sshd as a regular service rather than socket
+# activated, and keep retrying so a late LAN address cannot leave the appliance without SSH.
+if [ -d /etc/ssh/sshd_config.d ]; then
+  echo "ListenAddress $IP0" > /etc/ssh/sshd_config.d/10-falcongate.conf
+  systemctl disable ssh.socket 2>/dev/null || true
+  rm -f /etc/systemd/system/ssh.service.d/00-socket.conf /etc/systemd/system/ssh.socket.d/addresses.conf
+  systemctl enable ssh.service
+  mkdir -p /etc/systemd/system/ssh.service.d
+  printf '[Unit]\nStartLimitIntervalSec=0\n\n[Service]\nRestart=on-failure\nRestartSec=5\n' > /etc/systemd/system/ssh.service.d/falcongate.conf
+fi
 cp Falcongate/install/Ubuntu/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" Falcongate/install/Ubuntu/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
 cp Falcongate/install/Ubuntu/templates/sysctl.conf.tpl /etc/sysctl.conf
