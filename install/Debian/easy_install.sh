@@ -450,9 +450,14 @@ sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" -e "s/DHCPSTART/$DHCPSTART/g" -e "
 PHP_FPM_VERSION="$(ls /etc/php/ 2>/dev/null | sort -V | tail -1)"
 PHP_FPM_SOCK="/run/php/php${PHP_FPM_VERSION}-fpm.sock"
 echo "Using PHP-FPM socket: ${PHP_FPM_SOCK}"
-sed -e "s#PHPFPMSOCK#${PHP_FPM_SOCK}#g" Falcongate/install/Debian/templates/nginx_default_site.tpl > /etc/nginx/conf.d/falcongate.conf
-# Remove Debian's default site so Falcongate is served on port 80 as well.
+sed -e "s#PHPFPMSOCK#${PHP_FPM_SOCK}#g" -e "s/IP0/$IP0/g" Falcongate/install/Debian/templates/nginx_default_site.tpl > /etc/nginx/conf.d/falcongate.conf
+# Remove Debian's default site: it listens on every interface, and the web console
+# must only be reachable on the LAN address.
 rm -f /etc/nginx/sites-enabled/default
+# nginx cannot bind to the LAN address until the interface has it, which may be after
+# nginx first starts at boot (or not until a cable is plugged in), so keep retrying.
+mkdir -p /etc/systemd/system/nginx.service.d
+printf '[Unit]\nStartLimitIntervalSec=0\n\n[Service]\nRestart=on-failure\nRestartSec=5\n' > /etc/systemd/system/nginx.service.d/falcongate.conf
 systemctl enable "php${PHP_FPM_VERSION}-fpm" 2>/dev/null || true
 cp Falcongate/install/Debian/templates/falcongate.service.tpl /etc/systemd/system/falcongate.service
 sed -e "s/IFACE0/$IFACE0/g" -e "s/IP0/$IP0/g" Falcongate/install/Debian/templates/dhcpcd.conf.tpl > /etc/dhcpcd.conf
